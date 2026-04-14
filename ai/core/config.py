@@ -1,4 +1,10 @@
+import os
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# Windows에서 symlink 미지원 시 발생하는 huggingface_hub 경고 억제
+# 기능에 영향 없음 — 캐시가 파일 복사 방식으로 동작할 뿐
+os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 
 '''BaseSetting 환경변수 기반 설정 관리 클래스(URL, DB, 환경설정)'''
 
