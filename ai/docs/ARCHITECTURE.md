@@ -6,7 +6,7 @@ ai/
 ├── main.py                    # FastAPI 앱 진입점
 ├── core/
 │   ├── config.py              # 설정 (Ollama URL, 모델명 등)
-│   └── dependencies.py        # 의존성 주입 (embedding model 등)
+│   └── dependencies.py        # 의존성 주입 (embedding model 등) : 앱 전체에서 공용으로 쓰는 객체를 꺼내오는 창구
 ├── embeddings/
 │   ├── model.py               # multilingual-e5-small 로더/추론
 │   └── store.py               # 벡터 저장/검색 (faiss)
