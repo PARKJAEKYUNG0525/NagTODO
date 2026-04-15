@@ -1,0 +1,24 @@
+# AI 서버 의존성
+
+# API
+fastapi==0.135.3
+uvicorn[standard]
+
+# 설정
+pydantic-settings==2.13.1
+
+# 임베딩
+sentence-transformers==5.4.0
+faiss-cpu==1.13.2
+numpy==2.4.4
+
+# HTTP 클라이언트 (Ollama, 백엔드 API 통신)
+httpx==0.28.1
+
+# 워크플로우
+langgraph
+networkx==3.6.1
+
+# 테스트
+pytest==9.0.3
+pytest-asyncio==1.3.0
