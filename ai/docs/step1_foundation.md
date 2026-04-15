@@ -64,6 +64,6 @@ ai/
 
 ## 완료 조건
 
-- [ ] `EmbeddingModel().encode("테스트")` → shape `(384,)` 반환
-- [ ] `OllamaClient().generate("안녕")` → 문자열 응답 반환
-- [ ] `uvicorn main:app` 기동 성공
+- [x] `EmbeddingModel().encode("테스트")` → shape `(384,)` 반환
+- [x] `OllamaClient().generate("안녕")` → 문자열 응답 반환
+- [x] `uvicorn main:app` 기동 성공
