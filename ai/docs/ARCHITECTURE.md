@@ -29,9 +29,9 @@ ai/
 │   │   ├── llm_report.py
 │   │   └── quality_check.py
 │   └── state.py               # LangGraph State 타입 정의
-├── data/
+├── data/                      # 런타임 자동 생성
 │   ├── index.faiss            # faiss 벡터 인덱스
-│   └── metadata.json          # 벡터 메타데이터 (todo_id, user_id 등)
+│   └── metadata.json          # 벡터 메타데이터 (todo_id, user_id, _vec 등)
 └── llm/
     └── ollama_client.py       # Ollama HTTP 클라이언트 래퍼
 ```

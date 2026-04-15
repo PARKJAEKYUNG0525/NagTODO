@@ -2,14 +2,14 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from ai.core.dependencies import get_embedding_model
+from ai.core.dependencies import get_embedding_model, get_embedding_store
 
-# generater : 필요할 때마다 하나씩 생성하는 iterator
+# generator : 필요할 때마다 하나씩 생성하는 iterator
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # 서버 시작 시 임베딩 모델 pre-load (첫 응답 처리 속도 빠름)
+    # 서버 시작 시 무거운 객체 pre-load (첫 응답 처리 속도 향상)
     get_embedding_model()
-    # Step 2 완료 후: get_embedding_store() 추가
+    get_embedding_store()
     yield
 
 

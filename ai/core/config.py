@@ -22,6 +22,7 @@ class Settings(BaseSettings):
 
     # 임베딩
     EMBEDDING_MODEL: str = "intfloat/multilingual-e5-small"
+    VECTOR_DIM: int = 384
 
     # 백엔드 API
     BACKEND_API_URL: str = "http://localhost:8000"
