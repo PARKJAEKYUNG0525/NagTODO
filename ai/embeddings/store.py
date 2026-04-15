@@ -1,0 +1,140 @@
+import json
+from pathlib import Path
+
+import faiss
+import numpy as np
+
+from ai.core.config import settings
+
+'''FAISS 기반 임베딩 벡터 저장소(EmbeddingStore) : 임베딩, 유사도 검색, soft delete, 디스크 영속화'''
+
+# 임베딩 모델 고정 출력 차원
+_VECTOR_DIM = settings.VECTOR_DIM
+
+# ai/ 패키지 루트 (store.py 위치 기준 2단계 상위)
+_AI_DIR = Path(__file__).resolve().parent.parent
+
+
+class EmbeddingStore:
+    '''
+    faiss IndexFlatIP 인덱스와 메타데이터를 함께 관리하는 벡터 스토어.
+
+    faiss 인덱스의 i번째 행과 _metadata[i]가 1:1 대응
+    삭제는 soft delete(is_deleted 플래그)로 처리하고, rebuild() 호출 시에만 물리적으로 제거
+    '''
+
+    def __init__(self) -> None:
+        self._index: faiss.IndexFlatIP = faiss.IndexFlatIP(_VECTOR_DIM)  # 벡터 저장소 생성
+        # 각 항목: todo_id, user_id, category, text, completed, is_deleted, _vec
+        self._metadata: list[dict] = []   # 메타데이터 리스트 생성
+
+    
+    ########## 경로 헬퍼 ##########
+
+    @staticmethod
+    def _index_path() -> Path:
+        return _AI_DIR / settings.FAISS_INDEX_PATH
+
+    @staticmethod
+    def _metadata_path() -> Path:
+        return _AI_DIR / settings.FAISS_METADATA_PATH
+
+
+    ########## CRUD ##########
+
+    # todo 생성 : 벡터 + 메타데이터 추가
+    def add(self, todo_id: str, vec: np.ndarray, meta: dict) -> None:
+        # 메타 정보 패킹
+        row: dict = {
+            "todo_id": todo_id,
+            **meta,
+            "is_deleted": False,
+            "_vec": vec.tolist(),  # JSON 직렬화 및 rebuild 재구축용
+        }
+
+        # FAISS(2차원 벡터로 변환해서), metadata에 추가
+        self._index.add(vec.reshape((1, -1)))  # type: ignore[call-arg]
+        self._metadata.append(row)
+
+    # todo 삭제 (soft delete)
+    def delete(self, todo_id: str) -> None:
+        for row in self._metadata:
+            if row["todo_id"] == todo_id and not row["is_deleted"]:
+                row["is_deleted"] = True
+                return
+
+    # todo 수정 : 기존 항목 삭제 후 새 벡터/메타데이터 추가
+    def update(self, todo_id: str, new_vec: np.ndarray, new_meta: dict) -> None:
+        self.delete(todo_id)
+        self.add(todo_id, new_vec, new_meta)
+
+    # 유사 todo top-k 검색 : cosine similarity 기준 top-k 검색. is_deleted=True 항목 제외
+    def search(self, query_vec: np.ndarray, top_k: int) -> list[dict]:
+        """
+        정규화된 벡터 + IndexFlatIP → 내적 = cosine similarity.
+        전체 인덱스를 검색한 뒤 삭제 항목을 필터링해 top_k 반환.
+        """
+        # 빈 벡터 저장소 제외
+        if self._index.ntotal == 0:
+            return []
+
+        # 삭제된 항목을 제외하기 위해 전체 인덱스 검색 후 필터링
+        scores, indices = self._index.search(  # type: ignore[call-arg]
+            query_vec.reshape((1, -1)), self._index.ntotal
+        )
+
+        active_set: set[int] = {
+            i for i, m in enumerate(self._metadata) if not m["is_deleted"]
+        }
+
+        # cosine similarity 기반 top_k 검색
+        results: list[dict] = []
+        for score, idx in zip(scores[0], indices[0]):
+            if idx == -1 or idx not in active_set:
+                continue
+            entry = {k: v for k, v in self._metadata[idx].items() if k != "_vec"}
+            entry["score"] = float(score)
+            results.append(entry)
+            if len(results) >= top_k:
+                break
+
+        return results
+
+
+    ########## 인덱스 유지보수 ##########
+
+    # soft delele 데이터 실제 제거 + faiss 인덱스 재구축
+    def rebuild(self) -> None:
+        active = [m for m in self._metadata if not m["is_deleted"]]
+        new_index: faiss.IndexFlatIP = faiss.IndexFlatIP(_VECTOR_DIM)
+        if active:
+            vecs = np.array([m["_vec"] for m in active], dtype=np.float32)
+            new_index.add(vecs)  # type: ignore[call-arg]
+        self._index = new_index
+        self._metadata = active
+
+
+    ########## 영구 저장 ##########
+
+    # index.faiss + metadata.json 디스크 저장
+    def save(self) -> None:
+        idx_path = self._index_path()
+        meta_path = self._metadata_path()
+        idx_path.parent.mkdir(parents=True, exist_ok=True)
+        faiss.write_index(self._index, str(idx_path))
+        meta_path.write_text(
+            json.dumps(self._metadata, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
+
+    # 디스크에서 인덱스와 메타데이터 로드 (파일 없으면 빈 상태로 시작)
+    # 서버 시작 시 호출
+    def load(self) -> None:
+        idx_path = self._index_path()
+        meta_path = self._metadata_path()
+        if idx_path.exists() and meta_path.exists():
+            self._index = faiss.read_index(str(idx_path))
+            self._metadata = json.loads(meta_path.read_text(encoding="utf-8"))
+        else:
+            self._index = faiss.IndexFlatIP(_VECTOR_DIM)
+            self._metadata = []

@@ -80,7 +80,7 @@ todo 수정 요청
 
 ## 완료 조건
 
-- [ ] `add` → `search` → 결과 반환 정상 동작
-- [ ] `delete` 후 `search` 결과에서 제외 확인
-- [ ] `save` → `load` 후 동일 데이터 복원
-- [ ] `rebuild` 후 `is_deleted` 항목 완전 제거 확인
+- [x] `add` → `search` → 결과 반환 정상 동작
+- [x] `delete` 후 `search` 결과에서 제외 확인
+- [x] `save` → `load` 후 동일 데이터 복원
+- [x] `rebuild` 후 `is_deleted` 항목 완전 제거 확인
