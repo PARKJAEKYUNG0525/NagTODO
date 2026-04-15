@@ -233,7 +233,7 @@ class Settings(BaseSettings):
 fastapi
 uvicorn
 sentence-transformers
-faiss-cpu
+faiss-gpu
 numpy        # faiss 내부 연산용
 networkx
 langgraph
