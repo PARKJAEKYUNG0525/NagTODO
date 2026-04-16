@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -10,7 +11,8 @@ os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file="../.env",
+        # 파일 기준 절대 경로로 지정 — cwd와 무관하게 항상 올바른 .env 로드
+        env_file=Path(__file__).resolve().parent.parent.parent / ".env",
         case_sensitive=True,
         extra="ignore",   # 정의되지 않은 환경변수 무시
     )
@@ -36,7 +38,7 @@ class Settings(BaseSettings):
     MIN_CLUSTER_SIZE: int = 2
     TOP_K_SIMILAR: int = 20
     MIN_MONTHLY_TASKS: int = 20
-    Min_MONTHLY_FAIL_TASKS : int = 5
+    MIN_MONTHLY_FAIL_TASKS: int = 5
 
 # 싱글턴 인스턴스 생성
 settings = Settings()

@@ -21,9 +21,18 @@ class OllamaClient:
         # async with : 자동으로 자원 정리
         #              요청 끝나면 connection close, 메모리 정리, 세션 종료
         async with httpx.AsyncClient(timeout=self._timeout) as client:
-            response = await client.post(
-                f"{self._base_url}/api/generate",
-                json=payload,
-            )
-            response.raise_for_status()
-            return response.json()["response"]
+            try:
+                response = await client.post(
+                    f"{self._base_url}/api/generate",
+                    json=payload,
+                )
+                response.raise_for_status()
+            except httpx.TimeoutException as e:
+                raise TimeoutError(f"Ollama 응답 시간 초과 ({self._timeout}s)") from e
+            except httpx.ConnectError as e:
+                raise ConnectionError(f"Ollama 서버 연결 실패: {self._base_url}") from e
+
+            data = response.json()
+            if "response" not in data:
+                raise ValueError(f"Ollama 응답에 'response' 필드 없음: {data}")
+            return data["response"]

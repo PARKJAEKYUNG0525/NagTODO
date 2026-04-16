@@ -30,7 +30,7 @@ ai/interference/
 - 반환 필드: `global_rate`, `personal_rate`, `similar_count`, `personal_count`, `similar_failures`
 - `global_rate`: top-k 전체 중 `completed / total * 100`
 - `personal_rate`: `user_id` 매칭 항목만 따로 계산, 데이터 없으면 `None`
-- `similar_failures`: 실패 task 텍스트 목록 (개인 실패 우선, 최대 5개)
+- `similar_failures`: 실패 task 텍스트 목록 (개인 실패 우선, 최대 10개)
 
 ### `interference/feedback.py`
 - `async generate_feedback(todo_text, stats, ollama) -> str`
@@ -79,7 +79,7 @@ POST /ai/interference
 
 ## 완료 조건
 
-- [ ] `POST /ai/interference` 200 응답, 명세 형식 일치
-- [ ] 빈 벡터 스토어에서도 에러 없이 동작
-- [ ] `personal_rate < 30%`일 때만 LLM 호출됨을 확인
-- [ ] `similar_failures` 개인 실패 우선 정렬 확인
+- [x] `POST /ai/interference` 200 응답, 명세 형식 일치
+- [x] 빈 벡터 스토어에서도 에러 없이 동작
+- [x] `personal_rate < 30%`일 때만 LLM 호출됨을 확인
+- [x] `similar_failures` 개인 실패 우선 정렬 확인
