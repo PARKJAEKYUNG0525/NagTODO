@@ -11,6 +11,7 @@ ai/
 │   ├── model.py               # multilingual-e5-small 로더/추론
 │   └── store.py               # 벡터 저장/검색 (faiss)
 ├── interference/
+│   ├── __init__.py
 │   ├── router.py              # POST /ai/interference
 │   ├── retrieval.py           # top-20 유사 task 검색
 │   ├── stats.py               # 전체/개인 성공률 계산

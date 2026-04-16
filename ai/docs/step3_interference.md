@@ -79,7 +79,7 @@ POST /ai/interference
 
 ## 완료 조건
 
-- [ ] `POST /ai/interference` 200 응답, 명세 형식 일치
-- [ ] 빈 벡터 스토어에서도 에러 없이 동작
-- [ ] `personal_rate < 30%`일 때만 LLM 호출됨을 확인
-- [ ] `similar_failures` 개인 실패 우선 정렬 확인
+- [x] `POST /ai/interference` 200 응답, 명세 형식 일치
+- [x] 빈 벡터 스토어에서도 에러 없이 동작
+- [x] `personal_rate < 30%`일 때만 LLM 호출됨을 확인
+- [x] `similar_failures` 개인 실패 우선 정렬 확인
