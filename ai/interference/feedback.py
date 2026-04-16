@@ -20,8 +20,10 @@ _MSG_LOW_GLOBAL = (
 
 
 def _build_prompt(todo_text: str, stats: dict) -> str:
-    '''LLM에 전달할 한국어 잔소리 프롬프트 생성'''
+    '''LLM에 전달할 한국어 잔소리 프롬프트 생성 — personal_rate가 None이면 호출 불가'''
     personal_rate = stats["personal_rate"]
+    if personal_rate is None:
+        raise ValueError("_build_prompt은 personal_rate가 존재할 때만 호출해야 함")
     failures = stats.get("similar_failures", [])
     failure_examples = "\n".join(f"- {f}" for f in failures) if failures else "없음"
 
@@ -48,7 +50,7 @@ def _build_prompt(todo_text: str, stats: dict) -> str:
 
 '''
 LLM 호출 분기:
-- 유사 데이터 없음          → 고정 문자열
+- 유사 데이터 없음            → 고정 문자열
 - personal_rate >= 30%      → 템플릿 (잘하고 있음)
 - personal_rate 없음        → 템플릿 (전체 성공률 낮음 안내)
 - personal_rate < 30%       → LLM 호출 (잔소리)

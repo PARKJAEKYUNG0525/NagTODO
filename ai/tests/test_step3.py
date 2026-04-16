@@ -76,17 +76,17 @@ def test_similar_failures_personal_first():
     ]
     result = compute_stats(tasks, "u1")
     failures = result["similar_failures"]
-    assert len(failures) == 5
+    assert len(failures) == 6
     # 개인 실패가 앞에 와야 함
     assert failures[0] == "개인실패1"
     assert failures[1] == "개인실패2"
 
 
-def test_similar_failures_max_five():
-    """similar_failures는 최대 5개를 초과하지 않는다."""
-    tasks = [_make_task("u1", False, f"실패{i}") for i in range(10)]
+def test_similar_failures_max_ten():
+    """similar_failures는 최대 10개를 초과하지 않는다."""
+    tasks = [_make_task("u1", False, f"실패{i}") for i in range(15)]
     result = compute_stats(tasks, "u1")
-    assert len(result["similar_failures"]) == 5
+    assert len(result["similar_failures"]) == 10
 
 
 # ── feedback 단위 테스트 ──────────────────────────────────────────────────────────

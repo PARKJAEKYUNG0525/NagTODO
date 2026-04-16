@@ -30,7 +30,7 @@ ai/interference/
 - 반환 필드: `global_rate`, `personal_rate`, `similar_count`, `personal_count`, `similar_failures`
 - `global_rate`: top-k 전체 중 `completed / total * 100`
 - `personal_rate`: `user_id` 매칭 항목만 따로 계산, 데이터 없으면 `None`
-- `similar_failures`: 실패 task 텍스트 목록 (개인 실패 우선, 최대 5개)
+- `similar_failures`: 실패 task 텍스트 목록 (개인 실패 우선, 최대 10개)
 
 ### `interference/feedback.py`
 - `async generate_feedback(todo_text, stats, ollama) -> str`

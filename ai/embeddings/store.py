@@ -58,10 +58,28 @@ class EmbeddingStore:
         return _AI_DIR / settings.FAISS_METADATA_PATH
 
 
+    ########## 입력 검증 ##########
+
+    def _validate_vec(self, vec: np.ndarray) -> None:
+        '''벡터 차원, NaN/Inf, L2 정규화 검증'''
+        if vec.shape != (_VECTOR_DIM,):
+            raise ValueError(f"벡터 차원 불일치: 기대 ({_VECTOR_DIM},), 실제 {vec.shape}")
+        if not np.isfinite(vec).all():
+            raise ValueError("벡터에 NaN 또는 Inf 값 포함")
+        # IndexFlatIP는 L2 정규화 벡터를 가정 — norm ≠ 1이면 내적 ≠ cosine similarity
+        norm = float(np.linalg.norm(vec))
+        if not np.isclose(norm, 1.0, atol=1e-5):   # float32 정밀도 오차 허용 범위 (~1e-7), 임베딩 연산 누적 오차 고려
+            raise ValueError(f"벡터가 정규화되지 않음: norm={norm:.4f}")
+
     ########## CRUD ##########
 
     # todo 생성 : 벡터 + 메타데이터 추가
     def add(self, todo_id: str, vec: np.ndarray, meta: dict) -> None:
+        # 중복 todo_id 방지 (active 항목 기준)
+        if any(m["todo_id"] == todo_id and not m["is_deleted"] for m in self._metadata):
+            raise ValueError(f"todo_id '{todo_id}' 이미 존재")
+        self._validate_vec(vec)
+
         # 메타 정보 패킹
         row: dict = {
             "todo_id": todo_id,
@@ -74,12 +92,11 @@ class EmbeddingStore:
         self._index.add(vec.reshape((1, -1)))  # type: ignore[call-arg]
         self._metadata.append(row)
 
-    # todo 삭제 (soft delete)
+    # todo 삭제 (soft delete) — 동일 todo_id의 모든 active 항목 처리
     def delete(self, todo_id: str) -> None:
         for row in self._metadata:
             if row["todo_id"] == todo_id and not row["is_deleted"]:
                 row["is_deleted"] = True
-                return
 
     # todo 수정 : 기존 항목 삭제 후 새 벡터/메타데이터 추가
     def update(self, todo_id: str, new_vec: np.ndarray, new_meta: dict) -> None:
