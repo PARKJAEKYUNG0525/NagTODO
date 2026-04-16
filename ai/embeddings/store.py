@@ -18,15 +18,33 @@ _AI_DIR = Path(__file__).resolve().parent.parent
 class EmbeddingStore:
     '''
     faiss IndexFlatIP 인덱스와 메타데이터를 함께 관리하는 벡터 스토어.
+    GPU 사용 가능하면 GpuIndexFlatIP로 실행 / 없으면 CPU 인덱스로 폴백.
 
     faiss 인덱스의 i번째 행과 _metadata[i]가 1:1 대응
     삭제는 soft delete(is_deleted 플래그)로 처리하고, rebuild() 호출 시에만 물리적으로 제거
     '''
 
     def __init__(self) -> None:
-        self._index: faiss.IndexFlatIP = faiss.IndexFlatIP(_VECTOR_DIM)  # 벡터 저장소 생성
+        # GPU 사용 가능 여부 확인
+        self._gpu_available: bool = faiss.get_num_gpus() > 0
+        self._res: faiss.StandardGpuResources | None = (
+            faiss.StandardGpuResources() if self._gpu_available else None
+        )
+        self._index: faiss.Index = self._to_gpu(faiss.IndexFlatIP(_VECTOR_DIM))
         # 각 항목: todo_id, user_id, category, text, completed, is_deleted, _vec
         self._metadata: list[dict] = []   # 메타데이터 리스트 생성
+
+    # CPU 인덱스 → GPU 인덱스 변환 (GPU 없으면 그대로 반환)
+    def _to_gpu(self, cpu_index: faiss.Index) -> faiss.Index:
+        if self._gpu_available and self._res is not None:
+            return faiss.index_cpu_to_gpu(self._res, 0, cpu_index)
+        return cpu_index
+
+    # GPU 인덱스 → CPU 인덱스 변환 (디스크 저장 전 필수)
+    def _to_cpu(self) -> faiss.Index:
+        if self._gpu_available:
+            return faiss.index_gpu_to_cpu(self._index)
+        return self._index
 
     
     ########## 경로 헬퍼 ##########
@@ -106,35 +124,40 @@ class EmbeddingStore:
     # soft delele 데이터 실제 제거 + faiss 인덱스 재구축
     def rebuild(self) -> None:
         active = [m for m in self._metadata if not m["is_deleted"]]
-        new_index: faiss.IndexFlatIP = faiss.IndexFlatIP(_VECTOR_DIM)
+        cpu_index: faiss.Index = faiss.IndexFlatIP(_VECTOR_DIM)
         if active:
             vecs = np.array([m["_vec"] for m in active], dtype=np.float32)
-            new_index.add(vecs)  # type: ignore[call-arg]
-        self._index = new_index
+            cpu_index.add(vecs)  # type: ignore[call-arg]
+        self._index = self._to_gpu(cpu_index)
         self._metadata = active
 
 
     ########## 영구 저장 ##########
 
     # index.faiss + metadata.json 디스크 저장
+    # faiss.write_index는 CPU 인덱스만 지원하므로 GPU → CPU 변환 후 저장
     def save(self) -> None:
         idx_path = self._index_path()
         meta_path = self._metadata_path()
+
         idx_path.parent.mkdir(parents=True, exist_ok=True)
-        faiss.write_index(self._index, str(idx_path))
+
+        faiss.write_index(self._to_cpu(), str(idx_path))
         meta_path.write_text(
             json.dumps(self._metadata, ensure_ascii=False, indent=2),
             encoding="utf-8",
         )
 
     # 디스크에서 인덱스와 메타데이터 로드 (파일 없으면 빈 상태로 시작)
-    # 서버 시작 시 호출
+    # 로드 후 GPU로 이동 / 서버 시작 시 호출
     def load(self) -> None:
         idx_path = self._index_path()
         meta_path = self._metadata_path()
+        
         if idx_path.exists() and meta_path.exists():
-            self._index = faiss.read_index(str(idx_path))
+            cpu_index = faiss.read_index(str(idx_path))
+            self._index = self._to_gpu(cpu_index)
             self._metadata = json.loads(meta_path.read_text(encoding="utf-8"))
         else:
-            self._index = faiss.IndexFlatIP(_VECTOR_DIM)
+            self._index = self._to_gpu(faiss.IndexFlatIP(_VECTOR_DIM))
             self._metadata = []
