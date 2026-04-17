@@ -138,6 +138,11 @@ class EmbeddingStore:
 
     ########## 인덱스 유지보수 ##########
 
+    # 모든 데이터 삭제 후 빈 인덱스로 초기화
+    def clear(self) -> None:
+        self._metadata = []
+        self._index = self._to_gpu(faiss.IndexFlatIP(_VECTOR_DIM))
+
     # soft delele 데이터 실제 제거 + faiss 인덱스 재구축
     def rebuild(self) -> None:
         active = [m for m in self._metadata if not m["is_deleted"]]

@@ -40,5 +40,8 @@ class Settings(BaseSettings):
     MIN_MONTHLY_TASKS: int = 20
     MIN_MONTHLY_FAIL_TASKS: int = 5
 
+    # 데모 모드 (DEMO_MODE=1 설정 시 /ai/demo/* 엔드포인트 활성화)
+    DEMO_MODE: bool = False
+
 # 싱글턴 인스턴스 생성
 settings = Settings()
