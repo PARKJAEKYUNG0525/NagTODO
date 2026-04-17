@@ -1,2 +1,2 @@
-from .user import UserService
+from .users import UserService
 from .board import BoardService
