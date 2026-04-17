@@ -16,7 +16,7 @@ import sys
 import httpx
 
 _SEP = "=" * 60
-_NEW_TODO = "러닝 30분"
+_NEW_TODO = "스위치온 다이어트 1일차"
 
 
 def _base_url() -> str:
@@ -56,7 +56,7 @@ def _print_result(label: str, user_id: str, data: dict) -> None:
     print(f"  전체 성공률  : {gr}")
     print(f"  개인 성공률  : {pr}")
     if data["similar_failures"]:
-        print(f"  실패 사례    : {data['similar_failures'][:3]}")
+        print(f"  유사 사례    : {data['similar_failures'][:5]}")
     print(f"\n  ▶ 피드백: {data['feedback']}")
     print(_SEP)
 
@@ -80,14 +80,14 @@ def main() -> None:
         data = _interference(client, "new_user")
         _print_result("시나리오 2 | 개인 todo 없음 → 전체 성공률 안내 [early return]", "new_user", data)
 
-        # ── 시나리오 3: user_B — 개인 성공률 73% (generate_feedback) ─
+        # ── 시나리오 3: user_B — 개인 성공률 30% 이상 (generate_feedback) ─
         data = _interference(client, "user_B")
-        _print_result("시나리오 3 | 개인 성공률 73% → 비꼬기 메시지 [generate_feedback]", "user_B", data)
+        _print_result("시나리오 3 | 개인 성공률 30% 이상 → 잔소리 X [generate_feedback]", "user_B", data)
 
-        # ── 시나리오 4: user_A — 개인 성공률 13% → LLM 잔소리 ────
+        # ── 시나리오 4: user_A — 개인 성공률 30% 미만 → LLM 잔소리 ────
         print("\n  [Ollama LLM 호출 중... 잠시 대기]")
         data = _interference(client, "user_A")
-        _print_result("시나리오 4 | 개인 성공률 13% → LLM 잔소리 [generate_feedback → LLM]", "user_A", data)
+        _print_result("시나리오 4 | 개인 성공률 30% 미만 → LLM 잔소리 [generate_feedback → LLM]", "user_A", data)
 
 
 if __name__ == "__main__":
