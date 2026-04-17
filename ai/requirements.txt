@@ -10,7 +10,7 @@ pydantic-settings==2.13.1
 # 임베딩
 sentence-transformers==5.4.0
 faiss-gpu  # CUDA 환경 필요. GPU 없는 경우 faiss-cpu로 교체
-numpy==2.4.4
+numpy>=2.1,<2.3
 
 # HTTP 클라이언트 (Ollama, 백엔드 API 통신)
 httpx==0.28.1
