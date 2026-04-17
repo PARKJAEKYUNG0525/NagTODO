@@ -6,11 +6,11 @@ from ai.llm.ollama_client import OllamaClient
 _LLM_CALL_THRESHOLD = 30.0
 
 # 고정 문자열 (유사 데이터 없을 때)
-_MSG_NO_DATA = "아직 유사한 task 데이터가 없어요. 첫 도전이니 열심히 해봐요!"
+_MSG_NO_DATA = "기록도 없는데 이번엔 잘 할 거라는 근거가 뭐야?"
 
 # 성공률 양호 템플릿 (personal_rate >= 30%)
 _MSG_GOOD_PERSONAL = (
-    "니가 잘하는 종류네. 앞으로도 그렇게 해."
+    "이번엔 잘했네. 근데 얼마나 갈지는 두고봐야 알겠지."
 )
 
 # 개인 데이터 없음 + 낮은 전체 성공률 템플릿
