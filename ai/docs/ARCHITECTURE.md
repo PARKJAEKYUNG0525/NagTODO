@@ -18,19 +18,21 @@ ai/
 │   ├── feedback.py            # LLM 피드백 문장 생성
 │   └── demo_router.py         # 데모 전용 라우터 (DEMO_MODE=1 시 활성화)
 ├── report/
-│   ├── router.py              # POST /ai/report/monthly
-│   ├── graph.py               # LangGraph 워크플로우 정의
+│   ├── __init__.py
+│   ├── router.py              # POST /ai/report/monthly (미구현)
+│   ├── graph.py               # LangGraph 워크플로우 정의 (미구현)
 │   ├── nodes/
-│   │   ├── load_logs.py
-│   │   ├── compute_stats.py
-│   │   ├── embed_failures.py
-│   │   ├── build_similarity_graph.py
-│   │   ├── extract_clusters.py
-│   │   ├── summarize_clusters.py
-│   │   ├── llm_analysis.py
-│   │   ├── llm_report.py
-│   │   └── quality_check.py
-│   └── state.py               # LangGraph State 타입 정의
+│   │   ├── __init__.py
+│   │   ├── load_logs.py       # async: 백엔드 API에서 월간 로그 fetch
+│   │   ├── compute_stats.py   # 카테고리별 달성률 집계
+│   │   ├── embed_failures.py  # 실패 task 임베딩 (list로 직렬화)
+│   │   ├── build_similarity_graph.py  # cosine similarity 그래프 구성
+│   │   ├── extract_clusters.py        # connected components 클러스터 추출
+│   │   ├── summarize_clusters.py      # LLM 입력용 클러스터 요약
+│   │   ├── llm_analysis.py    # async: 클러스터 실패 원인 분석
+│   │   ├── llm_report.py      # async: 월간 회고 리포트 생성
+│   │   └── quality_check.py   # 리포트 품질 검증 (길이/bullet/숫자)
+│   └── state.py               # ReportState(TypedDict) 정의
 ├── data/                      # 런타임 자동 생성
 │   ├── index.faiss            # faiss 벡터 인덱스
 │   └── metadata.json          # 벡터 메타데이터 (todo_id, user_id, _vec 등)
