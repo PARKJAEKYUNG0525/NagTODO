@@ -24,7 +24,8 @@ def retrieve_similar(
     todo_text: str,
     model: EmbeddingModel,
     store: EmbeddingStore,
+    user_id: str | None = None,
 ) -> list[dict]:
 
     query_vec = model.encode(todo_text)
-    return store.search(query_vec, top_k=settings.TOP_K_SIMILAR)
+    return store.search(query_vec, top_k=settings.TOP_K_SIMILAR, user_id=user_id)

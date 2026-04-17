@@ -103,11 +103,19 @@ class EmbeddingStore:
         self.delete(todo_id)
         self.add(todo_id, new_vec, new_meta)
 
+    # 특정 유저의 active todo 수 반환
+    def count_user(self, user_id: str) -> int:
+        return sum(
+            1 for m in self._metadata
+            if not m["is_deleted"] and m.get("user_id") == user_id
+        )
+
     # 유사 todo top-k 검색 : cosine similarity 기준 top-k 검색. is_deleted=True 항목 제외
-    def search(self, query_vec: np.ndarray, top_k: int) -> list[dict]:
+    def search(self, query_vec: np.ndarray, top_k: int, user_id: str | None = None) -> list[dict]:
         """
         정규화된 벡터 + IndexFlatIP → 내적 = cosine similarity.
         전체 인덱스를 검색한 뒤 삭제 항목을 필터링해 top_k 반환.
+        user_id 지정 시 해당 유저 데이터만 대상으로 검색.
         """
         # 빈 벡터 저장소 제외
         if self._index.ntotal == 0:
@@ -119,7 +127,8 @@ class EmbeddingStore:
         )
 
         active_set: set[int] = {
-            i for i, m in enumerate(self._metadata) if not m["is_deleted"]
+            i for i, m in enumerate(self._metadata)
+            if not m["is_deleted"] and (user_id is None or m.get("user_id") == user_id)
         }
 
         # cosine similarity 기반 top_k 검색
