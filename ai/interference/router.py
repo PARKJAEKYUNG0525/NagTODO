@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from ai.core.dependencies import get_embedding_model, get_embedding_store, get_ollama_client
 
@@ -27,6 +27,13 @@ class InterferenceRequest(BaseModel):
     category: str
     user_id: str
 
+    @field_validator("todo_text", "user_id", "category")
+    @classmethod
+    def not_empty(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("빈 문자열은 허용되지 않습니다")
+        return v
+
 
 class InterferenceResponse(BaseModel):
     global_rate: float | None
@@ -44,10 +51,11 @@ async def interference(
     ollama: OllamaClient = Depends(get_ollama_client),
 ) -> InterferenceResponse:
     """retrieval → stats → feedback 3단계 파이프라인."""
-    if store.count_user(req.user_id) < settings.MIN_PERSONAL_TODOS:
+    personal_count = store.count_user(req.user_id)
+    if personal_count < settings.MIN_PERSONAL_TODOS:
         global_similar = retrieve_similar(req.todo_text, model, store)
         global_stats = compute_stats(global_similar, req.user_id)
-        remaining = settings.MIN_PERSONAL_TODOS - store.count_user(req.user_id)
+        remaining = settings.MIN_PERSONAL_TODOS - personal_count
         global_rate = global_stats["global_rate"]
         rate_str = f"{global_rate:.1f}%" if global_rate is not None else "집계 중"
         return InterferenceResponse(
