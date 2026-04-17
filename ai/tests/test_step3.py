@@ -157,6 +157,7 @@ def _make_app():
 
     mock_store = MagicMock()
     mock_store.search.return_value = []
+    mock_store.count_user.return_value = 0  # FIX: Set return value for count_user
 
     mock_ollama = MagicMock()
 

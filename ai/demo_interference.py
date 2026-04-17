@@ -1,11 +1,15 @@
 """
 간섭 파이프라인 시각 확인용 HTTP 데모 스크립트.
 
-FastAPI 서버에 실제 HTTP 요청을 보내 4가지 피드백 분기를 모두 눈으로 확인한다:
-  1. 빈 스토어              → 고정 문자열 (유사 데이터 없음)
-  2. new_user — 개인 데이터 없음  → 템플릿
-  3. user_B  — 개인 성공률 73%   → 템플릿 (잘하고 있음)
-  4. user_A  — 개인 성공률 13%   → LLM 잔소리 호출
+FastAPI 서버에 실제 HTTP 요청을 보내 4가지 피드백 분기를 모두 눈으로 확인한다.
+
+피드백 분기 구조:
+  ┌─ 개인 todo < MIN_PERSONAL_TODOS(15)일 때 router early return
+  │   1. 빈 스토어, user_A  → 전체 성공률 집계 불가 + 필요 개수 안내
+  │   2. new_user           → 전체 성공률 안내 + 필요 개수 안내
+  └─ 개인 todo >= 15일 때 generate_feedback 호출
+      3. user_B (73%)       → 격려 메시지 (personal_rate >= 30%)
+      4. user_A (13%)       → LLM 잔소리 호출 (personal_rate < 30%)
 """
 import sys
 
@@ -63,27 +67,27 @@ def main() -> None:
 
     with httpx.Client(base_url=base) as client:
 
-        # ── 시나리오 1: 빈 스토어 ────────────────────────────────
+        # ── 시나리오 1: 빈 스토어 (early return) ─────────────────
         _reset(client)
         data = _interference(client, "user_A")
-        _print_result("시나리오 1 | 빈 스토어 → 고정 문자열", "user_A", data)
+        _print_result("시나리오 1 | 빈 스토어 → 전체 성공률 집계 불가 안내 [early return]", "user_A", data)
 
         # ── 데이터 로드 (시나리오 2~4 공통) ──────────────────────
         print("\n  [mock 데이터 스토어에 적재 중...]")
         _seed(client)
 
-        # ── 시나리오 2: new_user — 개인 데이터 없음 ───────────────
+        # ── 시나리오 2: new_user — 개인 todo 없음 (early return) ──
         data = _interference(client, "new_user")
-        _print_result("시나리오 2 | 개인 데이터 없음 → 템플릿", "new_user", data)
+        _print_result("시나리오 2 | 개인 todo 없음 → 전체 성공률 안내 [early return]", "new_user", data)
 
-        # ── 시나리오 3: user_B — 개인 성공률 73% ─────────────────
+        # ── 시나리오 3: user_B — 개인 성공률 73% (generate_feedback) ─
         data = _interference(client, "user_B")
-        _print_result("시나리오 3 | 개인 성공률 73% → 템플릿 (잘함)", "user_B", data)
+        _print_result("시나리오 3 | 개인 성공률 73% → 격려 메시지 [generate_feedback]", "user_B", data)
 
         # ── 시나리오 4: user_A — 개인 성공률 13% → LLM 잔소리 ────
         print("\n  [Ollama LLM 호출 중... 잠시 대기]")
         data = _interference(client, "user_A")
-        _print_result("시나리오 4 | 개인 성공률 13% → LLM 잔소리", "user_A", data)
+        _print_result("시나리오 4 | 개인 성공률 13% → LLM 잔소리 [generate_feedback → LLM]", "user_A", data)
 
 
 if __name__ == "__main__":

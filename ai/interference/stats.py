@@ -27,6 +27,12 @@ def compute_stats(similar_tasks: list[dict], user_id: str) -> dict:
             "similar_failures": [],
         }
 
+    # 필드 검증: 실패한 task에서는 'text' 필드가 필수 (CRITICAL BUG FIX)
+    for task in similar_tasks:
+        if not task.get("completed", False) and "text" not in task:
+            raise ValueError(f"실패 task는 'text' 필드가 필수: {task}")
+
+
     total = len(similar_tasks)
     completed_count = sum(1 for t in similar_tasks if t.get("completed", False))
     global_rate = completed_count / total * 100

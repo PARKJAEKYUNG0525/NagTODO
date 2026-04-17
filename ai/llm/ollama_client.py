@@ -32,7 +32,10 @@ class OllamaClient:
             except httpx.ConnectError as e:
                 raise ConnectionError(f"Ollama 서버 연결 실패: {self._base_url}") from e
 
-            data = response.json()
+            try:
+                data = response.json()
+            except Exception as e:
+                raise ValueError(f"Ollama 응답 JSON 파싱 실패: {response.text[:200]}") from e
             if "response" not in data:
                 raise ValueError(f"Ollama 응답에 'response' 필드 없음: {data}")
             return data["response"]
