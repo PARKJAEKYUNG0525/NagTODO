@@ -97,25 +97,26 @@ def seed(
     model: EmbeddingModel = Depends(get_embedding_model),
     store: EmbeddingStore = Depends(get_embedding_store),
 ) -> dict:
-    """_MOCK_DATA 전체를 스토어에 추가한다."""
+    """_MOCK_DATA 전체를 스토어에 추가한다. 이미 존재하는 항목은 건너뜀."""
     added = 0
     for i, item in enumerate(_MOCK_DATA):
         todo_id = f"demo_{item['user_id']}_{i}"
-        if any(m["todo_id"] == todo_id and not m["is_deleted"] for m in store._metadata):
-            continue
         vec = model.encode_passage(item["text"])
-        store.add(
-            todo_id=todo_id,
-            vec=vec,
-            meta={
-                "user_id":   item["user_id"],
-                "category":  item["category"],
-                "text":      item["text"],
-                "completed": item["completed"],
-            },
-        )
-        added += 1
-    return {"seeded": added, "total_in_store": store._index.ntotal}
+        try:
+            store.add(
+                todo_id=todo_id,
+                vec=vec,
+                meta={
+                    "user_id":   item["user_id"],
+                    "category":  item["category"],
+                    "text":      item["text"],
+                    "completed": item["completed"],
+                },
+            )
+            added += 1
+        except ValueError:
+            pass  # 이미 존재하는 항목 건너뜀
+    return {"seeded": added}
 
 
 @router.post("/reset")
