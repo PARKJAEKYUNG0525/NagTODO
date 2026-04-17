@@ -31,6 +31,7 @@ def _build_prompt(todo_text: str, stats: dict) -> str:
         f"""
         당신은 사용자의 미루기 습관을 정확히 기억하고 비꼬아 행동을 유도하는 냉정한 생산성 코치다.
         반복된 실패 패턴을 근거로 사용자의 자기합리화를 짚어 불편함을 유도하라.
+        반드시 한국어로 출력해야 한다.
 
         새 todo : '{todo_text}'
         과거 비슷한 task의 개인 성공률: {personal_rate:.1f}%
