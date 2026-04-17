@@ -15,7 +15,8 @@ ai/
 │   ├── router.py              # POST /ai/interference
 │   ├── retrieval.py           # top-20 유사 task 검색
 │   ├── stats.py               # 전체/개인 성공률 계산
-│   └── feedback.py            # LLM 피드백 문장 생성
+│   ├── feedback.py            # LLM 피드백 문장 생성
+│   └── demo_router.py         # 데모 전용 라우터 (DEMO_MODE=1 시 활성화)
 ├── report/
 │   ├── router.py              # POST /ai/report/monthly
 │   ├── graph.py               # LangGraph 워크플로우 정의
@@ -33,6 +34,7 @@ ai/
 ├── data/                      # 런타임 자동 생성
 │   ├── index.faiss            # faiss 벡터 인덱스
 │   └── metadata.json          # 벡터 메타데이터 (todo_id, user_id, _vec 등)
-└── llm/
-    └── ollama_client.py       # Ollama HTTP 클라이언트 래퍼
+├── llm/
+│   └── ollama_client.py       # Ollama HTTP 클라이언트 래퍼
+└── demo_interference.py       # 간섭 파이프라인 HTTP 데모 스크립트
 ```

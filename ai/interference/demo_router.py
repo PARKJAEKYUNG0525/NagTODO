@@ -7,7 +7,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
 
 from ai.core.dependencies import get_embedding_model, get_embedding_store
 
@@ -17,65 +16,102 @@ if TYPE_CHECKING:
 
 router = APIRouter(prefix="/ai/demo", tags=["demo"])
 
-_MOCK_TEXTS = [
-    # 건강
-    "러닝 30분",
-    "스쿼트 50개",
-    "스트레칭 10분",
-    "물 2리터 마시기",
-    "11시 전에 잠자리 들기",
-    # 공부 / 자기계발
-    "영어 단어 20개 외우기",
-    "기술 블로그 글 읽기",
-    "인강 1강 듣기",
-    "독서 30분",
-    "알고리즘 문제 1개 풀기",
-    # 업무 / 생산성
-    "받은 메일 정리하기",
-    "오늘 할 일 우선순위 정리",
-    "코드 리뷰 완료하기",
-    "회의록 작성하기",
-    "노션 페이지 업데이트",
-    # 생활 / 루틴
-    "방 청소하기",
-    "설거지 바로 하기",
-    "지출 가계부 기록",
-    "SNS 사용 1시간 이내로",
-    "쓰레기 분리수거",
-    # 멘탈 / 감정
-    "감사 일기 3줄 쓰기",
-    "명상 5분",
-    "오늘 하루 회고 적기",
+# user_id, category, text, completed 포함
+# user_A : 건강 실패 패턴  → personal_rate 약 13%  (LLM 잔소리 시나리오)
+# user_B : 건강 성공 패턴  → personal_rate 약 73%  (템플릿 시나리오)
+# other  : 전체 성공률 낮음 → global_rate 기여
+# (new_user 는 데이터 없음  → 고정 문자열 / 개인 데이터 없음 시나리오)
+_MOCK_DATA: list[dict] = [
+    # ── user_A: 건강 (2/15 완료 ≈ 13%) ──────────────────────────
+    {"user_id": "user_A", "category": "health", "text": "러닝 30분",              "completed": True},
+    {"user_id": "user_A", "category": "health", "text": "스쿼트 50개",            "completed": False},
+    {"user_id": "user_A", "category": "health", "text": "스트레칭 10분",          "completed": False},
+    {"user_id": "user_A", "category": "health", "text": "물 2리터 마시기",        "completed": False},
+    {"user_id": "user_A", "category": "health", "text": "11시 전에 잠자리 들기",  "completed": False},
+    {"user_id": "user_A", "category": "health", "text": "점심 후 10분 걷기",      "completed": True},
+    {"user_id": "user_A", "category": "health", "text": "계단으로 올라가기",      "completed": False},
+    {"user_id": "user_A", "category": "health", "text": "과자 대신 과일 먹기",    "completed": False},
+    {"user_id": "user_A", "category": "health", "text": "카페인 오후 2시 이후 끊기", "completed": False},
+    {"user_id": "user_A", "category": "health", "text": "20분마다 먼 곳 보기",   "completed": False},
+    {"user_id": "user_A", "category": "health", "text": "헬스장 등록하기",        "completed": False},
+    {"user_id": "user_A", "category": "health", "text": "저녁 과식 안 하기",      "completed": False},
+    {"user_id": "user_A", "category": "health", "text": "체중 기록하기",          "completed": False},
+    {"user_id": "user_A", "category": "health", "text": "비타민 챙겨 먹기",      "completed": False},
+    {"user_id": "user_A", "category": "health", "text": "폼롤러로 근막 풀기",    "completed": False},
+    # ── user_A: 공부 (3/10 완료 ≈ 30%) ──────────────────────────
+    {"user_id": "user_A", "category": "study",  "text": "영어 단어 20개 외우기",  "completed": True},
+    {"user_id": "user_A", "category": "study",  "text": "인강 1강 듣기",          "completed": False},
+    {"user_id": "user_A", "category": "study",  "text": "알고리즘 문제 1개 풀기", "completed": True},
+    {"user_id": "user_A", "category": "study",  "text": "독서 30분",              "completed": False},
+    {"user_id": "user_A", "category": "study",  "text": "CS 개념 하나 정리",      "completed": True},
+    {"user_id": "user_A", "category": "study",  "text": "기술 블로그 읽기",       "completed": False},
+    {"user_id": "user_A", "category": "study",  "text": "오픈소스 코드 읽기",     "completed": False},
+    {"user_id": "user_A", "category": "study",  "text": "TED 강연 1편 듣기",      "completed": False},
+    {"user_id": "user_A", "category": "study",  "text": "자격증 문제 10문제",     "completed": False},
+    {"user_id": "user_A", "category": "study",  "text": "깃허브 잔디 1칸 채우기", "completed": False},
+    # ── user_A: 업무 (4/10 완료 = 40%) ──────────────────────────
+    {"user_id": "user_A", "category": "work",   "text": "받은 메일 정리하기",     "completed": True},
+    {"user_id": "user_A", "category": "work",   "text": "코드 리뷰 완료하기",     "completed": True},
+    {"user_id": "user_A", "category": "work",   "text": "회의록 작성하기",        "completed": False},
+    {"user_id": "user_A", "category": "work",   "text": "할 일 우선순위 정리",    "completed": True},
+    {"user_id": "user_A", "category": "work",   "text": "노션 페이지 업데이트",   "completed": False},
+    {"user_id": "user_A", "category": "work",   "text": "PR 설명 꼼꼼히 작성",    "completed": True},
+    {"user_id": "user_A", "category": "work",   "text": "테스트 코드 1개 추가",   "completed": False},
+    {"user_id": "user_A", "category": "work",   "text": "티켓 닫기",              "completed": False},
+    {"user_id": "user_A", "category": "work",   "text": "내일 일정 미리 확인",    "completed": False},
+    {"user_id": "user_A", "category": "work",   "text": "작업 전 요구사항 다시 읽기", "completed": False},
+
+    # ── user_B: 건강 (11/15 완료 ≈ 73%) ─────────────────────────
+    {"user_id": "user_B", "category": "health", "text": "러닝 30분",              "completed": True},
+    {"user_id": "user_B", "category": "health", "text": "스쿼트 50개",            "completed": True},
+    {"user_id": "user_B", "category": "health", "text": "스트레칭 10분",          "completed": True},
+    {"user_id": "user_B", "category": "health", "text": "물 2리터 마시기",        "completed": True},
+    {"user_id": "user_B", "category": "health", "text": "11시 전에 잠자리 들기",  "completed": True},
+    {"user_id": "user_B", "category": "health", "text": "점심 후 10분 걷기",      "completed": True},
+    {"user_id": "user_B", "category": "health", "text": "계단으로 올라가기",      "completed": True},
+    {"user_id": "user_B", "category": "health", "text": "과자 대신 과일 먹기",    "completed": True},
+    {"user_id": "user_B", "category": "health", "text": "카페인 오후 2시 이후 끊기", "completed": True},
+    {"user_id": "user_B", "category": "health", "text": "20분마다 먼 곳 보기",   "completed": True},
+    {"user_id": "user_B", "category": "health", "text": "헬스장 등록하기",        "completed": True},
+    {"user_id": "user_B", "category": "health", "text": "저녁 과식 안 하기",      "completed": False},
+    {"user_id": "user_B", "category": "health", "text": "체중 기록하기",          "completed": False},
+    {"user_id": "user_B", "category": "health", "text": "비타민 챙겨 먹기",      "completed": False},
+    {"user_id": "user_B", "category": "health", "text": "폼롤러로 근막 풀기",    "completed": False},
+
+    # ── other: 건강 (3/10 완료 = 30%) — global_rate 낮춤 ─────────
+    {"user_id": "other",  "category": "health", "text": "러닝 30분",              "completed": True},
+    {"user_id": "other",  "category": "health", "text": "스쿼트 50개",            "completed": False},
+    {"user_id": "other",  "category": "health", "text": "스트레칭 10분",          "completed": True},
+    {"user_id": "other",  "category": "health", "text": "물 2리터 마시기",        "completed": False},
+    {"user_id": "other",  "category": "health", "text": "11시 전에 잠자리 들기",  "completed": False},
+    {"user_id": "other",  "category": "health", "text": "점심 후 10분 걷기",      "completed": True},
+    {"user_id": "other",  "category": "health", "text": "계단으로 올라가기",      "completed": False},
+    {"user_id": "other",  "category": "health", "text": "과자 대신 과일 먹기",    "completed": False},
+    {"user_id": "other",  "category": "health", "text": "카페인 오후 2시 이후 끊기", "completed": False},
+    {"user_id": "other",  "category": "health", "text": "20분마다 먼 곳 보기",   "completed": False},
 ]
-
-
-class SeedRequest(BaseModel):
-    user_id: str
-    completed_count: int  # 0~10, 앞에서부터 completed_count개를 완료 처리
 
 
 @router.post("/seed")
 def seed(
-    req: SeedRequest,
     model: EmbeddingModel = Depends(get_embedding_model),
     store: EmbeddingStore = Depends(get_embedding_store),
 ) -> dict:
-    """mock 운동 관련 태스크를 스토어에 추가한다."""
+    """_MOCK_DATA 전체를 스토어에 추가한다."""
     added = 0
-    for i, text in enumerate(_MOCK_TEXTS):
-        todo_id = f"demo_{req.user_id}_{i}"
-        # 이미 존재하면 스킵 (중복 실행 방어)
+    for i, item in enumerate(_MOCK_DATA):
+        todo_id = f"demo_{item['user_id']}_{i}"
         if any(m["todo_id"] == todo_id and not m["is_deleted"] for m in store._metadata):
             continue
-        vec = model.encode_passage(text)
+        vec = model.encode_passage(item["text"])
         store.add(
             todo_id=todo_id,
             vec=vec,
             meta={
-                "user_id": req.user_id,
-                "category": "health",
-                "text": text,
-                "completed": i < req.completed_count,
+                "user_id":   item["user_id"],
+                "category":  item["category"],
+                "text":      item["text"],
+                "completed": item["completed"],
             },
         )
         added += 1
