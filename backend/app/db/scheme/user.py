@@ -19,7 +19,7 @@ class UserLogin(BaseModel):
     pw : Password
     username : str
 
-class Userupdate(BaseModel):
+class UserUpdate(BaseModel):
     email : str | None = None
     pw : Password | None = None
     username : str | None = None
