@@ -12,8 +12,8 @@ def create_todo(db: Session, data: TodoCreate) -> Todo:
     todo = Todo(
         title=data.title,
         detail=data.detail,
-        visibility=data.visibility,
         todo_status=data.todo_status,
+        visibility=data.visibility,
         user_id=data.user_id,
         category_id=data.category_id,
     )
