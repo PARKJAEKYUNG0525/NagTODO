@@ -21,11 +21,10 @@ class User(Base):
     pw:              Mapped[str]           = mapped_column(String(255), nullable=False)
     username:        Mapped[str]           = mapped_column(String(50), nullable=False)
     userimage_url:   Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
-    privacy_default: Mapped[str]           = mapped_column(Enum("친구공개", "비공개"), nullable=False, default="친구공개")
     created_at:      Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, server_default=func.now(), nullable=True)
     updated_at:      Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=True)
     birthday:        Mapped[date]          = mapped_column(nullable=False)
-
+    
     todos:            Mapped[List["Todo"]]           = relationship("Todo", back_populates="user", cascade="all, delete-orphan")
     friends_sent:     Mapped[List["Friend"]]         = relationship("Friend", foreign_keys="Friend.requester_id", back_populates="requester", cascade="all, delete-orphan")
     friends_received: Mapped[List["Friend"]]         = relationship("Friend", foreign_keys="Friend.receiver_id", back_populates="receiver", cascade="all, delete-orphan")
