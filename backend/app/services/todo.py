@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
-from app.db.crud import todo as todo_crud
+from app.db.crud.todo import TodoCrud as todo_crud
 from app.db.scheme.todo import TodoCreate, TodoUpdate
 from app.db.models.todo import Todo
 
@@ -8,7 +8,7 @@ class TodoService:
 
     # C 생성
     @staticmethod
-    async def create_todo(db: AsyncSession, data: TodoCreate) -> Todo:
+    async def create_todo_svc(db: AsyncSession, data: TodoCreate) -> Todo:
         # user 존재 확인
         user = await todo_crud.get_user(db, data.user_id)
         if not user:
@@ -40,7 +40,7 @@ class TodoService:
 
     # R 조회 - todo 단일 조회
     @staticmethod
-    async def get_todo(db: AsyncSession, todo_id: str) -> Todo:
+    async def get_todo_svc(db: AsyncSession, todo_id: str) -> Todo:
         todo = await todo_crud.get_todo(db, todo_id)
         if not todo:
             raise HTTPException(
@@ -51,7 +51,7 @@ class TodoService:
 
     # R 조회 - todo 목록 조회 (user 기준)
     @staticmethod
-    async def get_all_todos(db: AsyncSession, user_id: str) -> list[Todo]:
+    async def get_all_todos_svc(db: AsyncSession, user_id: str) -> list[Todo]:
         user = await todo_crud.get_user(db, user_id)
         if not user:
             raise HTTPException(
@@ -64,7 +64,7 @@ class TodoService:
 
     # U 수정
     @staticmethod
-    async def update_todo(db: AsyncSession, todo_id: str, data: TodoUpdate) -> Todo:
+    async def update_todo_svc(db: AsyncSession, todo_id: str, data: TodoUpdate) -> Todo:
         todo = await todo_crud.get_todo(db, todo_id)
         if not todo:
             raise HTTPException(
@@ -95,7 +95,7 @@ class TodoService:
         
     # D 삭제
     @staticmethod
-    async def delete_todo(db: AsyncSession, todo_id: str) -> dict:
+    async def delete_todo_svc(db: AsyncSession, todo_id: str) -> dict:
         todo = await todo_crud.get_todo(db, todo_id)
         if not todo:
             raise HTTPException(
