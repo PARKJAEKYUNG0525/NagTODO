@@ -10,10 +10,6 @@ class TodoBase(BaseModel):
     category_id: str
 
 class TodoCreate(TodoBase):
-    title: str
-    todo_status: str = "대기중"
-    detail: str
-    visibility: str = "친구공개"
     user_id: Annotated[str, Field(max_length=100)]
     category_id: Annotated[str, Field(max_length=100)]
 
