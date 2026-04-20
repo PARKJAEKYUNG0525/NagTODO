@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.db.scheme.todo import TodoCreate, TodoUpdate, TodoRead
-from app.services import todo as todo_svc
+from app.services.todo import TodoService as todo_svc
 
 router = APIRouter(prefix="/todos", tags=["Todo"])
 
