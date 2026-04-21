@@ -1,53 +1,62 @@
-from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from app.db.models.user import User
 from app.db.scheme.user import UserCreate, UserUpdate
-from typing import Optional
 
 class UserCrud:
+
     # C 생성
-    async def create_user(db: Session, data: UserCreate) -> User:
-        user = User(
-            email=data.email,
-            pw=data.pw,
-            username=data.username,
-            birthday=data.birthday,
-        )
-        await db.add(user)
-        await db.commit()
-        await db.refresh(user)
+    @staticmethod
+    async def create_user(db: AsyncSession, data: UserCreate) -> User:
+        user = User(**data.model_dump())
+        db.add(user)
+        await db.flush()
         return user
 
     # R 조회 - user 확인
-    def get_user(db: Session, user_id: str) -> Optional[User]:
-        stmt = select(User).where(User.user_id == user_id)
-        return db.scalar(stmt)
+    @staticmethod
+    async def get_user(db: AsyncSession, user_id: str) -> User | None:
+        result = await db.execute(select(User).where(User.user_id == user_id))
+        return result.scalar_one_or_none()
 
     # R 조회 - username 확인
-    def get_username(db: Session, username: str) -> Optional[User]:
-        stmt = select(User).where(User.username == username)
-        return db.scalar(stmt)
+    @staticmethod
+    async def get_username(db: AsyncSession, username: str) -> User | None:
+        result = await db.execute(select(User).where(User.username == username))
+        return result.scalar_one_or_none()
 
     # R 조회 - email 확인
-    def get_email(db: Session, email: str) -> Optional[User]:
-        stmt = select(User).where(User.email == email)
-        return db.scalar(stmt)
+    @staticmethod
+    async def get_email(db: AsyncSession, email: str) -> User | None:
+        result = await db.execute(select(User).where(User.email == email))
+        return result.scalar_one_or_none()
 
     # R 조회 - 전체 조회
-    def get_all_users(db: Session, user_id: str) -> list[User]:
-        stmt = select(User).where(User.user_id == user_id)
-        return list(db.scalars(stmt).all())
+    @staticmethod
+    async def get_all_users(db: AsyncSession) -> list[User]:
+        result = await db.execute(select(User))
+        return list(result.scalars().all())
 
     # U 수정
-    def update_user(db: Session, user: User, data: UserUpdate) -> User:
+    @staticmethod
+    async def update_user(db: AsyncSession, user: User, data: UserUpdate) -> User:
         update_data = data.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(user, key, value)
-        db.commit()
-        db.refresh(user)
+        await db.flush()
         return user
 
     # D 삭제
-    def delete_user(db: Session, user: User) -> None:
-        db.delete(user)
-        db.commit()
+    @staticmethod
+    async def delete_user(db: AsyncSession, user: User) -> None:
+        await db.delete(user)
+        await db.flush()
+
+    # refresh_token 업데이트
+    @staticmethod
+    async def update_refresh_token_by_id(db:AsyncSession, user_id: int, refresh_token: str):
+        db_user = await db.get(User, user_id)
+        if db_user:
+            db_user.refresh_token = refresh_token
+            await db.flush()
+        return db_user

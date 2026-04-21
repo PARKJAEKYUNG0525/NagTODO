@@ -3,16 +3,49 @@ from fastapi import HTTPException, status
 from app.db.crud.user import UserCrud
 from app.db.scheme.user import UserCreate, UserUpdate
 from app.db.models.user import User
+from app.core.jwt_handle import (
+    create_access_token,
+    create_refresh_token,
+    get_password_hash,
+    verify_password
+)
 
 user_crud = UserCrud()
 
 class UserService:
 
     # C 생성
+    # @staticmethod
+    # async def create_user_svc(db: AsyncSession, data: UserCreate) -> User:
+    #     try:
+    #         user = await user_crud.create_user(db, data)
+    #         await db.commit()
+    #         await db.refresh(user)
+    #         return user
+
+    #     except Exception:
+    #         await db.rollback()
+    #         raise HTTPException(
+    #             status_code=status.HTTP_400_BAD_REQUEST,
+    #             detail="user 생성에 실패했습니다."
+    #         )
+
+    # C 생성 - 회원가입
     @staticmethod
-    async def create_user_svc(db: AsyncSession, data: UserCreate) -> User:
+    async def signup_svc(db: AsyncSession, data: UserCreate) -> User:
+        # 중복 username 확인
+        if await UserCrud.get_username(db, data.username):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="이미 동일한 이름의 사용자가 존재합니다."
+            )
+
+        # 비밀번호 해시화
+        hash_pw = get_password_hash(data.pw)
+        data.pw = hash_pw
+
         try:
-            user = await user_crud.create_user(db, data)
+            user = await UserCrud.create_user(db, data)
             await db.commit()
             await db.refresh(user)
             return user
@@ -23,6 +56,7 @@ class UserService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="user 생성에 실패했습니다."
             )
+
 
     # R 조회 - user 단일 조회
     @staticmethod
