@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
-from app.db.crud.todo import TodoCrud as todo_crud
+from app.db.crud.todo import TodoCrud 
 from app.db.scheme.todo import TodoCreate, TodoUpdate
 from app.db.models.todo import Todo
 
@@ -10,7 +10,7 @@ class TodoService:
     @staticmethod
     async def create_todo_svc(db: AsyncSession, data: TodoCreate) -> Todo:
         # user 존재 확인
-        user = await todo_crud.get_user(db, data.user_id)
+        user = await TodoCrud.get_user(db, data.user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -18,7 +18,7 @@ class TodoService:
             )
 
         # category 존재 확인
-        category = await todo_crud.get_category(db, data.category_id)
+        category = await TodoCrud.get_category(db, data.category_id)
         if not category:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -26,7 +26,7 @@ class TodoService:
             )
 
         try:
-            todo = await todo_crud.create_todo(db, data)
+            todo = await TodoCrud.create_todo(db, data)
             await db.commit()
             await db.refresh(todo)
             return todo
@@ -41,7 +41,7 @@ class TodoService:
     # R 조회 - todo 단일 조회
     @staticmethod
     async def get_todo_svc(db: AsyncSession, todo_id: str) -> Todo:
-        todo = await todo_crud.get_todo(db, todo_id)
+        todo = await TodoCrud.get_todo(db, todo_id)
         if not todo:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -52,20 +52,20 @@ class TodoService:
     # R 조회 - todo 목록 조회 (user 기준)
     @staticmethod
     async def get_all_todos_svc(db: AsyncSession, user_id: str) -> list[Todo]:
-        user = await todo_crud.get_user(db, user_id)
+        user = await TodoCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"user_id '{user_id}'에 해당하는 유저가 없습니다."
             )
 
-        todos = await todo_crud.get_all_todos(db, user_id)
+        todos = await TodoCrud.get_all_todos(db, user_id)
         return todos
 
     # U 수정
     @staticmethod
     async def update_todo_svc(db: AsyncSession, todo_id: str, data: TodoUpdate) -> Todo:
-        todo = await todo_crud.get_todo(db, todo_id)
+        todo = await TodoCrud.get_todo(db, todo_id)
         if not todo:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -73,7 +73,7 @@ class TodoService:
             )
 
         if data.category_id:
-            category = await todo_crud.get_category(db, data.category_id)
+            category = await TodoCrud.get_category(db, data.category_id)
             if not category:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -81,7 +81,7 @@ class TodoService:
                 )
 
         try:
-            updated = await todo_crud.update_todo(db, todo, data)
+            updated = await TodoCrud.update_todo(db, todo, data)
             await db.commit()
             await db.refresh(updated)
             return updated
@@ -96,7 +96,7 @@ class TodoService:
     # D 삭제
     @staticmethod
     async def delete_todo_svc(db: AsyncSession, todo_id: str) -> dict:
-        todo = await todo_crud.get_todo(db, todo_id)
+        todo = await TodoCrud.get_todo(db, todo_id)
         if not todo:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -104,7 +104,7 @@ class TodoService:
             )
 
         try:
-            await todo_crud.delete_todo(db, todo)
+            await TodoCrud.delete_todo(db, todo)
             await db.commit()
             return {"message": f"todo_id '{todo_id}' 삭제 완료"}
 
