@@ -20,7 +20,7 @@ class CategoryService:
             await db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="카테고리 생성에 실패했습니다."
+                detail="category 생성에 실패했습니다."
             )
 
     # R 조회 - category 단일 조회
@@ -30,14 +30,14 @@ class CategoryService:
         if not category:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"category_id '{category_id}'에 해당하는 카테고리가 없습니다."
+                detail=f"category_id '{category_id}'에 해당하는 category가 없습니다."
             )
         return category
 
     # R 조회 - category 목록 조회
     @staticmethod
-    async def get_all_categories_svc(db: AsyncSession) -> list[Category]:
-        category = await CategoryCrud.get_all_categories(db)
+    async def get_all_category_svc(db: AsyncSession) -> list[Category]:
+        category = await CategoryCrud.get_all_category(db)
         return category
 
     # U 수정
@@ -47,7 +47,7 @@ class CategoryService:
         if not category:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"category_id '{category_id}'에 해당하는 카테고리가 없습니다."
+                detail=f"category_id '{category_id}'에 해당하는 category가 없습니다."
             )
 
         try:
@@ -60,7 +60,7 @@ class CategoryService:
             await db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="카테고리 수정에 실패했습니다."
+                detail="category 수정에 실패했습니다."
             )
         
     # D 삭제
@@ -70,7 +70,7 @@ class CategoryService:
         if not category:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"category_id '{category_id}'에 해당하는 카테고리가 없습니다."
+                detail=f"category_id '{category_id}'에 해당하는 category가 없습니다."
             )
 
         try:
@@ -82,5 +82,5 @@ class CategoryService:
             await db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="카테고리 삭제에 실패했습니다."
+                detail="category 삭제에 실패했습니다."
             )

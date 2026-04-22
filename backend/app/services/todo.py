@@ -14,7 +14,7 @@ class TodoService:
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user_id '{data.user_id}'에 해당하는 유저가 없습니다."
+                detail=f"user_id '{data.user_id}'에 해당하는 user가 없습니다."
             )
 
         # category 존재 확인
@@ -22,7 +22,7 @@ class TodoService:
         if not category:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"category_id '{data.category_id}'에 해당하는 카테고리가 없습니다."
+                detail=f"category_id '{data.category_id}'에 해당하는 category가 없습니다."
             )
 
         try:
@@ -51,16 +51,22 @@ class TodoService:
 
     # R 조회 - todo 목록 조회 (user 기준)
     @staticmethod
-    async def get_all_todos_svc(db: AsyncSession, user_id: str) -> list[Todo]:
+    async def get_user_svc(db: AsyncSession, user_id: str) -> list[Todo]:
         user = await TodoCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user_id '{user_id}'에 해당하는 유저가 없습니다."
+                detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
             )
 
-        todos = await TodoCrud.get_all_todos(db, user_id)
+        todos = await TodoCrud.get_user(db, user_id)
         return todos
+    
+    # R 조회 - history 전체 조회
+    @staticmethod
+    async def get_all_todos_svc(db: AsyncSession) -> list[Todo]:
+        todo = await TodoCrud.get_all_todos(db)
+        return todo
 
     # U 수정
     @staticmethod
@@ -77,7 +83,15 @@ class TodoService:
             if not category:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"category_id '{data.category_id}'에 해당하는 카테고리가 없습니다."
+                    detail=f"category_id '{data.category_id}'에 해당하는 category가 없습니다."
+                )
+            
+        if data.user_id:
+            user = await TodoCrud.get_user(db, data.user_id)
+            if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"user_id '{data.user_id}'에 해당하는 user가 없습니다."
                 )
 
         try:

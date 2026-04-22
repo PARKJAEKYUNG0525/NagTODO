@@ -19,6 +19,7 @@ class TodoUpdate(BaseModel):
     detail: str | None = None
     visibility: str | None = None
     category_id: str | None = None
+    user_id: str | None = None
 
 class TodoInDB(TodoBase):
     todo_id: str

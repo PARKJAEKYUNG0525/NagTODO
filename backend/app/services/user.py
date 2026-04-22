@@ -10,7 +10,18 @@ class UserService:
 
     # C 생성
     @staticmethod
-    async def create_user_svc(db: AsyncSession, data: UserCreate) -> User:
+    async def signup_svc(db: AsyncSession, data: UserCreate) -> User:
+        # 중복 username 확인
+        if await UserCrud.get_username(db, data.username):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="이미 동일한 이름의 user가 존재합니다."
+            )
+
+        # 비밀번호 해시화
+        hash_pw = get_password_hash(data.pw)
+        data.pw = hash_pw
+
         try:
             user = await user_crud.create_user(db, data)
             await db.commit()
@@ -31,7 +42,7 @@ class UserService:
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user_id '{user_id}'에 해당하는 유저가 없습니다."
+                detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
             )
         return user
 
@@ -48,7 +59,7 @@ class UserService:
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user_id '{user_id}'에 해당하는 유저가 없습니다."
+                detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
             )
 
         try:
@@ -71,7 +82,7 @@ class UserService:
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user_id '{user_id}'에 해당하는 유저가 없습니다."
+                detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
             )
 
         try:
