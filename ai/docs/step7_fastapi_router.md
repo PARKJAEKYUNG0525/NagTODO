@@ -21,7 +21,8 @@ ai/
 ## `report/router.py`
 
 - `POST /ai/report/monthly`
-- 요청: `user_id`, `month_start`
+- 요청: `user_id`
+- `month_start`는 요청 시각 기준 -30일로 서버에서 계산하여 initial_state에 주입
 - `report_graph.ainvoke(initial_state)` 호출 후 결과 반환
 - 응답: `category_stats`, `clusters`, `cluster_summaries`, `report`, `quality_passed`, `quality_issues`
 - initial_state의 모든 필드를 빈 값으로 초기화하여 그래프에 전달
