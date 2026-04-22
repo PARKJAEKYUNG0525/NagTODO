@@ -9,15 +9,15 @@ Password = Annotated[str, Field(min_length=8, max_length=30,
 
 class UserBase(BaseModel):
     email : str
-    pw : Password
     username : str
+    pw : Password
 
 class UserCreate(UserBase):
     birthday : date
 
 class UserLogin(BaseModel):
+    email : str
     pw : Password
-    username : str
 
 class UserUpdate(BaseModel):
     email : str | None = None

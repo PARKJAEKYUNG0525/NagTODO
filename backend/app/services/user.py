@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from app.db.crud.user import UserCrud
-from app.db.scheme.user import UserCreate, UserUpdate
+from app.db.scheme.user import UserCreate, UserUpdate, UserLogin
 from app.db.models.user import User
 from app.core.jwt_handle import (
     create_access_token,
@@ -119,3 +119,19 @@ class UserService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="user 삭제에 실패했습니다."
             )
+    
+    # 로그인
+    @staticmethod
+    async def login(db:AsyncSession, user:UserLogin):
+        db_user = await UserCrud.get_email(db, user.email)
+
+        if not db_user or not verify_password(user.pw, db_user.pw):
+            raise HTTPException(status_code=401, detail="잘못된 이메일 혹은 비밀번호입니다")
+
+        refresh_token = create_refresh_token(db_user.user_id)
+        access_token = create_access_token(db_user.user_id)
+
+        updated_user = await UserCrud.update_refresh_token_by_id(db, db_user.user_id, refresh_token)
+        await db.commit()
+        await db.refresh(updated_user)
+        return updated_user, access_token, refresh_token
