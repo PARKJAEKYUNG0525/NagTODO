@@ -1,0 +1,11 @@
+*.csv
+*.txt
+*.json
+*.jsonl
+*.xlsx
+*.xls
+*.tsv
+*.xml
+*.yaml
+*.yml
+*.parquet
