@@ -2,10 +2,19 @@ from pydantic import BaseModel, Field
 from datetime import datetime, timezone, date
 from typing import Annotated
 
-Password = Annotated[str, Field(min_length=8, max_length=30,
-                                pattern=r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).*$",
-                                description="8~30자, 영문/숫자/특수문자 포함"
-                                )]
+# Password = Annotated[str, Field(min_length=8, max_length=30,
+#                                 pattern=r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).*$",
+#                                 description="8~30자, 영문/숫자/특수문자 포함"
+#                                 )]
+
+Password = Annotated[
+    str,
+    Field(
+        min_length=8,
+        max_length=30,
+        description="8~30자, 영문/숫자/특수문자 포함"
+    )
+]
 
 class UserBase(BaseModel):
     email : str
