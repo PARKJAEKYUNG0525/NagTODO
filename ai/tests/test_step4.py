@@ -185,7 +185,7 @@ class TestQualityCheck:
     def test_fails_min_length(self):
         result = quality_check({"retrospective_report": "짧은 리포트 - 1개"})
         assert not result["quality_passed"]
-        assert any("길이" in issue for issue in result["quality_issues"])
+        assert any("짧습니다" in issue for issue in result["quality_issues"])
 
     def test_fails_no_bullet(self):
         report = "이번 달 달성률은 75%였습니다. 총 20개 task 중 15개를 완료했습니다. " + "a" * 80

@@ -22,15 +22,15 @@ START
   ↓
 [load_monthly_logs]
   ↓
-<task 수 < 10?>
-  ├─ YES → [too_few_tasks] → END
+<월간 task 수 < 30?>
+  ├─ YES → [too_few_tasks] → END   (잔소리 템플릿 출력)
   └─ NO  ↓
 [compute_category_stats]
   ↓
 [embed_failures]
   ↓
-<실패 task 수 < 3?>
-  ├─ YES → [minimal_report] → END
+<실패 task 수 < 5?>
+  ├─ YES → [minimal_report] → END   (데이터 부족. 패턴 분석 실패)
   └─ NO  ↓
 [build_similarity_graph]
   ↓
@@ -60,13 +60,16 @@ START
 
 | 함수 | 판단 기준 | 분기 대상 |
 |------|-----------|-----------|
-| `_check_task_count` | `len(monthly_logs) < MIN_MONTHLY_TASKS` | `too_few_tasks` / `compute_category_stats` |
-| `_check_failure_count` | `len(failed_tasks) < 3` | `minimal_report` / `build_similarity_graph` |
+| `_check_task_count` | `len(monthly_logs) < MIN_MONTHLY_TASKS` (30) | `too_few_tasks` / `compute_category_stats` |
+| `_check_failure_count` | `len(failed_tasks) < MIN_FAILURE_TASKS` (5) | `minimal_report` / `build_similarity_graph` |
 | `_route_after_quality` | `quality_passed`, `retry_count < 2` | `END` / `llm_retrospective_report` |
 
-### 노드 등록 목록
+### 터미널 노드 (인라인 정의)
 
 `too_few_tasks`, `minimal_report` 두 터미널 노드도 이 파일에 인라인으로 정의한다.
+
+- `too_few_tasks`: "열심히 살고 나서 분석 요청하라"는 잔소리 템플릿을 `report` state에 저장
+- `minimal_report`: "데이터 부족. 패턴 분석 실패" 메시지를 `report` state에 저장
 
 ### 그래프 빌드
 
@@ -96,8 +99,8 @@ START
 ## 완료 조건
 
 - [ ] `build_report_graph()` 컴파일 에러 없음
-- [ ] task 수 < 10 → `too_few_tasks` 경로 실행
-- [ ] 실패 수 < 3 → `minimal_report` 경로 실행
+- [ ] 월간 task 수 < 30 → `too_few_tasks` 경로 실행
+- [ ] 실패 task 수 < 5 → `minimal_report` 경로 실행
 - [ ] `quality_passed=True` → END 도달
 - [ ] `quality_passed=False`, `retry_count=0` → `llm_retrospective_report` 재실행
 - [ ] `quality_passed=False`, `retry_count=2` → 재시도 없이 END 도달

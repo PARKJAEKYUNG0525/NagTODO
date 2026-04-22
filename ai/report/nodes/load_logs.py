@@ -5,6 +5,14 @@ from ai.core.config import settings
 
 async def load_logs(state: dict) -> dict:
     """백엔드 API에서 월간 로그를 가져와 monthly_logs, failed_tasks를 업데이트."""
+    # monthly_logs가 이미 주입된 경우 HTTP 생략 (데모/테스트용)
+    if state.get("monthly_logs") is not None:
+        monthly_logs: list[dict] = state["monthly_logs"]
+        return {
+            "monthly_logs": monthly_logs,
+            "failed_tasks": [t for t in monthly_logs if not t.get("completed", False)],
+        }
+
     user_id: str = state["user_id"]
     month_start: str = state["month_start"]
 

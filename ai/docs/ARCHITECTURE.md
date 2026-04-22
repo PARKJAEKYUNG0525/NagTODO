@@ -20,10 +20,11 @@ ai/
 ├── report/
 │   ├── __init__.py
 │   ├── router.py              # POST /ai/report/monthly (미구현)
-│   ├── graph.py               # LangGraph 워크플로우 정의 (미구현)
+│   ├── demo_router.py         # 데모 전용 라우터 (DEMO_MODE=1 시 활성화)
+│   ├── graph.py               # LangGraph 워크플로우 정의
 │   ├── nodes/
 │   │   ├── __init__.py
-│   │   ├── load_logs.py       # async: 백엔드 API에서 월간 로그 fetch
+│   │   ├── load_logs.py       # async: 백엔드 API에서 월간 로그 fetch (monthly_logs 주입 시 생략)
 │   │   ├── compute_stats.py   # 카테고리별 달성률 집계
 │   │   ├── embed_failures.py  # 실패 task 임베딩 (list로 직렬화)
 │   │   ├── build_similarity_graph.py  # cosine similarity 그래프 구성
@@ -33,10 +34,12 @@ ai/
 │   │   ├── llm_report.py      # async: 월간 회고 리포트 생성
 │   │   └── quality_check.py   # 리포트 품질 검증 (길이/bullet/숫자)
 │   └── state.py               # ReportState(TypedDict) 정의
+├── demo/                      # HTTP 데모 스크립트 모음
+│   ├── interference.py        # 간섭 파이프라인 4가지 분기 확인
+│   └── report.py              # 월간 리포트 3가지 분기 확인
 ├── data/                      # 런타임 자동 생성
 │   ├── index.faiss            # faiss 벡터 인덱스
 │   └── metadata.json          # 벡터 메타데이터 (todo_id, user_id, _vec 등)
-├── llm/
-│   └── ollama_client.py       # Ollama HTTP 클라이언트 래퍼
-└── demo_interference.py       # 간섭 파이프라인 HTTP 데모 스크립트
+└── llm/
+    └── ollama_client.py       # Ollama HTTP 클라이언트 래퍼
 ```
