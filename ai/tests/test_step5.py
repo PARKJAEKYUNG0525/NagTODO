@@ -3,6 +3,7 @@ import pytest
 from unittest.mock import AsyncMock, patch
 from langgraph.graph import END
 
+from ai.core.config import settings
 from ai.report.graph import (
     build_report_graph,
     _check_task_count,
@@ -10,9 +11,10 @@ from ai.report.graph import (
     _route_after_quality,
     _too_few_tasks,
     _minimal_report,
-    MIN_MONTHLY_TASKS,
-    MIN_FAILURE_TASKS,
 )
+
+MIN_MONTHLY_TASKS = settings.MIN_MONTHLY_TASKS
+MIN_FAILURE_TASKS = settings.MIN_MONTHLY_FAIL_TASKS
 
 
 # ── 조건부 엣지 함수 ────────────────────────────────────────────────────────────

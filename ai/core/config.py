@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     MIN_CLUSTER_SIZE: int = 2
     TOP_K_SIMILAR: int = 20
     MIN_PERSONAL_TODOS: int = 15  # 개인 간섭 파이프라인 최소 todo 수
-    MIN_MONTHLY_TASKS: int = 20
+    MIN_MONTHLY_TASKS: int = 30
     MIN_MONTHLY_FAIL_TASKS: int = 5
 
     # 데모 모드 (DEMO_MODE=1 설정 시 /ai/demo/* 엔드포인트 활성화)
