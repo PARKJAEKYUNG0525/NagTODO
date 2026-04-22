@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             // post(URL, data) 형식
-            const response = await api.post("/users/login", {email, password});
+            const response = await api.post("/users/", {email, username, password, birthday});
 
             // 사용자 로그인 성공 = 인증 성공
             if (response.status === 200) {
@@ -54,8 +54,12 @@ export const AuthProvider = ({ children }) => {
         }
         try {
             // user/signup은 scheme/users.py-UserCreate 참고
-            const response = await api.post("/users/signup", {email, username, password});
-
+            const response = await api.post("/users/", {
+                email,
+                username,
+                pw: password,        
+                birthday,            
+            });
             if (response.status === 200) {
                 showSuccessAlert("회원가입이 완료되었습니다");
                 return true;
