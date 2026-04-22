@@ -38,4 +38,4 @@ class CategoryCrud:
     @staticmethod
     async def delete_category(db: AsyncSession, category: Category) -> None:
         await db.delete(category)
-        await db.flush()
+        await db.flush()                                         
