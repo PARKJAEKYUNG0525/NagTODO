@@ -8,7 +8,7 @@ _NUMBER_PATTERN = re.compile(r"\d+")
 
 def quality_check(state: dict) -> dict:
     """리포트 품질을 3가지 규칙으로 검증한다."""
-    report: str = state.get("retrospective_report", "")
+    report: str = state.get("retrospective_report") or ""
 
     issues: list[str] = []
 

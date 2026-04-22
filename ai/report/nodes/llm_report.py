@@ -5,8 +5,8 @@ from ai.core.dependencies import get_ollama_client
 
 async def llm_report(state: dict) -> dict:
     """pattern_analysis와 category_stats를 바탕으로 월간 회고 리포트를 생성한다."""
-    pattern_analysis: str = state["pattern_analysis"]
-    category_stats: dict = state["category_stats"]
+    pattern_analysis: str = state.get("pattern_analysis", "")
+    category_stats: dict = state.get("category_stats", {})
     retry_count: int = state.get("retry_count", 0)
     quality_issues: list[str] = state.get("quality_issues", [])
 
@@ -32,7 +32,7 @@ async def llm_report(state: dict) -> dict:
     base_prompt += "\n리포트:"
 
     client = get_ollama_client()
-    retrospective_report = await client.generate(base_prompt)
+    retrospective_report = await client.generate(base_prompt) or ""
 
     return {
         "retrospective_report": retrospective_report,
