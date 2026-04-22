@@ -10,6 +10,8 @@
 ```
 ai/
 ├── main.py                 ← 라우터 등록, lifespan 완성
+├── embeddings/
+│   └── router.py           ← POST/PUT/DELETE /ai/embeddings/todo (신규)
 └── report/
     └── router.py           ← POST /ai/report/monthly
 ```
@@ -38,10 +40,45 @@ lifespan:
 라우터:
   app.include_router(interference_router)
   app.include_router(report_router)
+  app.include_router(embeddings_router)
 
 헬스체크:
   GET /health → {"status": "ok"}
 ```
+
+---
+
+## `embeddings/router.py` (신규)
+
+FAISS 스토어에 TODO 벡터를 관리하는 엔드포인트.
+백엔드가 TODO 상태(완료/실패)가 확정될 때 호출한다.
+
+### `POST /ai/embeddings/todo`
+
+TODO 완료 또는 실패 확정 시 임베딩을 생성하여 FAISS에 저장한다.
+
+- 요청: `todo_id`, `user_id`, `category`, `text`, `completed`
+- 처리: `model.encode(text)` → `store.add(todo_id, vec, meta)` → `store.save()`
+- 응답: `{"todo_id": "...", "indexed": true}`
+- 중복 `todo_id` 요청 시 `409 Conflict`
+
+### `DELETE /ai/embeddings/todo/{todo_id}`
+
+TODO 삭제 시 FAISS에서 soft delete한다.
+
+- 처리: `store.delete(todo_id)` → `store.save()`
+- 응답: `{"todo_id": "...", "deleted": true}`
+
+### `PUT /ai/embeddings/todo/{todo_id}`
+
+TODO 텍스트 수정 시 임베딩을 재생성한다.
+
+- 요청: `user_id`, `category`, `text`, `completed`
+- 처리: `store.update(todo_id, new_vec, new_meta)` → `store.save()`
+- 응답: `{"todo_id": "...", "updated": true}`
+
+> **설계 근거**: `store.add()`는 완료/실패 확정 이후에만 호출한다.
+> 미완료 TODO는 저장하지 않아 유사도 검색 품질을 보장한다.
 
 ---
 
@@ -52,6 +89,9 @@ lifespan:
 | GET | `/health` | 서버 상태 확인 |
 | POST | `/ai/interference` | 실시간 간섭 |
 | POST | `/ai/report/monthly` | 월간 회고 리포트 |
+| POST | `/ai/embeddings/todo` | TODO 완료 시 임베딩 저장 |
+| DELETE | `/ai/embeddings/todo/{todo_id}` | TODO 삭제 시 soft delete |
+| PUT | `/ai/embeddings/todo/{todo_id}` | TODO 수정 시 임베딩 갱신 |
 
 ---
 
@@ -76,5 +116,9 @@ lifespan:
 - [ ] `GET /health` → `{"status": "ok"}`
 - [ ] `POST /ai/interference` 응답 형식 일치
 - [ ] `POST /ai/report/monthly` 응답 형식 일치
+- [ ] `POST /ai/embeddings/todo` → FAISS 저장 및 디스크 반영 확인
+- [ ] 중복 `todo_id` 요청 시 `409 Conflict` 반환
+- [ ] `DELETE /ai/embeddings/todo/{todo_id}` → soft delete 확인
+- [ ] `PUT /ai/embeddings/todo/{todo_id}` → 임베딩 갱신 확인
 - [ ] `/docs` Swagger UI에서 두 엔드포인트 스키마 확인
 - [ ] Ollama 미실행 시 503 반환
