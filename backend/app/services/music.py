@@ -4,7 +4,6 @@ from app.db.crud.music import MusicCrud
 from app.db.scheme.music import MusicCreate, MusicUpdate
 from app.db.models.music import Music
 
-
 class MusicService:
 
     # C 생성
@@ -20,9 +19,7 @@ class MusicService:
             )
 
         try:
-            music = await MusicCrud.create_music(
-                db, data.music_id, data.title, data.homepage_id
-            )
+            music = await MusicCrud.create_music(db, data)
             await db.commit()
             await db.refresh(music)
             return music
@@ -34,29 +31,49 @@ class MusicService:
                 detail="music 생성에 실패했습니다."
             )
 
-    # R 조회 - 단일 조회
+    # R 단일 조회
     @staticmethod
     async def get_music_svc(db: AsyncSession, music_id: str) -> Music:
         music = await MusicCrud.get_music(db, music_id)
+        if not music:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"music_id '{music_id}'에 해당하는 데이터가 없습니다."
+            )
+        return music
 
+    # R 목록 조회 (homepage 기준)
+    @staticmethod
+    async def get_all_musics_by_homepage_svc(db: AsyncSession, homepage_id: str):
+        return await MusicCrud.get_all_musics_by_homepage(db, homepage_id)
+
+    # U 수정
+    @staticmethod
+    async def update_music_svc(db: AsyncSession, music_id: str, data: MusicUpdate) -> Music:
+        music = await MusicCrud.get_music(db, music_id)
         if not music:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"music_id '{music_id}'에 해당하는 데이터가 없습니다."
             )
 
-        return music
+        try:
+            updated_music = await MusicCrud.update_music(db, music, data)
+            await db.commit()
+            await db.refresh(updated_music)
+            return updated_music
 
-    # R 조회 - 목록 조회 (homepage 기준)
-    @staticmethod
-    async def get_all_musics_by_homepage_svc(db: AsyncSession, homepage_id: str):
-        return await MusicCrud.get_all_musics_by_homepage(db, homepage_id)
+        except Exception:
+            await db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="music 수정에 실패했습니다."
+            )
 
     # D 삭제
     @staticmethod
-    async def delete_music_svc(db: AsyncSession, music_id: str) -> dict:
+    async def delete_music_svc(db: AsyncSession, music_id: str):
         music = await MusicCrud.get_music(db, music_id)
-
         if not music:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -66,7 +83,6 @@ class MusicService:
         try:
             await MusicCrud.delete_music(db, music)
             await db.commit()
-            return {"message": f"music_id '{music_id}' 삭제 완료"}
 
         except Exception:
             await db.rollback()

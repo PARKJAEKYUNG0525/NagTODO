@@ -10,7 +10,6 @@ class ImgService:
     # C 생성
     @staticmethod
     async def create_img_svc(db: AsyncSession, data: ImgCreate) -> Img:
-
         # homepage 존재 확인
         homepage = await ImgCrud.get_homepage(db, data.homepage_id)
         if not homepage:
@@ -20,9 +19,7 @@ class ImgService:
             )
 
         try:
-            img = await ImgCrud.create_img(
-                db, data.img_id, data.title, data.homepage_id
-            )
+            img = await ImgCrud.create_img(db, data)
             await db.commit()
             await db.refresh(img)
             return img
@@ -38,25 +35,45 @@ class ImgService:
     @staticmethod
     async def get_img_svc(db: AsyncSession, img_id: str) -> Img:
         img = await ImgCrud.get_img(db, img_id)
+        if not img:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"img_id '{img_id}'에 해당하는 데이터가 없습니다."
+            )
+        return img
 
+    # R 조회 - 목록 조회 (homepage 기준)
+    @staticmethod
+    async def get_all_imgs_by_homepage_svc(db: AsyncSession, homepage_id: str) -> list[Img]:
+        return await ImgCrud.get_all_imgs_by_homepage(db, homepage_id)
+
+    # U 수정
+    @staticmethod
+    async def update_img_svc(db: AsyncSession, img_id: str, data: ImgUpdate) -> Img:
+        img = await ImgCrud.get_img(db, img_id)
         if not img:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"img_id '{img_id}'에 해당하는 데이터가 없습니다."
             )
 
-        return img
+        try:
+            updated = await ImgCrud.update_img(db, img, data)
+            await db.commit()
+            await db.refresh(updated)
+            return updated
 
-    # R 조회 - 목록 조회 (homepage 기준)
-    @staticmethod
-    async def get_all_imgs_by_homepage_svc(db: AsyncSession, homepage_id: str):
-        return await ImgCrud.get_all_imgs_by_homepage(db, homepage_id)
+        except Exception:
+            await db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="img 수정에 실패했습니다."
+            )
 
     # D 삭제
     @staticmethod
     async def delete_img_svc(db: AsyncSession, img_id: str) -> dict:
         img = await ImgCrud.get_img(db, img_id)
-
         if not img:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

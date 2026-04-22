@@ -15,8 +15,12 @@ class ImgUpdate(BaseModel):
     homepage_id: str | None = None
 
 
-class ImgResponse(ImgBase):
+class ImgInDB(ImgBase):
     img_id: str
 
     class Config:
         from_attributes = True
+
+
+class ImgResponse(ImgInDB):
+    pass

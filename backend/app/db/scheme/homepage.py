@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+
 class HomepageBase(BaseModel):
     user_id: str
 
@@ -12,8 +13,12 @@ class HomepageUpdate(BaseModel):
     user_id: str | None = None
 
 
-class HomepageResponse(HomepageBase):
+class HomepageInDB(HomepageBase):
     homepage_id: str
 
     class Config:
         from_attributes = True
+
+
+class HomepageResponse(HomepageInDB):
+    pass
