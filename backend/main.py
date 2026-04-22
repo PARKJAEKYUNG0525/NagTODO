@@ -7,6 +7,7 @@ from fastapi.concurrency import asynccontextmanager
 
 from app.middleware.token_refresh import RefreshTokenMiddleware
 from app.routers import users, board
+from app.routers import users, board, homepage, music, img
 
 load_dotenv(dotenv_path=".env")
 
@@ -40,6 +41,9 @@ app.add_middleware(
 
 app.include_router(user.router)
 app.include_router(board.router)
+app.include_router(homepage.router)
+app.include_router(music.router)
+app.include_router(img.router)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)
