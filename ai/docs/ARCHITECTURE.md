@@ -9,7 +9,8 @@ ai/
 │   └── dependencies.py        # 의존성 주입 (embedding model 등) : 앱 전체에서 공용으로 쓰는 객체를 꺼내오는 창구
 ├── embeddings/
 │   ├── model.py               # multilingual-e5-small 로더/추론
-│   └── store.py               # 벡터 저장/검색 (faiss)
+│   ├── store.py               # 벡터 저장/검색 (faiss)
+│   └── router.py              # POST/PUT/DELETE /ai/embeddings/todo
 ├── interference/
 │   ├── __init__.py
 │   ├── router.py              # POST /ai/interference
@@ -19,7 +20,7 @@ ai/
 │   └── demo_router.py         # 데모 전용 라우터 (DEMO_MODE=1 시 활성화)
 ├── report/
 │   ├── __init__.py
-│   ├── router.py              # POST /ai/report/monthly (미구현)
+│   ├── router.py              # POST /ai/report/monthly
 │   ├── demo_router.py         # 데모 전용 라우터 (DEMO_MODE=1 시 활성화)
 │   ├── graph.py               # LangGraph 워크플로우 정의
 │   ├── nodes/
