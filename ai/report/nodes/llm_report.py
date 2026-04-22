@@ -24,7 +24,10 @@ async def llm_report(state: dict) -> dict:
 
     if retry_count > 0 and quality_issues:
         issues_text = "\n".join(f"- {issue}" for issue in quality_issues)
-        base_prompt += f"\n[이전 리포트 품질 문제 (반드시 개선)]\n{issues_text}\n"
+        base_prompt += (
+            f"\n이전 시도에서 다음 문제가 있었습니다:\n{issues_text}\n"
+            "위 문제를 반드시 수정하여 다시 작성하세요.\n"
+        )
 
     base_prompt += "\n리포트:"
 
