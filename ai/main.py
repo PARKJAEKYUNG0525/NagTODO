@@ -19,8 +19,10 @@ app = FastAPI(title="NagTODO AI", lifespan=lifespan)
 app.include_router(interference_router)
 
 if settings.DEMO_MODE:
-    from ai.interference.demo_router import router as demo_router
-    app.include_router(demo_router)
+    from ai.interference.demo_router import router as interference_demo_router
+    from ai.report.demo_router import router as report_demo_router
+    app.include_router(interference_demo_router)
+    app.include_router(report_demo_router)
 
 
 # 서버 살아있는지 확인

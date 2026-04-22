@@ -5,8 +5,8 @@ from ai.core.dependencies import get_ollama_client
 
 async def llm_report(state: dict) -> dict:
     """pattern_analysis와 category_stats를 바탕으로 월간 회고 리포트를 생성한다."""
-    pattern_analysis: str = state["pattern_analysis"]
-    category_stats: dict = state["category_stats"]
+    pattern_analysis: str = state.get("pattern_analysis", "")
+    category_stats: dict = state.get("category_stats", {})
     retry_count: int = state.get("retry_count", 0)
     quality_issues: list[str] = state.get("quality_issues", [])
 
@@ -24,12 +24,15 @@ async def llm_report(state: dict) -> dict:
 
     if retry_count > 0 and quality_issues:
         issues_text = "\n".join(f"- {issue}" for issue in quality_issues)
-        base_prompt += f"\n[이전 리포트 품질 문제 (반드시 개선)]\n{issues_text}\n"
+        base_prompt += (
+            f"\n이전 시도에서 다음 문제가 있었습니다:\n{issues_text}\n"
+            "위 문제를 반드시 수정하여 다시 작성하세요.\n"
+        )
 
     base_prompt += "\n리포트:"
 
     client = get_ollama_client()
-    retrospective_report = await client.generate(base_prompt)
+    retrospective_report = await client.generate(base_prompt) or ""
 
     return {
         "retrospective_report": retrospective_report,
