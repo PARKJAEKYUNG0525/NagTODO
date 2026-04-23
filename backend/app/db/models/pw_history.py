@@ -11,7 +11,7 @@ class PwHistory(Base):
     __tablename__ = "pw_history"
 
     pw_history_id: Mapped[str]      = mapped_column(String(100), primary_key=True)
-    user_id:       Mapped[str]      = mapped_column(Integer, ForeignKey("user.user_id"))
+    user_id:       Mapped[int]      = mapped_column(Integer, ForeignKey("user.user_id"))
     pw:            Mapped[str]      = mapped_column(String(255), nullable=False)
     updated_at:    Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now(), nullable=False)
 

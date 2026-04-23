@@ -13,6 +13,6 @@ class Recommend(Base):
     content:      Mapped[str]  = mapped_column(Text, nullable=False)
     basis:        Mapped[str]  = mapped_column(String(255), nullable=False)
     is_read:      Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    user_id:      Mapped[str]  = mapped_column(Integer, ForeignKey("user.user_id"), nullable=False)
+    user_id:      Mapped[int]  = mapped_column(Integer, ForeignKey("user.user_id"), nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="recommends")
