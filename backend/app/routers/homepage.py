@@ -18,7 +18,7 @@ def get_homepage(homepage_id: str, db: Session = Depends(get_db)):
 
 # R user 기준 조회
 @router.get("/user/{user_id}", response_model=HomepageResponse)
-def get_homepage_by_user(user_id: str, db: Session = Depends(get_db)):
+def get_homepage_by_user(user_id: int, db: Session = Depends(get_db)):
     return homepage_svc.get_homepage_by_user_svc(db, user_id)
 
 # U 수정

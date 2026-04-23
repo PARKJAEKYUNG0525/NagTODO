@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from datetime import datetime
 
 class PwHistoryBase(BaseModel):
-    user_id: str
+    user_id: int
     pw: str
     updated_at: datetime
 

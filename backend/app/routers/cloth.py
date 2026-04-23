@@ -18,7 +18,7 @@ def get_todo(cloth_id: str, db: Session = Depends(get_db)):
 
 # R 전체 조회 - 유저별
 @router.get("/user/{user_id}", response_model=list[ClothRead])
-def get_cloths_by_user(user_id: str, db: Session = Depends(get_db)):
+def get_cloths_by_user(user_id: int, db: Session = Depends(get_db)):
     return cloth_svc.get_all_cloths_svc(db, user_id)
 
 # U 수정

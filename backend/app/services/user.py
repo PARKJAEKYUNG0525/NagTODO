@@ -48,7 +48,7 @@ class UserService:
 
     # R 조회 - user 단일 조회
     @staticmethod
-    async def get_user_svc(db: AsyncSession, user_id: str) -> User:
+    async def get_user_svc(db: AsyncSession, user_id: int) -> User:
         user = await UserCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(
@@ -65,7 +65,7 @@ class UserService:
 
     # U 수정
     @staticmethod
-    async def update_user_svc(db: AsyncSession, user_id: str, data: UserUpdate) -> User:
+    async def update_user_svc(db: AsyncSession, user_id: int, data: UserUpdate) -> User:
         user = await UserCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(
@@ -88,7 +88,7 @@ class UserService:
 
     # D 삭제
     @staticmethod
-    async def delete_user_svc(db: AsyncSession, user_id: str) -> dict:
+    async def delete_user_svc(db: AsyncSession, user_id: int) -> dict:
         user = await UserCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(

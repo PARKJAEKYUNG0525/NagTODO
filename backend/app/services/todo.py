@@ -51,7 +51,7 @@ class TodoService:
 
     # R 조회 - todo 목록 조회 (user 기준)
     @staticmethod
-    async def get_user_svc(db: AsyncSession, user_id: str) -> list[Todo]:
+    async def get_user_svc(db: AsyncSession, user_id: int) -> list[Todo]:
         user = await TodoCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(

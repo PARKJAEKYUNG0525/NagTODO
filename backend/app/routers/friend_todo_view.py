@@ -18,7 +18,7 @@ async def get_friend_todo_view(friend_todo_view_id: int, db: AsyncSession = Depe
 
 # R 전체 조회 - User
 @router.get("/user/{user_id}", response_model=list[FriendTodoViewRead])
-async def get_friend_todo_views_by_user(user_id: str, db: AsyncSession = Depends(get_db)):
+async def get_friend_todo_views_by_user(user_id: int, db: AsyncSession = Depends(get_db)):
     return await friend_todo_view_svc.get_all_friend_todo_views_by_user_svc(db, user_id)
 
 # R 전체 조회 - Todo

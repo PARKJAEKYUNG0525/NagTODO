@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Annotated
 
 class FriendTodoViewBase(BaseModel):
-    user_id: Annotated[str, Field(max_length=100)]
+    user_id: int
     todo_id: Annotated[str, Field(max_length=100)]
 
 class FriendTodoViewCreate(FriendTodoViewBase):

@@ -17,7 +17,7 @@ class FriendTodoViewCrud:
     
     # R 조회 - user 존재 확인
     @staticmethod
-    async def get_user(db: AsyncSession, user_id: str) -> User | None:
+    async def get_user(db: AsyncSession, user_id: int) -> User | None:
         result = await db.execute(select(User).where(User.user_id == user_id))
         return result.scalar_one_or_none()
 
@@ -35,7 +35,7 @@ class FriendTodoViewCrud:
 
     # R 조회 - 목록 조회 (user 기준)
     @staticmethod
-    async def get_all_friend_todo_views_by_user(db: AsyncSession, user_id: str) -> list[FriendTodoView]:
+    async def get_all_friend_todo_views_by_user(db: AsyncSession, user_id: int) -> list[FriendTodoView]:
         result = await db.execute(select(User).where(User.user_id == user_id))
         return list(result.scalars().all())
 

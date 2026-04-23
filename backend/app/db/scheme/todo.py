@@ -10,7 +10,7 @@ class TodoBase(BaseModel):
     category_id: str
 
 class TodoCreate(TodoBase):
-    user_id: Annotated[str, Field(max_length=100)]
+    user_id: int
     category_id: Annotated[str, Field(max_length=100)]
 
 class TodoUpdate(BaseModel):
@@ -19,11 +19,11 @@ class TodoUpdate(BaseModel):
     detail: str | None = None
     visibility: str | None = None
     category_id: str | None = None
-    user_id: str | None = None
+    user_id: int | None = None
 
 class TodoInDB(TodoBase):
     todo_id: str
-    user_id: str
+    user_id: int
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
