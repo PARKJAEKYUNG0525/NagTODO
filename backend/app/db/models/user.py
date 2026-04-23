@@ -1,7 +1,7 @@
 from app.db.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from datetime import datetime, date
-from sqlalchemy import String, TIMESTAMP, Enum, func
+from datetime import datetime
+from sqlalchemy import String, TIMESTAMP, Enum, func, Date, Integer
 from typing import Optional, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -16,15 +16,16 @@ if TYPE_CHECKING:
 class User(Base):
     __tablename__ = "user"
 
-    user_id:         Mapped[str]           = mapped_column(String(100), primary_key=True)
-    email:           Mapped[str]           = mapped_column(String(255), unique=True, nullable=False)
-    pw:              Mapped[str]           = mapped_column(String(255), nullable=False)
-    username:        Mapped[str]           = mapped_column(String(50), nullable=False)
-    userimage_url:   Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    user_id:         Mapped[int]                = mapped_column(Integer, primary_key=True, autoincrement=True)
+    email:           Mapped[str]                = mapped_column(String(255), unique=True, nullable=False)
+    pw:              Mapped[str]                = mapped_column(String(255), nullable=False)
+    username:        Mapped[str]                = mapped_column(String(50), nullable=False)
+    userimage_url:   Mapped[Optional[str]]      = mapped_column(String(500), nullable=True)
     created_at:      Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, server_default=func.now(), nullable=True)
     updated_at:      Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=True)
-    birthday:        Mapped[date]          = mapped_column(nullable=False)
-    
+    birthday:        Mapped[Date]               = mapped_column(Date, nullable=False)
+    refresh_token:   Mapped[Optional[str]]      = mapped_column(String(255), nullable=True)
+
     todos:            Mapped[List["Todo"]]           = relationship("Todo", back_populates="user", cascade="all, delete-orphan")
     friends_sent:     Mapped[List["Friend"]]         = relationship("Friend", foreign_keys="Friend.requester_id", back_populates="requester", cascade="all, delete-orphan")
     friends_received: Mapped[List["Friend"]]         = relationship("Friend", foreign_keys="Friend.receiver_id", back_populates="receiver", cascade="all, delete-orphan")

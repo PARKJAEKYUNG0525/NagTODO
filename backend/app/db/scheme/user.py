@@ -2,22 +2,31 @@ from pydantic import BaseModel, Field
 from datetime import datetime, timezone, date
 from typing import Annotated
 
-Password = Annotated[str, Field(min_length=8, max_length=30,
-                                pattern=r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).*$",
-                                description="8~30자, 영문/숫자/특수문자 포함"
-                                )]
+# Password = Annotated[str, Field(min_length=8, max_length=30,
+#                                 pattern=r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).*$",
+#                                 description="8~30자, 영문/숫자/특수문자 포함"
+#                                 )]
+
+Password = Annotated[
+    str,
+    Field(
+        min_length=8,
+        max_length=255,
+        description="8~30자, 영문/숫자/특수문자 포함"
+    )
+]
 
 class UserBase(BaseModel):
     email : str
-    pw : Password
     username : str
+    pw : Password
 
 class UserCreate(UserBase):
     birthday : date
 
 class UserLogin(BaseModel):
+    email : str
     pw : Password
-    username : str
 
 class UserUpdate(BaseModel):
     email : str | None = None
@@ -27,11 +36,13 @@ class UserUpdate(BaseModel):
     birthday : date | None = None
 
 class UserInDB(UserBase):
-    user_id : int
-    userimage_url : str
-    created_at : datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at : datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    birthday : date
+    user_id: int
+    email: str
+    username: str
+    userimage_url: str | None = None  # Optional로 변경
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    birthday: date
 
     class Config:
         from_attributes = True

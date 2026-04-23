@@ -5,6 +5,8 @@ from fastapi import FastAPI
 from ai.core.config import settings
 from ai.core.dependencies import get_embedding_model, get_embedding_store
 from ai.interference.router import router as interference_router
+from ai.report.router import router as report_router
+from ai.embeddings.router import router as embeddings_router
 
 # generator : 필요할 때마다 하나씩 생성하는 iterator
 @asynccontextmanager
@@ -17,10 +19,14 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="NagTODO AI", lifespan=lifespan)
 app.include_router(interference_router)
+app.include_router(report_router)
+app.include_router(embeddings_router)
 
 if settings.DEMO_MODE:
-    from ai.interference.demo_router import router as demo_router
-    app.include_router(demo_router)
+    from ai.interference.demo_router import router as interference_demo_router
+    from ai.report.demo_router import router as report_demo_router
+    app.include_router(interference_demo_router)
+    app.include_router(report_demo_router)
 
 
 # 서버 살아있는지 확인
