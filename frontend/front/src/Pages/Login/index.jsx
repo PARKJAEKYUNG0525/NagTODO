@@ -1,21 +1,28 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 export default function Login({ onSignupClick }) {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const { login, error, setError } = useAuth();
 
     const handleLogin = async (e) => {
-        e.preventDefault();
-        setIsLoading(true);
-        // TODO: 실제 로그인 로직 연결
-        setTimeout(() => {
+            e.preventDefault();
+            setError("");
+            setIsLoading(true);
+
+            const success = await login(email, password);
+            if (success) {
+                navigate("/main");
+            }
+            else {
+                alert('아이디/비밀번호가 틀립니다.');
+            }
             setIsLoading(false);
-            navigate("/main");
-        }, 1000);
-    };
+        };
 
     const handleSignupClick = () => {
         if (onSignupClick) {
