@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             // post(URL, data) 형식
-            const response = await api.post("/users/login", { email, password })
+            const response = await api.post("/users/login", { email, pw: password })
 
             // 사용자 로그인 성공 = 인증 성공
             if (response.status === 200) {

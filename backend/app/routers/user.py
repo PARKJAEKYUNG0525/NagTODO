@@ -22,7 +22,7 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
     return JSONResponse(content={
         "access_token": access_token,
         "refresh_token": refresh_token,
-        "user": UserRead.model_validate(user).model_dump()
+        "user": UserRead.model_validate(user).model_dump(mode="json")
     })
 
 @router.get("/me", response_model=UserRead)
