@@ -62,7 +62,7 @@ class HistoryService:
 
     # U 수정
     @staticmethod
-    async def update_history_svc(db: AsyncSession, history_id: str, data: HistoryUpdate) -> Todo:
+    async def update_history_svc(db: AsyncSession, history_id: str, data: HistoryUpdate) -> History:
         history = await HistoryCrud.get_history(db, history_id)
         if not history:
             raise HTTPException(
