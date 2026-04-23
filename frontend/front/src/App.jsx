@@ -97,9 +97,9 @@ const router = createBrowserRouter([
         children: [
             { index: true, element: <Login /> },
             { path: "signup", element: <Signup /> },
-            // { index: true, element: <Navigate to="/login" replace /> }, // 👈 기본 경로를 /login으로 리다이렉트
-            // { path: "login", element: <Login /> },                       // 👈 로그인 페이지 추가
-            // { path: "main", element: <Main /> },                         // 👈 메인은 /main으로 이동
+            { path: "main", element: <Main /> },                         // 메인은 /main으로 이동
+            { path: "login", element: <Login /> },                       // 로그인 페이지 추가
+            // { index: true, element: <Navigate to="/login" replace /> }, // 기본 경로를 /login으로 리다이렉트
 
             {
                 element: (

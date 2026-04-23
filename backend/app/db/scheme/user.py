@@ -11,7 +11,7 @@ Password = Annotated[
     str,
     Field(
         min_length=8,
-        max_length=30,
+        max_length=255,
         description="8~30자, 영문/숫자/특수문자 포함"
     )
 ]
@@ -36,11 +36,13 @@ class UserUpdate(BaseModel):
     birthday : date | None = None
 
 class UserInDB(UserBase):
-    user_id : int
-    userimage_url : str
-    created_at : datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    updated_at : datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    birthday : date
+    user_id: int
+    email: str
+    username: str
+    userimage_url: str | None = None  # Optional로 변경
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    birthday: date
 
     class Config:
         from_attributes = True

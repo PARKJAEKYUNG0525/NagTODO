@@ -15,7 +15,7 @@ class UserCrud:
 
     # R 조회 - user 확인
     @staticmethod
-    async def get_user(db: AsyncSession, user_id: str) -> User | None:
+    async def get_user(db: AsyncSession, user_id: int) -> User | None:
         result = await db.execute(select(User).where(User.user_id == user_id))
         return result.scalar_one_or_none()
 

@@ -6,6 +6,13 @@ from passlib.context import CryptContext
 
 from app.core.settings import settings
 
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.db.database import get_db
+
+security = HTTPBearer()
+
 # 해싱 방식과 정책 관리(bcrypt 알고리즘 사용)
 pwd_crypt = CryptContext(schemes=["bcrypt"])
 
@@ -55,3 +62,27 @@ def decode_token(token:str) -> dict:
 def verify_token(token:str) -> int:
     payload = decode_token(token)
     return payload.get("uid")
+
+
+
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    db: AsyncSession = Depends(get_db)
+):
+    token = credentials.credentials
+
+    try:
+        user_id = verify_token(token)
+        if not user_id:
+            raise HTTPException(status_code=401, detail="유효하지 않은 토큰입니다.")
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="토큰이 만료되었습니다.")
+    except jwt.InvalidTokenError:
+        raise HTTPException(status_code=401, detail="유효하지 않은 토큰입니다.")
+
+    from app.db.crud.user import UserCrud
+    user = await UserCrud.get_user(db, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="유저를 찾을 수 없습니다.")
+
+    return user

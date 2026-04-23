@@ -10,29 +10,11 @@ from app.core.jwt_handle import (
     verify_password
 )
 
-user_crud = UserCrud()
-
 class UserService:
 
     # C 생성
-    # @staticmethod
-    # async def create_user_svc(db: AsyncSession, data: UserCreate) -> User:
-    #     try:
-    #         user = await user_crud.create_user(db, data)
-    #         await db.commit()
-    #         await db.refresh(user)
-    #         return user
-
-    #     except Exception:
-    #         await db.rollback()
-    #         raise HTTPException(
-    #             status_code=status.HTTP_400_BAD_REQUEST,
-    #             detail="user 생성에 실패했습니다."
-    #         )
-
-    # C 생성 - 회원가입
     @staticmethod
-    async def signup_svc(db: AsyncSession, data: UserCreate) -> User:
+    async def create_user_svc(db: AsyncSession, data: UserCreate) -> User:
         # 중복 username 확인
         if await UserCrud.get_username(db, data.username):
             raise HTTPException(
@@ -41,8 +23,7 @@ class UserService:
             )
 
         # 비밀번호 해시화
-        hash_pw = get_password_hash(data.pw)
-        data.pw = hash_pw
+        data.pw = get_password_hash(data.pw)
 
         try:
             user = await UserCrud.create_user(db, data)
@@ -50,8 +31,15 @@ class UserService:
             await db.refresh(user)
             return user
 
-        except Exception:
+        # except Exception:
+        #     await db.rollback()
+        #     raise HTTPException(
+        #         status_code=status.HTTP_400_BAD_REQUEST,
+        #         detail="user 생성에 실패했습니다."
+        #     )
+        except Exception as e:
             await db.rollback()
+            print(f"❌ 에러 발생: {e}")  # 추가
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="user 생성에 실패했습니다."
@@ -61,7 +49,7 @@ class UserService:
     # R 조회 - user 단일 조회
     @staticmethod
     async def get_user_svc(db: AsyncSession, user_id: str) -> User:
-        user = await user_crud.get_user(db, user_id)
+        user = await UserCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -72,13 +60,13 @@ class UserService:
     # R 조회 - user 목록 조회
     @staticmethod
     async def get_all_users_svc(db: AsyncSession) -> list[User]:
-        users = await user_crud.get_all_users(db)
+        users = await UserCrud.get_all_users(db)
         return users
 
     # U 수정
     @staticmethod
     async def update_user_svc(db: AsyncSession, user_id: str, data: UserUpdate) -> User:
-        user = await user_crud.get_user(db, user_id)
+        user = await UserCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -86,7 +74,7 @@ class UserService:
             )
 
         try:
-            updated = await user_crud.update_user(db, user, data)
+            updated = await UserCrud.update_user(db, user, data)
             await db.commit()
             await db.refresh(updated)
             return updated
@@ -101,7 +89,7 @@ class UserService:
     # D 삭제
     @staticmethod
     async def delete_user_svc(db: AsyncSession, user_id: str) -> dict:
-        user = await user_crud.get_user(db, user_id)
+        user = await UserCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -109,7 +97,7 @@ class UserService:
             )
 
         try:
-            await user_crud.delete_user(db, user)
+            await UserCrud.delete_user(db, user)
             await db.commit()
             return {"message": f"user_id '{user_id}' 삭제 완료"}
 

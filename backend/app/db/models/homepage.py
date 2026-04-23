@@ -1,6 +1,6 @@
 from app.db.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import String, ForeignKey,Integer
 from typing import List, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -12,7 +12,7 @@ class Homepage(Base):
     __tablename__ = "homepage"
 
     homepage_id: Mapped[str] = mapped_column(String(100), primary_key=True)
-    user_id:     Mapped[str] = mapped_column(String(100), ForeignKey("user.user_id"), nullable=False)
+    user_id:     Mapped[str] = mapped_column(Integer, ForeignKey("user.user_id"), nullable=False)
 
     user:   Mapped["User"]        = relationship("User", back_populates="homepages")
     imgs:   Mapped[List["Img"]]   = relationship("Img", back_populates="homepage")

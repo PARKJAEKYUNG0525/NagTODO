@@ -1,7 +1,7 @@
 import uuid
 from app.db.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, TIMESTAMP, Enum, Text,func,ForeignKey
+from sqlalchemy import String, TIMESTAMP, Enum, Text,func,ForeignKey,Integer
 from datetime import datetime
 from typing import List, TYPE_CHECKING
 
@@ -21,7 +21,7 @@ class Todo(Base):
     visibility:  Mapped[str]      = mapped_column(Enum("친구공개", "비공개"), nullable=False, default="친구공개")
     created_at:  Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now(), nullable=False)
     updated_at:  Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
-    user_id:     Mapped[str]      = mapped_column(String(100), ForeignKey("user.user_id"), nullable=False)
+    user_id:     Mapped[str]      = mapped_column(Integer, ForeignKey("user.user_id"), nullable=False)
     category_id: Mapped[str]      = mapped_column(String(100), ForeignKey("category.category_id"), nullable=False)
 
     user:              Mapped["User"]                  = relationship("User", back_populates="todos")

@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             // post(URL, data) 형식
-            const response = await api.post("/users/", {email, username, password, birthday});
+            const response = await api.post("/users/login", { email, password })
 
             // 사용자 로그인 성공 = 인증 성공
             if (response.status === 200) {
@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const signup = async ({email, username, password, confirmPassword}) => {
+    const signup = async ({email, username, password, confirmPassword, birthday}) => {
         if (!email.includes("@")) {
             setError("유효한 이메일을 입력하세요");
             return false;
@@ -44,8 +44,8 @@ export const AuthProvider = ({ children }) => {
             setError("이름은 최소 2글자 이상이어야 합니다");
             return false;
         }
-        if (password.length < 5) {
-            setError("비밀번호는 최소 5글자 이상이어야 합니다");
+        if (password.length < 8) {
+            setError("비밀번호는 최소 8글자 이상이어야 합니다");
             return false;
         }
         if (password !== confirmPassword) {
@@ -54,13 +54,8 @@ export const AuthProvider = ({ children }) => {
         }
         try {
             // user/signup은 scheme/users.py-UserCreate 참고
-            const response = await api.post("/users/", {
-                email,
-                username,
-                pw: password,        
-                birthday,            
-            });
-            if (response.status === 200) {
+            const response = await api.post("/users/", { email, username, pw: password, birthday })
+            if (response.status === 201) {
                 showSuccessAlert("회원가입이 완료되었습니다");
                 return true;
             }

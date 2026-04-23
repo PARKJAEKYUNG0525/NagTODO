@@ -11,13 +11,14 @@ export default function Signup({ onLoginClick }) {
         email: "",
         password: "",
         confirmPassword: "",
+        birthYear: "",
         birthMonth: "",
         birthDay: "",
     });
     const [isLoading, setIsLoading] = useState(false);
 
     const handleChange = (e) => {
-        setError(""); // 입력 시 에러 초기화
+        setError("");
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
@@ -25,13 +26,11 @@ export default function Signup({ onLoginClick }) {
         e.preventDefault();
         setError("");
 
-        // 유효성 검사
         if (form.username.length < 2) {
             setError("닉네임은 최소 2글자 이상이어야 합니다");
             return;
         }
 
-        // 비밀번호 규칙: 8~30자, 영문+숫자+특수문자 포함
         const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{8,30}$/;
         if (!pwRegex.test(form.password)) {
             setError("비밀번호는 8~30자, 영문/숫자/특수문자를 포함해야 합니다");
@@ -43,8 +42,8 @@ export default function Signup({ onLoginClick }) {
             return;
         }
 
-        if (!form.birthMonth || !form.birthDay) {
-            setError("생일을 선택해주세요");
+        if (!form.birthYear || !form.birthMonth || !form.birthDay) {
+            setError("생년월일을 모두 선택해주세요");
             return;
         }
 
@@ -55,7 +54,8 @@ export default function Signup({ onLoginClick }) {
                 username: form.username,
                 password: form.password,
                 confirmPassword: form.confirmPassword,
-                birthday: `2000-${String(form.birthMonth).padStart(2, "0")}-${String(form.birthDay).padStart(2, "0")}`,
+                // "YYYY-MM-DD" 형식으로 전달
+                birthday: `${form.birthYear}-${String(form.birthMonth).padStart(2, "0")}-${String(form.birthDay).padStart(2, "0")}`,
             });
 
             if (success) {
@@ -64,10 +64,13 @@ export default function Signup({ onLoginClick }) {
                     email: "",
                     password: "",
                     confirmPassword: "",
+                    birthYear: "",
                     birthMonth: "",
                     birthDay: "",
                 });
-                handleLoginClick();
+                alert("회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.");
+                navigate("/");
+                // handleLoginClick();
             }
         } catch (err) {
             console.error("Signup error:", err);
@@ -84,8 +87,17 @@ export default function Signup({ onLoginClick }) {
         }
     };
 
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: 100 }, (_, i) => currentYear - i);   // 올해~100년 전
     const months = Array.from({ length: 12 }, (_, i) => i + 1);
     const days = Array.from({ length: 31 }, (_, i) => i + 1);
+
+    const selectStyle = {
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234A5568' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "right 12px center",
+        paddingRight: "32px",
+    };
 
     return (
         <div className="min-h-screen bg-[#EEF2F5] sm:bg-white flex items-center justify-center font-sans">
@@ -100,9 +112,8 @@ export default function Signup({ onLoginClick }) {
                     회원가입
                 </h1>
 
-                {/* 폼 */}
                 <form onSubmit={handleSignup} className="flex flex-col gap-4">
-                    {/* 닉네임 */}
+                    {/* 이름 */}
                     <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-medium text-[#4A5568]">이름</label>
                         <input
@@ -154,38 +165,43 @@ export default function Signup({ onLoginClick }) {
                         />
                     </div>
 
-                    {/* 생일 */}
+                    {/* 생년월일 - 년/월/일 */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-medium text-[#4A5568]">생일</label>
-                        <div className="flex gap-3">
+                        <label className="text-xs font-medium text-[#4A5568]">생년월일</label>
+                        <div className="flex gap-2">
+                            {/* 년도 */}
+                            <select
+                                name="birthYear"
+                                value={form.birthYear}
+                                onChange={handleChange}
+                                className="flex-1 px-3 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA] appearance-none cursor-pointer"
+                                style={selectStyle}
+                            >
+                                <option value="">년</option>
+                                {years.map((y) => (
+                                    <option key={y} value={y}>{y}년</option>
+                                ))}
+                            </select>
+                            {/* 월 */}
                             <select
                                 name="birthMonth"
                                 value={form.birthMonth}
                                 onChange={handleChange}
                                 className="w-24 px-3 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA] appearance-none cursor-pointer"
-                                style={{
-                                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234A5568' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
-                                    backgroundRepeat: "no-repeat",
-                                    backgroundPosition: "right 12px center",
-                                    paddingRight: "32px",
-                                }}
+                                style={selectStyle}
                             >
                                 <option value="">월</option>
                                 {months.map((m) => (
                                     <option key={m} value={m}>{m}월</option>
                                 ))}
                             </select>
+                            {/* 일 */}
                             <select
                                 name="birthDay"
                                 value={form.birthDay}
                                 onChange={handleChange}
                                 className="w-24 px-3 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA] appearance-none cursor-pointer"
-                                style={{
-                                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234A5568' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,
-                                    backgroundRepeat: "no-repeat",
-                                    backgroundPosition: "right 12px center",
-                                    paddingRight: "32px",
-                                }}
+                                style={selectStyle}
                             >
                                 <option value="">일</option>
                                 {days.map((d) => (
