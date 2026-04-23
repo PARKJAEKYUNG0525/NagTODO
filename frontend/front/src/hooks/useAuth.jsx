@@ -1,7 +1,7 @@
 import { useState, createContext, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import { showErrorAlert, showSuccessAlert } from "../utils/alertUtiles.js";
+import { showSuccessAlert, showWarningAlert } from "../utils/alertUtiles.js";
 
 const AuthContext = createContext(null);
 
@@ -101,10 +101,10 @@ export const AuthProvider = ({ children }) => {
             if (error.response?.status === 401) {
                 const detail = error.response.data?.detail;
 
-                // if (detail ===  "Access token expired") {
-                //     showErrorAlert("세션이 만료되었습니다. 다시 로그인해주세요");
-                //     navigate("/");
-                // }
+                if (detail ===  "Access token expired") {
+                    showWarningAlert("세션이 만료되었습니다. 다시 로그인해주세요");
+                    navigate("/");
+                }
             }
             setIsAuthenticated(false);
             setUser(null);
