@@ -23,7 +23,7 @@ class PwHistoryService:
 
     # R 조회 - user 모든 비밀번호 변경 이력 조회
     @staticmethod
-    async def get_all_pw_histories_svc(db: AsyncSession, user_id: str) -> list[PwHistory]:
+    async def get_all_pw_histories_svc(db: AsyncSession, user_id: int) -> list[PwHistory]:
         user = await PwHistoryCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(

@@ -43,7 +43,7 @@ class ClothService:
 
     # R 조회 - cloth 전체 조회 (user 기준)
     @staticmethod
-    async def get_all_cloths_svc(db: AsyncSession, user_id: str) -> list[Cloth]:
+    async def get_all_cloths_svc(db: AsyncSession, user_id: int) -> list[Cloth]:
         user = await cloth_crud.get_user(db, user_id)
         if not user:
             raise HTTPException(

@@ -43,7 +43,7 @@ class HistoryService:
 
     # R 조회 - history 목록 조회 (user 기준)
     @staticmethod
-    async def get_user_svc(db: AsyncSession, user_id: str) -> list[History]:
+    async def get_user_svc(db: AsyncSession, user_id: int) -> list[History]:
         user = await HistoryCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(

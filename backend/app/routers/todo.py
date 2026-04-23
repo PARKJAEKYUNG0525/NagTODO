@@ -18,7 +18,7 @@ async def get_todo(todo_id: str, db: AsyncSession = Depends(get_db)):
 
 # R 전체 조회 - 유저별
 @router.get("/user/{user_id}", response_model=list[TodoRead])
-async def get_todos_by_user(user_id: str, db: AsyncSession = Depends(get_db)):
+async def get_todos_by_user(user_id: int, db: AsyncSession = Depends(get_db)):
     return await todo_svc.get_all_todos_svc(db, user_id)
 
 # U 수정

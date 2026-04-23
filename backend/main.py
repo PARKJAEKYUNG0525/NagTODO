@@ -8,11 +8,11 @@ from fastapi.concurrency import asynccontextmanager
 from app.middleware.token_refresh import RefreshTokenMiddleware
 
 from app.routers.user import router as user_router
-# from app.routers.category import router as category_router
+from app.routers.category import router as category_router
 from app.routers.cloth import router as cloth_router
 from app.routers.friend_todo_view import router as friend_todo_view_router
 # from app.routers.friend import router as friend_router
-# from app.routers.history import router as history_router
+from app.routers.history import router as history_router
 from app.routers.homepage import router as homepage_router
 from app.routers.img import router as img_router
 from app.routers.music import router as music_router
@@ -59,13 +59,14 @@ app.add_middleware(
 )
 
 app.include_router(user_router)
-# app.include_router(category_router)
+app.include_router(category_router)
 app.include_router(cloth_router)
 app.include_router(friend_todo_view_router)
 # app.include_router(friend_router)
-# app.include_router(history_router)
+app.include_router(history_router)
 app.include_router(homepage_router)
 app.include_router(img_router)
+
 app.include_router(music_router)
 app.include_router(pw_history_router)
 # app.include_router(recommend_router)

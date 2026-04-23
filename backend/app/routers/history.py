@@ -18,7 +18,7 @@ async def get_history(history_id: str, db: AsyncSession = Depends(get_db)):
 
 # R 단일 조회 - 유저별
 @router.get("/{user_id}", response_model=list[HistoryRead])
-async def get_history_by_user(user_id: str, db: AsyncSession = Depends(get_db)):
+async def get_history_by_user(user_id: int, db: AsyncSession = Depends(get_db)):
     return await history_svc.get_user_svc(db, user_id)
 
 # R 전체 조회

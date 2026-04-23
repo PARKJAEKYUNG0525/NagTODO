@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 
 class ClothBase(BaseModel):
     cloth_id: str
-    user_id: str
+    user_id: int
     title: str
 
 class ClothCreate(ClothBase):
@@ -12,7 +12,7 @@ class ClothCreate(ClothBase):
 
 class ClothUpdate(BaseModel):
     cloth_id: str | None = None
-    user_id: str | None = None
+    user_id: int | None = None
     title: str | None = None
 
 class ClothInDB(ClothBase):

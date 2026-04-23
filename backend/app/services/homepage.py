@@ -44,7 +44,7 @@ class HomepageService:
 
     # R 조회 - user 기준 단일 조회
     @staticmethod
-    async def get_homepage_by_user_svc(db: AsyncSession, user_id: str) -> Homepage:
+    async def get_homepage_by_user_svc(db: AsyncSession, user_id: int) -> Homepage:
         homepage = await HomepageCrud.get_homepage_by_user(db, user_id)
         if not homepage:
             raise HTTPException(

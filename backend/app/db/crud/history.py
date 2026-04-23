@@ -28,7 +28,7 @@ class HistoryCrud:
 
     # R 조회 - 히스토리 목록 조회 (user 기준)
     @staticmethod
-    async def get_user(db: AsyncSession, user_id: str) -> list[History]:
+    async def get_user(db: AsyncSession, user_id: int) -> list[History]:
         result = await db.execute(select(History).where(History.user_id == user_id))
         return list(result.scalars().all())
 
