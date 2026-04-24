@@ -77,8 +77,7 @@ export default function Todo() {
     ];
 
     const currentTodos =
-        todosByDate.find((entry) => isSameDay(entry.date, selectedDate))?.todos ||
-        [];
+        todosByDate.find((entry) => isSameDay(entry.date, selectedDate))?.todos || [];
     const isToday = isSameDay(selectedDate, TODAY);
     const formattedSelected = format(selectedDate, "M월 d일", { locale: ko });
 
