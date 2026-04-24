@@ -51,7 +51,7 @@ class FriendTodoViewService:
 
     # R 조회 - 목록 조회 (user 기준)
     @staticmethod
-    async def get_all_friend_todo_views_by_user_svc(db: AsyncSession, user_id: str) -> list[FriendTodoView]:
+    async def get_all_friend_todo_views_by_user_svc(db: AsyncSession, user_id: int) -> list[FriendTodoView]:
         friend_todo_views = await FriendTodoViewCrud.get_all_friend_todo_views_by_user(db, user_id)
         return friend_todo_views
 

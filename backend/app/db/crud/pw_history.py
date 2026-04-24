@@ -8,7 +8,7 @@ class PwHistoryCrud:
 
     # R 조회 - user 존재 확인
     @staticmethod
-    async def get_user(db: AsyncSession, user_id: str) -> User | None:
+    async def get_user(db: AsyncSession, user_id: int) -> User | None:
         result = await db.execute(select(User).where(User.user_id == user_id))
         return result.scalar_one_or_none()
     
@@ -20,7 +20,7 @@ class PwHistoryCrud:
 
     # R 조회 - user 모든 비밀번호 변경 이력 조회
     @staticmethod
-    async def get_all_pw_histories(db: AsyncSession, user_id: str) -> list[PwHistory]:
+    async def get_all_pw_histories(db: AsyncSession, user_id: int) -> list[PwHistory]:
         result = await db.execute(select(PwHistory)
                                   .where(PwHistory.user_id == user_id)
                                   .order_by(desc(PwHistory.updated_at)))

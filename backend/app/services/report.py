@@ -19,7 +19,7 @@ class ReportService:
             await db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="리포트 생성에 실패했습니다."
+                detail="report 생성에 실패했습니다."
             )
 
     # R 조회 - 리포트 단일 조회
@@ -29,7 +29,7 @@ class ReportService:
         if not report:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"report_id '{report_id}'에 해당하는 리포트가 없습니다."
+                detail=f"report_id '{report_id}'에 해당하는 report가 없습니다."
             )
         return report
 
@@ -46,7 +46,7 @@ class ReportService:
         if not report:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"report_id '{report_id}'에 해당하는 리포트가 없습니다."
+                detail=f"report_id '{report_id}'에 해당하는 report가 없습니다."
             )
 
         try:
@@ -59,7 +59,7 @@ class ReportService:
             await db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="리포트 수정에 실패했습니다."
+                detail="report 수정에 실패했습니다."
             )
         
     # D 삭제
@@ -69,7 +69,7 @@ class ReportService:
         if not report:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"report_id '{report_id}'에 해당하는 리포트가 없습니다."
+                detail=f"report_id '{report_id}'에 해당하는 report가 없습니다."
             )
 
         try:
@@ -81,5 +81,5 @@ class ReportService:
             await db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="리포트 삭제에 실패했습니다."
+                detail="report 삭제에 실패했습니다."
             )

@@ -16,7 +16,7 @@ class ClothCrud:
 
     # R 조회 - user 존재 확인
     @staticmethod
-    async def get_user(db: AsyncSession, user_id: str) -> User | None:
+    async def get_user(db: AsyncSession, user_id: int) -> User | None:
         result = await db.execute(select(User).where(User.user_id == user_id))
         return result.scalar_one_or_none()
 
@@ -28,7 +28,7 @@ class ClothCrud:
 
     # R 조회 - cloth 전체 조회 (user 기준)
     @staticmethod
-    async def get_all_cloths(db: AsyncSession, user_id: str) -> list[Cloth]:
+    async def get_all_cloths(db: AsyncSession, user_id: int) -> list[Cloth]:
         result = await db.execute(select(Cloth).where(Cloth.user_id == user_id))
         return list(result.scalars().all())
 

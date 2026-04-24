@@ -13,7 +13,7 @@ async def get_pw_history(pw_history_id: str, db: AsyncSession = Depends(get_db))
 
 # R 전체 조회
 @router.get("/user/{user_id}", response_model=list[PwHistoryRead])
-async def get_todos_by_user(user_id: str, db: AsyncSession = Depends(get_db)):
+async def get_todos_by_user(user_id: int, db: AsyncSession = Depends(get_db)):
     return await pwhistory_svc.get_all_pw_histories_svc(db, user_id)
 
 # U 수정 #성공 시 트리거 실행

@@ -17,7 +17,7 @@ class TodoCrud:
 
     # R 조회 - user 존재 확인
     @staticmethod
-    async def get_user(db: AsyncSession, user_id: str) -> User | None:
+    async def get_user(db: AsyncSession, user_id: int) -> User | None:
         result = await db.execute(select(User).where(User.user_id == user_id))
         return result.scalar_one_or_none()
 
@@ -35,8 +35,14 @@ class TodoCrud:
 
     # R 조회 - todo 목록 조회 (user 기준)
     @staticmethod
-    async def get_all_todos(db: AsyncSession, user_id: str) -> list[Todo]:
+    async def get_user(db: AsyncSession, user_id: int) -> list[Todo]:
         result = await db.execute(select(Todo).where(Todo.user_id == user_id))
+        return list(result.scalars().all())
+    
+    # R 조회 - 전체 조회
+    @staticmethod
+    async def get_all_todos(db: AsyncSession) -> list[Todo]:
+        result = await db.execute(select(Todo))
         return list(result.scalars().all())
 
     # U 수정

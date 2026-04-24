@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class HomepageBase(BaseModel):
-    user_id: str
+    user_id: int
 
 
 class HomepageCreate(HomepageBase):
@@ -10,7 +10,7 @@ class HomepageCreate(HomepageBase):
 
 
 class HomepageUpdate(BaseModel):
-    user_id: str | None = None
+    user_id: int | None = None
 
 
 class HomepageInDB(HomepageBase):

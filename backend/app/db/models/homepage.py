@@ -12,7 +12,7 @@ class Homepage(Base):
     __tablename__ = "homepage"
 
     homepage_id: Mapped[str] = mapped_column(String(100), primary_key=True)
-    user_id:     Mapped[str] = mapped_column(Integer, ForeignKey("user.user_id"), nullable=False)
+    user_id:     Mapped[int] = mapped_column(Integer, ForeignKey("user.user_id"), nullable=False)
 
     user:   Mapped["User"]        = relationship("User", back_populates="homepages")
     imgs:   Mapped[List["Img"]]   = relationship("Img", back_populates="homepage")

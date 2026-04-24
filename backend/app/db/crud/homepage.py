@@ -16,7 +16,7 @@ class HomepageCrud:
 
     # R 조회 - user 존재 확인
     @staticmethod
-    async def get_user(db: AsyncSession, user_id: str) -> User | None:
+    async def get_user(db: AsyncSession, user_id: int) -> User | None:
         result = await db.execute(select(User).where(User.user_id == user_id))
         return result.scalar_one_or_none()
 
@@ -28,7 +28,7 @@ class HomepageCrud:
 
     # R 조회 - user 기준 단일 조회
     @staticmethod
-    async def get_homepage_by_user(db: AsyncSession, user_id: str) -> Homepage | None:
+    async def get_homepage_by_user(db: AsyncSession, user_id: int) -> Homepage | None:
         result = await db.execute(select(Homepage).where(Homepage.user_id == user_id))
         return result.scalar_one_or_none()
 

@@ -48,12 +48,12 @@ class UserService:
 
     # R 조회 - user 단일 조회
     @staticmethod
-    async def get_user_svc(db: AsyncSession, user_id: str) -> User:
+    async def get_user_svc(db: AsyncSession, user_id: int) -> User:
         user = await UserCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user_id '{user_id}'에 해당하는 유저가 없습니다."
+                detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
             )
         return user
 
@@ -65,12 +65,12 @@ class UserService:
 
     # U 수정
     @staticmethod
-    async def update_user_svc(db: AsyncSession, user_id: str, data: UserUpdate) -> User:
+    async def update_user_svc(db: AsyncSession, user_id: int, data: UserUpdate) -> User:
         user = await UserCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user_id '{user_id}'에 해당하는 유저가 없습니다."
+                detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
             )
 
         try:
@@ -88,12 +88,12 @@ class UserService:
 
     # D 삭제
     @staticmethod
-    async def delete_user_svc(db: AsyncSession, user_id: str) -> dict:
+    async def delete_user_svc(db: AsyncSession, user_id: int) -> dict:
         user = await UserCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user_id '{user_id}'에 해당하는 유저가 없습니다."
+                detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
             )
 
         try:

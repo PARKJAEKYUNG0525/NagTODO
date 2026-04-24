@@ -17,5 +17,5 @@ class CategoryInDB(CategoryBase):
     class Config:
         from_attributes = True
 
-class TodoRead(CategoryInDB):
+class CategoryRead(CategoryInDB):
     pass
