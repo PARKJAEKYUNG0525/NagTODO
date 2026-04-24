@@ -48,12 +48,12 @@ const ProtectedRoute = ({ children }) => {
 
 
 const RootLayout = () => {
-
     return (
         <div className="min-h-screen bg-gray-200 flex items-center justify-center font-sans">
-            <div className="bg-[#EEF2F5] flex flex-col w-full min-h-screen sm:w-110 sm:min-h-0 sm:h-auto sm:aspect-9/16 sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative">
+            <main className="bg-[#EEF2F5] flex flex-col w-full min-h-screen sm:w-[390px] sm:min-h-0 sm:h-auto sm:aspect-[390/844] sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative">
                 <Outlet />
-            </div>
+                <Navbar />
+            </main>
         </div>
     );
 };
@@ -73,27 +73,26 @@ const router = createBrowserRouter([
             { path: "login", element: <Login /> },
             { path: "signup", element: <Signup /> },
             // { index: true, element: <Navigate to="/login" replace /> }, // 기본 경로를 /login으로 리다이렉트
-            { path: "home", element: <Home /> },
+            { path: "main", element: <Home /> },
             { path: "friend", element: <Friend/>},
             { path: "todo", element: <Todo/>},
             { path: "report", element: <Report/>},
             { path: "mypage", element: <MyPage/>},
             {
                 element: (
-                    // ProtectedRoute 내에 있는 컴포넌트만 보호되도록
-                    // = 로그인 해야 사용할 수 있는 화면 목록
                     <ProtectedRoute>
-                        {/* 여기에 <Friend/>,<Todo/>,<Report/>,<MyPage/>가 들어오게 됨*/}
+                        {/*  일단 로그인 -> 쿠키 생성 잘 되면 아래 주석 해제*/}
                         {/*<Outlet />*/}
+                        {/*<Navbar />*/}
                     </ProtectedRoute>
                 ),
-                // 화면을 더 추가하고 싶다면 여기 children list에 추가하면 됨
                 children: [
-                    { path: "home", element: <Home /> },
-                    { path: "friend", element: <Friend/>},
-                    { path: "todo", element: <Todo/>},
-                    { path: "report", element: <Report/>},
-                    { path: "mypage", element: <MyPage/>}
+                    // 일단 로그인 -> 쿠키 생성 잘 되면 아래 주석 해제
+                    // { path: "main", element: <Home /> },
+                    // { path: "friend", element: <Friend/>},
+                    // { path: "todo", element: <Todo/>},
+                    // { path: "report", element: <Report/>},
+                    // { path: "mypage", element: <MyPage/>}
                 ],
             },
         ],
