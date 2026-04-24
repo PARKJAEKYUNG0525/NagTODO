@@ -6,8 +6,8 @@ from passlib.context import CryptContext
 
 from app.core.settings import settings
 
-from fastapi import Depends, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi import Depends, HTTPException , Request  
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials 
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 
@@ -66,10 +66,11 @@ def verify_token(token:str) -> int:
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    # credentials: HTTPAuthorizationCredentials = Depends(security),
+    request: Request,
     db: AsyncSession = Depends(get_db)
 ):
-    token = credentials.credentials
+    token = request.cookies.get("access_token")
 
     try:
         user_id = verify_token(token)

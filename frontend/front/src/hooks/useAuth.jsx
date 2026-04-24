@@ -8,7 +8,7 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
     const [error, setError] = useState("");
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-
+    const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
@@ -17,13 +17,15 @@ export const AuthProvider = ({ children }) => {
         try {
             // post(URL, data) 형식
             const response = await api.post("/users/login", { email, pw: password })
+            console.log(response.data);
 
             // 사용자 로그인 성공 = 인증 성공
             if (response.status === 200) {
-                setUser(response.data);
+                setUser(response.data.user);
                 setIsAuthenticated(true);
                 await verifyJWT();
                 showSuccessAlert("환영합니다");
+                navigate("/main");
                 return true;
             }
         }
@@ -109,6 +111,9 @@ export const AuthProvider = ({ children }) => {
             setIsAuthenticated(false);
             setUser(null);
             return false;
+        }
+        finally {
+            setIsLoading(false); 
         }
     };
 

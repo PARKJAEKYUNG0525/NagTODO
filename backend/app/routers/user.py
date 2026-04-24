@@ -19,11 +19,13 @@ async def create_user(data: UserCreate, db: AsyncSession = Depends(get_db)):
 @router.post("/login")
 async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
     user, access_token, refresh_token = await user_svc.login(db, data)
-    return JSONResponse(content={
-        "access_token": access_token,
-        "refresh_token": refresh_token,
+    response = JSONResponse(content={
         "user": UserRead.model_validate(user).model_dump(mode="json")
     })
+    response.set_cookie(key="access_token", value=access_token, httponly=True, samesite="lax", secure=False)
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, samesite="lax", secure=False)
+    
+    return response
 
 @router.get("/me", response_model=UserRead)
 async def get_me(current_user: User = Depends(get_current_user)):

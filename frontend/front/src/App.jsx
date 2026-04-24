@@ -73,26 +73,26 @@ const router = createBrowserRouter([
             { path: "login", element: <Login /> },
             { path: "signup", element: <Signup /> },
             // { index: true, element: <Navigate to="/login" replace /> }, // 기본 경로를 /login으로 리다이렉트
-            { path: "main", element: <Home /> },
-            { path: "friend", element: <Friend/>},
-            { path: "todo", element: <Todo/>},
-            { path: "report", element: <Report/>},
-            { path: "mypage", element: <MyPage/>},
+            // { path: "main", element: <Home /> },
+            // { path: "friend", element: <Friend/>},
+            // { path: "todo", element: <Todo/>},
+            // { path: "report", element: <Report/>},
+            // { path: "mypage", element: <MyPage/>},
             {
                 element: (
                     <ProtectedRoute>
                         {/*  일단 로그인 -> 쿠키 생성 잘 되면 아래 주석 해제*/}
-                        {/*<Outlet />*/}
-                        {/*<Navbar />*/}
+                        <Outlet />
+                        <Navbar />
                     </ProtectedRoute>
                 ),
                 children: [
                     // 일단 로그인 -> 쿠키 생성 잘 되면 아래 주석 해제
-                    // { path: "main", element: <Home /> },
-                    // { path: "friend", element: <Friend/>},
-                    // { path: "todo", element: <Todo/>},
-                    // { path: "report", element: <Report/>},
-                    // { path: "mypage", element: <MyPage/>}
+                    { path: "main", element: <Home /> },
+                    { path: "friend", element: <Friend/>},
+                    { path: "todo", element: <Todo/>},
+                    { path: "report", element: <Report/>},
+                    { path: "mypage", element: <MyPage/>}
                 ],
             },
         ],
