@@ -11,7 +11,7 @@ from app.routers.user import router as user_router
 from app.routers.category import router as category_router
 from app.routers.cloth import router as cloth_router
 from app.routers.friend_todo_view import router as friend_todo_view_router
-# from app.routers.friend import router as friend_router
+from app.routers.friend import router as friend_router
 from app.routers.history import router as history_router
 from app.routers.homepage import router as homepage_router
 from app.routers.img import router as img_router
@@ -62,7 +62,7 @@ app.include_router(user_router)
 app.include_router(category_router)
 app.include_router(cloth_router)
 app.include_router(friend_todo_view_router)
-# app.include_router(friend_router)
+app.include_router(friend_router)
 app.include_router(history_router)
 app.include_router(homepage_router)
 app.include_router(img_router)
@@ -74,4 +74,4 @@ app.include_router(report_router)
 app.include_router(todo_router)
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8081, reload=True)
