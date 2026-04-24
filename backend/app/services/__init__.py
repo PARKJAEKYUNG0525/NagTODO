@@ -1,7 +1,7 @@
 from .user import UserService
-from .friend import FriendService
+# from .friend import FriendService
 from .todo import TodoService
-from .recommend import RecommendService
+# from .recommend import RecommendService
 from .pw_history import PwHistoryService
 from .homepage import HomepageService
 from .cloth import ClothService

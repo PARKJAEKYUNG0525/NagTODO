@@ -7,14 +7,15 @@ import {
     useNavigate,
 } from "react-router-dom";
 import Navbar from "./Components/Navbar";
-import LoginModal from "./Components/Modal/LoginModal";
-import SignupModal from "./Components/Modal/SignupModal";
-import Main from "./Pages/Main";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import Swal from "sweetalert2";
-// import CreateBoard from "./Pages/CreateBoard";
 import Login from "./Pages/Login";
-import Signup from "./Pages/Signup"; 
+import Signup from "./Pages/Signup";
+import Home from "./Pages/Home/index.jsx";
+import Friend from "./Pages/Friend/index.jsx";
+import Todo from "./Pages/Todo/index.jsx";
+import Report from "./Pages/Report/index.jsx";
+import MyPage from "./Pages/MyPage/index.jsx";
 
 const ProtectedRoute = ({ children }) => {
     const { isAuthenticated, isLoading } = useAuth();
@@ -47,40 +48,12 @@ const ProtectedRoute = ({ children }) => {
 
 
 const RootLayout = () => {
-    const [isLoginOpen, setIsLoginOpen] = useState(false);
-    const [isSignupOpen, setIsSignupOpen] = useState(false);
-
-    const onLoginClick = () => {
-        setIsSignupOpen(false);
-        setIsLoginOpen(true);
-    }
-
-    const onSignupClick = () => {
-        setIsLoginOpen(false);
-        setIsSignupOpen(true);
-    }
-    const handleCloseModals = () => {
-        setIsLoginOpen(false);
-        setIsSignupOpen(false);
-    }
-
     return (
-        <>
-            {/* <Navbar onLoginClick={onLoginClick} onSignupClick={onSignupClick} /> */}
-            <main className="flex-grow container mx-auto px-4 py-8">
+        <div className="min-h-screen bg-gray-200 flex items-center justify-center font-sans">
+            <main className="bg-[#EEF2F5] flex flex-col w-full min-h-screen sm:w-[390px] sm:min-h-0 sm:h-auto sm:aspect-[390/844] sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative">
                 <Outlet />
             </main>
-            <LoginModal
-                isOpen={isLoginOpen}
-                onClose={handleCloseModals}
-                onSignupClick={onSignupClick}
-            />
-            <SignupModal
-                isOpen={isSignupOpen}
-                onClose={handleCloseModals}
-                onLoginClick={onLoginClick}
-            />
-        </>
+        </div>
     );
 };
 
@@ -96,22 +69,30 @@ const router = createBrowserRouter([
         ),
         children: [
             { index: true, element: <Login /> },
+            { path: "login", element: <Login /> },
             { path: "signup", element: <Signup /> },
-            { path: "main", element: <Main /> },                         // 메인은 /main으로 이동
-            { path: "login", element: <Login /> },                       // 로그인 페이지 추가
             // { index: true, element: <Navigate to="/login" replace /> }, // 기본 경로를 /login으로 리다이렉트
-
+            // { path: "main", element: <Home /> },
+            // { path: "friend", element: <Friend/>},
+            // { path: "todo", element: <Todo/>},
+            // { path: "report", element: <Report/>},
+            // { path: "mypage", element: <MyPage/>},
             {
                 element: (
-                    // ProtectedRoute 내에 있는 컴포넌트만 보호되도록
                     <ProtectedRoute>
-                        {/* 여기에 <CreateBoard />가 들어오게 됨*/}
+                        {/*  일단 로그인 -> 쿠키 생성 잘 되면 아래 주석 해제*/}
                         <Outlet />
+                        <Navbar />
                     </ProtectedRoute>
                 ),
-                // 화면을 더 추가하고 싶다면 여기 children list에 추가하면 됨
-                // children: [{ path: "create-board", element: <CreateBoard /> }],
-                children: [],
+                children: [
+                    // 일단 로그인 -> 쿠키 생성 잘 되면 아래 주석 해제
+                    { path: "main", element: <Home /> },
+                    { path: "friend", element: <Friend/>},
+                    { path: "todo", element: <Todo/>},
+                    { path: "report", element: <Report/>},
+                    { path: "mypage", element: <MyPage/>}
+                ],
             },
         ],
     },
