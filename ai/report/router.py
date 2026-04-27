@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
@@ -24,7 +24,7 @@ class MonthlyReportRequest(BaseModel):
 
 @router.post("/ai/report/monthly")
 async def monthly_report(req: MonthlyReportRequest):
-    month_start = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d")
+    month_start = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
 
     initial_state = {
         "user_id": req.user_id,
@@ -50,11 +50,22 @@ async def monthly_report(req: MonthlyReportRequest):
     except Exception as e:
         return JSONResponse(status_code=500, content={"detail": str(e)})
 
+    report = result.get("retrospective_report", "")
+    if not report:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "detail": "리포트 생성 실패: 결과가 비어 있습니다",
+                "quality_issues": result.get("quality_issues", []),
+            },
+        )
+
     return {
+        "month_start": month_start,
         "category_stats": result.get("category_stats", {}),
         "clusters": result.get("clusters", []),
         "cluster_summaries": result.get("cluster_summaries", []),
-        "report": result.get("retrospective_report", ""),
+        "report": report,
         "quality_passed": result.get("quality_passed", False),
         "quality_issues": result.get("quality_issues", []),
     }

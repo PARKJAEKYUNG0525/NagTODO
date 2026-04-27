@@ -6,7 +6,8 @@ htmlcov/
 dist/
 build/
 *.egg-info/
-backend/.env
+.env
+.env.*
 .cache/
 frontend/node_modules/
 frontend/.next/
