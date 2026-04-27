@@ -15,11 +15,9 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         try {
-            // post(URL, data) 형식
             const response = await api.post("/users/login", { email, pw: password })
             console.log(response.data);
 
-            // 사용자 로그인 성공 = 인증 성공
             if (response.status === 200) {
                 setUser(response.data.user);
                 setIsAuthenticated(true);
@@ -38,32 +36,15 @@ export const AuthProvider = ({ children }) => {
     };
 
     const signup = async ({email, username, password, confirmPassword, birthday}) => {
-        if (!email.includes("@")) {
-            setError("유효한 이메일을 입력하세요");
-            return false;
-        }
-        if (username.length < 2) {
-            setError("이름은 최소 2글자 이상이어야 합니다");
-            return false;
-        }
-        if (password.length < 8) {
-            setError("비밀번호는 최소 8글자 이상이어야 합니다");
-            return false;
-        }
-        if (password !== confirmPassword) {
-            setError("비밀번호가 일치하지 않습니다");
-            return false;
-        }
         try {
-            // user/signup은 scheme/users.py-UserCreate 참고
             const response = await api.post("/users/", { email, username, pw: password, birthday })
             if (response.status === 201) {
-                showSuccessAlert("회원가입이 완료되었습니다");
+                showSuccessAlert("(useAuth)회원가입이 완료되었습니다");
                 return true;
             }
         } catch (error) {
             console.log(error);
-            setError(error.response?.data.detail || "회원가입에 실패했습니다");
+            setError(error.response?.data.detail || "(useAuth)회원가입에 실패했습니다");
         }
     };
 
@@ -117,13 +98,12 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // mount 시 JWT 인증
-    // : 컴포넌트 화면에 첫 랜더링 될 때 사용자 JWT 상태를 확인하려고
-    // : 세션 유지, 자동 로그인 체크 시 활용, JWT 인증에서의 필수 패턴
+    // JWT 인증하기 위해(확인 및 검증)
+    // 세션 유지, 자동 로그인 체크 시 활용, JWT 인증에서의 필수 패턴
     useEffect(() => {
         (async () => {
             await verifyJWT();
-        })(); // 여기 끝에 있는 소괄호()가 함수를 바로 실행함, 함수() 형태인 것
+        })();
     }, []);
 
     return (
@@ -135,7 +115,6 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
