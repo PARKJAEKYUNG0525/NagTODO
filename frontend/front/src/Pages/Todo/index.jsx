@@ -26,8 +26,8 @@ import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
  */
 export default function Todo() {
     // ====== 상수/상태 ======
-    // 오늘 날짜 (데모용 고정값: 2026-04-21). 실제 배포 시 startOfDay(new Date()) 로 교체
-    const TODAY = startOfDay(new Date(2026, 3, 21));
+    // 오늘 날짜
+    const TODAY = startOfDay(new Date());
 
     const [selectedDate, setSelectedDate] = useState(TODAY);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
@@ -38,7 +38,7 @@ export default function Todo() {
     const [isNewOpen, setIsNewOpen] = useState(false);
     const [detailTodo, setDetailTodo] = useState(null);
 
-    // 날짜별 할 일 목데이터 (isSameDay 로 비교)
+    // 날짜별 할 일 임시데이터 (isSameDay로 비교)
     const todosByDate = [
         {
             date: new Date(2026, 3, 21),
@@ -152,10 +152,12 @@ export default function Todo() {
         <>
             {/* 상단 헤더 */}
             <header className="px-6 pt-6 flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-[#3D4D5C]">4월</h1>
+                <h1 className="text-2xl font-bold text-[#3D4D5C]">
+                    {format(selectedDate, "M월", {locale: ko})}
+                </h1>
                 <button
-                    onClick={() => setIsNotiOpen(true)}
                     className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
+                    onClick={() => setIsNotiOpen(true)}
                 >
                     {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
                     <span className="w-5 h-5 block" />
