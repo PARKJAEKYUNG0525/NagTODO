@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
-from app.db.scheme.todo import TodoCreate, TodoUpdate, TodoRead
+from app.db.scheme.todo import TodoCreate, TodoUpdate, TodoRead, TodoCreateResponse
 from app.services.todo import TodoService as todo_svc
 
 router = APIRouter(prefix="/todos", tags=["Todo"])
 
 # C 생성
-@router.post("/", response_model=TodoRead, status_code=201)
+@router.post("/", response_model=TodoCreateResponse, status_code=201)
 async def create_todo(data: TodoCreate, db: AsyncSession = Depends(get_db)):
     return await todo_svc.create_todo_svc(db, data)
 

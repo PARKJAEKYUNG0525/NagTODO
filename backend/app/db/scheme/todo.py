@@ -12,6 +12,7 @@ class TodoBase(BaseModel):
 class TodoCreate(TodoBase):
     user_id: int
     category_id: Annotated[str, Field(max_length=100)]
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class TodoUpdate(BaseModel):
     title: str | None = None
@@ -32,3 +33,15 @@ class TodoInDB(TodoBase):
 
 class TodoRead(TodoInDB):
     pass
+
+
+class InterferenceResult(BaseModel):
+    global_rate: float | None
+    personal_rate: float | None
+    similar_count: int
+    feedback: str
+    similar_failures: list[str]
+
+
+class TodoCreateResponse(TodoRead):
+    interference: InterferenceResult | None = None
