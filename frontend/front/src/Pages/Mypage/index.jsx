@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtiles";
+import { useAuth } from "../../hooks/useAuth";
 
 /**
  * Mypage 화면 (통합본)
@@ -17,9 +18,13 @@ import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtiles";
  * ※ 9:16 프레임 / 하단 Navbar 는 App.jsx 담당.
  */
 export default function MyPage() {
+    const { user } = useAuth();
     const [isAdmin, setIsAdmin] = useState(false);
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
     const [view, setView] = useState("main"); // "main" | "edit-profile"
+    const [form, setForm] = useState({ username: "", email: "", password: "", confirmPassword: "", birthYear: "",
+    birthMonth: ""});
+
 
     const [adminMode, setAdminMode] = useState("default"); // "default" | "edit" | "delete"
     const [editingCategoryId, setEditingCategoryId] = useState(null);
@@ -35,6 +40,15 @@ export default function MyPage() {
     ]);
     const [draggedIdx, setDraggedIdx] = useState(null);
 
+
+    useEffect(() => {
+        if (user) {
+            console.log("birthday 값:", user.birthday);
+            const [year, month] = (user.birthday || "").split("-");
+            console.log("year:", year, "month:", month);
+        }
+    }, [user]);
+
     useEffect(() => {
         const checkAdmin = () => false;
         setIsAdmin(checkAdmin());
@@ -45,6 +59,19 @@ export default function MyPage() {
     useEffect(() => {
         // TODO: API 로 strictMode 변경 저장
     }, [strictMode]);
+
+    useEffect(() => {
+        if (user) {
+            const [year, month] = (user.birthday || "").split("-");
+            setForm(prev => ({
+                ...prev,
+                username: user.username || "",
+                email: user.email || "",
+                birthYear: year || "",
+                birthMonth: month || "",
+            }));
+        }
+    }, [user]);
 
     const handleNotification = () => alert("알림 아이콘 클릭");
 
@@ -145,6 +172,8 @@ export default function MyPage() {
         </button>
     );
 
+    
+
     // ====== 렌더: 비관리자 - 내 정보 수정 ======
     if (!isAdmin && view === "edit-profile") {
         return (
@@ -164,13 +193,13 @@ export default function MyPage() {
                 </div>
 
                 <div className="mt-6 flex flex-col gap-4">
-                    <Field label="닉네임" defaultValue="홍길동" />
-                    <Field label="이메일" placeholder="name@example.com" />
-                    <Field label="비밀번호" type="password" defaultValue="12345678" />
+                    <Field label="닉네임" value={form.username} onChange={(e) => setForm({...form, username: e.target.value})} />
+                    <Field label="이메일" value={form.email} readOnly />
+                    <Field label="비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} />
                     <Field
                         label="비밀번호 확인"
                         type="password"
-                        defaultValue="12345678"
+                        value={form.confirmPassword} onChange={(e) => setForm({...form, confirmPassword: e.target.value})}
                     />
 
                     <div>
@@ -180,14 +209,14 @@ export default function MyPage() {
                                 onClick={() => alert("년도 선택")}
                                 className="flex-1 bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
                             >
-                                <span>&nbsp;</span>
+                                <span>{form.birthYear || ""}</span>
                                 <span className="text-[#A8C8D8] text-xs">▼</span>
                             </button>
                             <button
                                 onClick={() => alert("월 선택")}
                                 className="flex-1 bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
                             >
-                                <span>&nbsp;</span>
+                                <span>{form.birthMonth || ""}</span>
                                 <span className="text-[#A8C8D8] text-xs">▼</span>
                             </button>
                         </div>
@@ -397,11 +426,11 @@ export default function MyPage() {
                     </button>
 
                     <div className="flex flex-col items-center">
-                        <p className="text-lg font-bold text-[#3D4D5C]">admin</p>
+                        <p className="text-lg font-bold text-[#3D4D5C]">{user?.username || ""}</p>
                         <div className="mt-3 w-20 h-20 rounded-full bg-[#A8C8D8]">
                             {/* 아이콘 위치: 프로필 이미지 (bi-person-fill) */}
                         </div>
-                        <p className="mt-4 text-xs text-[#3D4D5C]">test@test.com</p>
+                        <p className="mt-4 text-xs text-[#3D4D5C]">{user?.email || ""}</p>
                         <p className="mt-1 text-xs text-[#8B9BAA]">
                             함께한 지 <span className="font-semibold">40일째</span>
                         </p>
@@ -445,14 +474,16 @@ export default function MyPage() {
 }
 
 /* ============ 서브 컴포넌트 ============ */
-function Field({ label, type = "text", defaultValue, placeholder }) {
+function Field({ label, type = "text", value, onChange, placeholder, readOnly }) {
     return (
         <div>
             <label className="block text-xs text-[#8B9BAA] mb-2">{label}</label>
             <input
                 type={type}
-                defaultValue={defaultValue}
+                value={value}
+                onChange={onChange}
                 placeholder={placeholder}
+                readOnly={readOnly}
                 className="w-full px-4 py-3 rounded-xl bg-white text-sm text-[#3D4D5C] placeholder-[#B5BEC7] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A8C8D8]"
             />
         </div>
