@@ -52,7 +52,7 @@ app.add_middleware(
 
     CORSMiddleware,
     # allow_origins=["*"],  # 개발 중에는 일단 전체 허용
-    allow_origins=["http://192.168.0.42:5173", "http://localhost:5173", "http://192.168.0.3:5173"],
+    allow_origins=["http://192.168.0.42:3000", "http://localhost:3000", "http://192.168.0.3:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
