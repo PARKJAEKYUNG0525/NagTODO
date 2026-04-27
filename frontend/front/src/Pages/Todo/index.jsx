@@ -7,6 +7,7 @@ import NotificationModal from "../../Components/Modal/NotificationModal";
 import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
 import { useAuth } from "../../hooks/useAuth";
 import api from "../../utils/api";
+import useTodo from "@/hooks/useTodo.jsx";
 
 /**
  * TodoMain 화면 (통합본)
@@ -33,8 +34,6 @@ const CATEGORY_COLOR = {
 };
 
 export default function Todo() {
-    const { user } = useAuth();
-
     // ====== 상수/상태 ======
     const TODAY = startOfDay(new Date());
 
@@ -48,25 +47,22 @@ export default function Todo() {
     const [isNewOpen, setIsNewOpen] = useState(false);
     const [detailTodo, setDetailTodo] = useState(null);
 
-    const fetchTodos = useCallback(async () => {
-        if (!user?.user_id) return;
-        try {
-            const res = await api.get(`/todos/user/${user.user_id}`);
-            setTodos(res.data);
-        } catch {
-            // 조용히 실패 (목록 비움 유지)
-        }
-    }, [user?.user_id]);
-
-    useEffect(() => {
-        fetchTodos();
-    }, [fetchTodos]);
-
     const currentTodos = todos.filter((t) =>
         isSameDay(startOfDay(new Date(t.created_at)), selectedDate)
     );
     const isToday = isSameDay(selectedDate, TODAY);
     const formattedSelected = format(selectedDate, "M월 d일", { locale: ko });
+
+    const { loading, getAllTodos } = useTodo();
+
+    const loadTodos = useCallback(async () => {
+        const data = await getAllTodos();
+        if (data) setTodos(data);
+    }, [getAllTodos]);
+
+    useEffect(() => {
+        loadTodos();
+    }, [loadTodos]);
 
     const notifications = [
         {

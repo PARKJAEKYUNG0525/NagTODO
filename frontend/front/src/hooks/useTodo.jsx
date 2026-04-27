@@ -33,6 +33,8 @@ export const useTodo = () => {
     const getAllTodos = useCallback(async() => {
         setLoading(true);
 
+        if (!user?.user_id) return;
+
         try {
             const response = await api.get("/user/{userid}")
 
@@ -41,14 +43,13 @@ export const useTodo = () => {
             }
             return [];
         }
-        catch (error) {
-            showWarningAlert("게시글을 불러올 수 없습니다.", error.message);
+        catch {
+
         }
         finally {
             setLoading(false);
         }
-    }, [])
-
+    }, [user?.user_id])
 
     return {loading, getAllTodos, createTodo};
 };
