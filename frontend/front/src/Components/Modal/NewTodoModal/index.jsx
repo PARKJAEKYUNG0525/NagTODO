@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { format } from "date-fns";
 import ModalLayout from "../ModalLayout";
 import { useAuth } from "../../../hooks/useAuth";
 import { useInterference } from "../../../hooks/useInterference";
@@ -10,9 +11,10 @@ import api from "../../../utils/api";
  * - 저장 시 백엔드 POST /todos/ 호출 → AI 간섭 팝업 트리거
  *
  * props:
- *   - isOpen    : boolean
- *   - onClose   : ()=>void
- *   - onSubmit  : (todo)=>void  — 부모의 목록 갱신용 콜백 (선택)
+ *   - isOpen        : boolean
+ *   - onClose       : ()=>void
+ *   - onSubmit      : (todo)=>void  — 부모의 목록 갱신용 콜백 (선택)
+ *   - selectedDate  : Date          — 캘린더에서 선택한 날짜 (기본값: 오늘)
  */
 const CATEGORIES = [
     { key: "study", label: "공부", color: "#E88A8A" },
@@ -20,7 +22,7 @@ const CATEGORIES = [
     { key: "daily", label: "일상", color: "#A8D5B4" },
 ];
 
-const NewTodoModal = ({ isOpen, onClose, onSubmit }) => {
+const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) => {
     const { user } = useAuth();
     const { showLoading, showFeedback } = useInterference();
 
@@ -51,6 +53,7 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit }) => {
                 category_id: snapshot.category,
                 visibility: snapshot.isPublic ? "친구공개" : "비공개",
                 user_id: user.user_id,
+                created_at: format(selectedDate, "yyyy-MM-dd'T'HH:mm:ss"),
             });
 
             const feedback = res.data.interference?.feedback ?? "할 수 있어! 이번엔 꼭 해내길 바라!";

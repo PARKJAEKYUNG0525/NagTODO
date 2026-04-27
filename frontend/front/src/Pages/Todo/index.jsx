@@ -310,6 +310,7 @@ export default function Todo() {
                     setIsNewOpen(false);
                     getAllTodos();
                 }}
+                selectedDate={selectedDate}
             />
             <TodoDetailModal
                 isOpen={!!detailTodo}
