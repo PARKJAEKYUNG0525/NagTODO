@@ -18,15 +18,12 @@ pwd_crypt = CryptContext(schemes=["bcrypt"])
 
 '''비밀번호 암호화'''
 def get_password_hash(password:str):
-    # 입력한 비밀번호를 72바이트까지 잘라서 'utf-8'로 encoding
-    trunc_password = password.encode("utf-8")[:72]
-    return pwd_crypt.hash(trunc_password)
+    return pwd_crypt.hash(password)
 
 '''비밀번호 검증'''
 # 평문 비번과 해시값 비교해서 같으면 True
 def verify_password(plain_pw:str, hashed_pw:str) -> bool:
-    trunc_password = plain_pw.encode("utf-8")[:72]
-    return pwd_crypt.verify(trunc_password, hashed_pw)
+    return pwd_crypt.verify(plain_pw, hashed_pw)
 
 '''JWT 토큰 생성'''
 # jwt 생성 함수(암호화된 jwt문자열 반환)
@@ -62,7 +59,6 @@ def decode_token(token:str) -> dict:
 def verify_token(token:str) -> int:
     payload = decode_token(token)
     return payload.get("uid")
-
 
 
 async def get_current_user(

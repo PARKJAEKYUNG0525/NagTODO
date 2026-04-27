@@ -99,13 +99,8 @@ export default function Signup({ onLoginClick }) {
     };
 
     return (
-        <div className="min-h-screen bg-[#EEF2F5] sm:bg-white flex items-center justify-center font-sans">
-            <div className="
-                bg-[#EEF2F5] flex flex-col
-                w-full h-screen px-6 py-18
-                sm:h-[700px]
-                sm:rounded-[32px] sm:shadow-2xl sm:px-10 sm:py-14 sm:w-[440px]
-            ">
+        <>
+            <div className="bg-[#EEF2F5] flex flex-col flex-1 w-full px-6 py-10">
                 {/* 타이틀 */}
                 <h1 className="text-2xl font-bold text-[#2D3748] tracking-tight mb-8">
                     회원가입
@@ -236,6 +231,6 @@ export default function Signup({ onLoginClick }) {
                     </button>
                 </div>
             </div>
-        </div>
+        </>
     );
 }

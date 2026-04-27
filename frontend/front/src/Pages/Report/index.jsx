@@ -23,13 +23,43 @@ import { ko } from "date-fns/locale";
  * ※ shadcn/ui Calendar: npx shadcn-ui@latest add calendar
  * ※ date-fns: npm i date-fns
  */
-export default function Report() {
-    const [reportMode, setReportMode] = useState("monthly"); // "monthly" | "30days"
+export default function MonthlyReport() {
+    const [reportMode, setReportMode] = useState("monthly"); // "monthly" | "30days" | "history"
     const [analyzed, setAnalyzed] = useState(false);
 
-    // 데모용 오늘 날짜 (2026-04-21). 배포 시 startOfDay(new Date()) 로 교체.
-    const TODAY = startOfDay(new Date(2026, 3, 21));
+    // 진짜 "오늘" (자정 기준). 매 렌더마다 현재 시각을 반영.
+    const TODAY = startOfDay(new Date());
     const [selectedDate, setSelectedDate] = useState(TODAY);
+
+    // 발행 이력 (목데이터). 추후 백엔드에서 받아옴.
+    const pastReports = [
+        {
+            id: "m-2026-04",
+            type: "monthly",
+            label: "4월",
+            range: "2026.04.01 ~ 2026.04.30",
+        },
+        {
+            id: "30-2026-04-21",
+            type: "30days",
+            label: "2026.03.21 ~ 2026.04.21",
+            range: "2026.03.21 ~ 2026.04.21",
+        },
+        {
+            id: "m-2026-03",
+            type: "monthly",
+            label: "3월",
+            range: "2026.03.01 ~ 2026.03.31",
+        },
+        {
+            id: "30-2026-03-01",
+            type: "30days",
+            label: "2026.02.01 ~ 2026.03.01",
+            range: "2026.02.01 ~ 2026.03.01",
+        },
+    ];
+    const [selectedReport, setSelectedReport] = useState(null);
+    const [isReportDropdownOpen, setIsReportDropdownOpen] = useState(false);
 
     // 30일 범위 계산 (한 달 전 같은 날 ~ 선택일)
     const rangeEnd = selectedDate;
@@ -45,6 +75,14 @@ export default function Report() {
         if (mode === reportMode) return;
         setReportMode(mode);
         setAnalyzed(false);
+        setSelectedReport(null);
+        setIsReportDropdownOpen(false);
+    };
+
+    const handlePastReportSelect = (report) => {
+        setSelectedReport(report);
+        setIsReportDropdownOpen(false);
+        setAnalyzed(true); // 과거 리포트는 선택 즉시 결과 화면 노출
     };
 
     const handleYearDropdown = () => alert("년도 선택 드롭다운 열기");
@@ -76,7 +114,11 @@ export default function Report() {
     ];
 
     const resultRange =
-        reportMode === "30days" ? formatted30DayRange : "2026.04.01 ~ 2026.04.30";
+        reportMode === "history" && selectedReport
+            ? selectedReport.range
+            : reportMode === "30days"
+                ? formatted30DayRange
+                : "2026.04.01 ~ 2026.04.30";
 
     return (
         <>
@@ -96,26 +138,38 @@ export default function Report() {
             {/* 스크롤 영역 */}
             <div className="flex-1 overflow-y-auto px-6 pt-6 pb-4">
                 {/* 탭 토글 */}
-                <div className="flex gap-2">
+                <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => handleTabChange("monthly")}
+                            className={`px-4 py-2 rounded-full text-xs whitespace-nowrap ${
+                                reportMode === "monthly"
+                                    ? "bg-[#A8C8D8] font-bold text-white"
+                                    : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"
+                            }`}
+                        >
+                            월 단위 리포트 보기
+                        </button>
+                        <button
+                            onClick={() => handleTabChange("30days")}
+                            className={`px-4 py-2 rounded-full text-xs whitespace-nowrap ${
+                                reportMode === "30days"
+                                    ? "bg-[#A8C8D8] font-bold text-white"
+                                    : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"
+                            }`}
+                        >
+                            최근 30일 리포트 보기
+                        </button>
+                    </div>
                     <button
-                        onClick={() => handleTabChange("monthly")}
-                        className={`px-4 py-2 rounded-full text-xs whitespace-nowrap ${
-                            reportMode === "monthly"
+                        onClick={() => handleTabChange("history")}
+                        className={`w-full py-2 rounded-full text-xs ${
+                            reportMode === "history"
                                 ? "bg-[#A8C8D8] font-bold text-white"
                                 : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"
                         }`}
                     >
-                        월 단위 리포트 보기
-                    </button>
-                    <button
-                        onClick={() => handleTabChange("30days")}
-                        className={`px-4 py-2 rounded-full text-xs whitespace-nowrap ${
-                            reportMode === "30days"
-                                ? "bg-[#A8C8D8] font-bold text-white"
-                                : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"
-                        }`}
-                    >
-                        최근 30일 리포트 보기
+                        발행했던 리포트 보기
                     </button>
                 </div>
 
@@ -151,6 +205,53 @@ export default function Report() {
                             <p className="text-xs text-[#3D4D5C]">
                                 선택한 달의 1일부터 말일까지의 할 일 달성률을 분석합니다.
                             </p>
+                        </div>
+                    </>
+                )}
+
+                {/* === 발행 이력 뷰 === */}
+                {reportMode === "history" && (
+                    <>
+                        <p className="mt-5 text-xs text-[#3D4D5C]">
+                            <span className="text-[#E89B9B] font-semibold">다시 열람</span>
+                            하고 싶은 리포트를 선택하세요
+                        </p>
+
+                        <div className="mt-3 relative">
+                            <button
+                                type="button"
+                                onClick={() => setIsReportDropdownOpen((v) => !v)}
+                                className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm shadow-sm"
+                            >
+                <span
+                    className={
+                        selectedReport ? "text-[#3D4D5C]" : "text-[#8B9BAA]"
+                    }
+                >
+                  {selectedReport ? selectedReport.label : "--- 선택하세요 ---"}
+                </span>
+                                <span className="text-[#8B9BAA] text-xs">▼</span>
+                            </button>
+
+                            {isReportDropdownOpen && (
+                                <ul className="absolute z-10 left-0 right-0 mt-1 bg-white rounded-xl shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+                                    {pastReports.map((report) => (
+                                        <li key={report.id}>
+                                            <button
+                                                type="button"
+                                                onClick={() => handlePastReportSelect(report)}
+                                                className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] ${
+                                                    selectedReport?.id === report.id
+                                                        ? "bg-[#EEF2F5] text-[#3D4D5C] font-semibold"
+                                                        : "text-[#3D4D5C]"
+                                                }`}
+                                            >
+                                                {report.label}
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
                         </div>
                     </>
                 )}
@@ -201,13 +302,15 @@ export default function Report() {
                     </>
                 )}
 
-                {/* 분석하기 버튼 */}
-                <button
-                    onClick={handleAnalyze}
-                    className="mt-6 w-full py-4 rounded-2xl bg-[#B4D0DB] text-white font-bold text-sm"
-                >
-                    분석하기
-                </button>
+                {/* 분석하기 버튼 (history 모드에서는 숨김 — 드롭다운 선택 즉시 결과로 진입) */}
+                {reportMode !== "history" && (
+                    <button
+                        onClick={handleAnalyze}
+                        className="mt-6 w-full py-4 rounded-2xl bg-[#B4D0DB] text-white font-bold text-sm"
+                    >
+                        분석하기
+                    </button>
+                )}
 
                 {/* === 분석 결과 === */}
                 {analyzed && (

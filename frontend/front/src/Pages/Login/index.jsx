@@ -35,13 +35,8 @@ export default function Login({ onSignupClick }) {
     return (
         // 모바일: 배경색이 카드색과 동일 → 전체화면처럼 보임
         // PC(sm 이상): 흰 배경에 카드 형태로 중앙 정렬
-        <div className="min-h-screen bg-[#EEF2F5] sm:bg-white flex items-center justify-center font-sans">
-            <div className="
-                bg-[#EEF2F5] flex flex-col 
-                w-full h-screen px-6 py-18   
-                sm:h-[700px]                 
-                sm:rounded-[32px] sm:shadow-2xl sm:px-10 sm:py-14 sm:w-[440px]
-            ">
+        <>
+            <div className="bg-[#EEF2F5] flex flex-col flex-1 w-full px-6 py-10">
                 {/* 프로필 아이콘 */}
                 <div className="flex flex-col items-center">
                     <div className="mb-5 ">
@@ -101,6 +96,6 @@ export default function Login({ onSignupClick }) {
                     </button>
                 </div>
             </div>
-        </div>
+        </>
     );
 }

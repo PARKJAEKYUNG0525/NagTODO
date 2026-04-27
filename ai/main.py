@@ -1,3 +1,4 @@
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -8,12 +9,18 @@ from ai.interference.router import router as interference_router
 from ai.report.router import router as report_router
 from ai.embeddings.router import router as embeddings_router
 
+logger = logging.getLogger(__name__)
+
 # generator : 필요할 때마다 하나씩 생성하는 iterator
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 서버 시작 시 무거운 객체 pre-load (첫 응답 처리 속도 향상)
-    get_embedding_model()
-    get_embedding_store()
+    try:
+        get_embedding_model()
+        get_embedding_store()
+    except Exception as e:
+        logger.critical("서버 초기화 실패: %s", e, exc_info=True)
+        raise
     yield
 
 
