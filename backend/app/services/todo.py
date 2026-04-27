@@ -39,6 +39,7 @@ class TodoService:
 
         # AI 간섭 호출 (실패해도 todo 생성 결과는 반환)
         ai_result = await get_interference(
+            todo_id=todo.todo_id,
             todo_text=data.title,
             category=data.category_id,
             user_id=str(data.user_id),
