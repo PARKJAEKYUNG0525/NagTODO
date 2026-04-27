@@ -6,6 +6,8 @@ import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtiles.js";
 import FriendAddModal from "../../Components/Modal/FriendAddModal";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 
+import { useFriend } from "../../hooks/useFriend";
+
 /**
  * Friend 화면 (통합본)
  * 현재 계정의 관리자 여부(isAdmin)에 따라 분기합니다.
@@ -404,8 +406,22 @@ export default function Friend() {
                 className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg"
                 aria-label="친구 추가"
             >
-                {/* 아이콘 위치: 사람+플러스 (bi-person-plus-fill) */}
-                <span className="w-5 h-5 block" />
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    viewBox="0 0 24 24"
+                >
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <line x1="19" y1="8" x2="19" y2="14" />
+                    <line x1="22" y1="11" x2="16" y2="11" />
+                </svg>
             </button>
 
             <SharedModals />

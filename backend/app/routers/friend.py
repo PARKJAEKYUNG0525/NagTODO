@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.db.scheme.friend import FriendCreate, FriendUpdate, FriendRead
@@ -36,3 +36,24 @@ async def update_friend(friend_id: int,
 @router.delete("/{friend_id}")
 async def delete_friend(friend_id: int, db: AsyncSession = Depends(get_db)):
     return await friend_svc.delete_friend_svc(db, friend_id)
+
+
+
+#-----------------------------------------------------
+# 친구 찾기 (이메일 또는 닉네임 검색)
+@router.get("/search", response_model=None)
+async def search_friend(query: str = Query(..., description="이메일 또는 닉네임 입력"),
+                        db: AsyncSession = Depends(get_db),
+                        current_user: User = Depends(get_current_user)
+                        ):
+
+    return await friend_svc.search_friend_svc(db, current_user, query)
+
+# 친구 신청 보내기
+@router.post("/", response_model=FriendRead, status_code=201)
+async def create_friend(data: FriendUpdate, 
+                        db: AsyncSession = Depends(get_db),
+                        current_user: User = Depends(get_current_user)
+                        ):
+    
+    return await friend_svc.send_request_svc(db, current_user.user_id, data.receiver_id)

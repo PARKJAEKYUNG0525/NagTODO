@@ -107,3 +107,45 @@ class FriendService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="friend 삭제에 실패했습니다."
             )
+        
+
+#------------------------------------------------------------------------
+    # 검색 (이메일/닉네임 통합 검색)
+    @staticmethod
+    async def search_friend_svc(db: AsyncSession, query: str):
+        user = await FriendCrud.search_user(db, query)
+        
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="일치하는 유저를 찾을 수 없습니다."
+            )
+        return user
+
+    # 신청 보내기
+    @staticmethod
+    async def send_request_svc(db: AsyncSession, requester_id: int, receiver_id: int):
+        # 본인 확인
+        if receiver_id == requester_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="본인에게 친구 신청을 보낼 수 없습니다."
+            )
+        
+        try:
+            new_req = await FriendCrud.create_request(db, requester_id, receiver_id)
+            await db.commit()      
+            await db.refresh(new_req) 
+            return new_req
+        
+        except Exception:
+            await db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="친구 신청 보내기에 실패했습니다."
+            )
+        
+
+
+
+
