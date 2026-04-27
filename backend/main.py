@@ -52,7 +52,7 @@ app.add_middleware(
 
     CORSMiddleware,
     # allow_origins=["*"],  # 개발 중에는 일단 전체 허용
-    allow_origins=["http://192.168.0.42:3000", "http://localhost:3000"],
+    allow_origins=["http://192.168.0.42:3000", "http://localhost:3000", "http://192.168.0.3:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -74,4 +74,4 @@ app.include_router(report_router)
 app.include_router(todo_router)
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8081, reload=True)

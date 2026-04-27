@@ -22,8 +22,8 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
     response = JSONResponse(content={
         "user": UserRead.model_validate(user).model_dump(mode="json")
     })
-    response.set_cookie(key="access_token", value=access_token, httponly=True, samesite="lax", secure=False)
-    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, samesite="lax", secure=False)
+    response.set_cookie(key="access_token", value=access_token, httponly=True, samesite="none", secure=True)
+    response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, samesite="none", secure=True)
     
     return response
 
