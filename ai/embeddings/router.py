@@ -71,7 +71,10 @@ def delete_todo_embedding(
     todo_id: str,
     store: EmbeddingStore = Depends(get_embedding_store),
 ):
-    store.delete(todo_id)
+    try:
+        store.delete(todo_id)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
     store.save()
     return {"todo_id": todo_id, "deleted": True}
 
@@ -90,6 +93,11 @@ def update_todo_embedding(
         "text": req.text,
         "completed": req.completed,
     }
-    store.update(todo_id, vec, meta)
+    try:
+        store.update(todo_id, vec, meta)
+    except ValueError as e:
+        if "존재하지 않음" in str(e):
+            raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=422, detail=str(e))
     store.save()
     return {"todo_id": todo_id, "updated": True}
