@@ -1,4 +1,5 @@
 import json
+import threading
 from pathlib import Path
 
 import faiss
@@ -25,6 +26,8 @@ class EmbeddingStore:
     '''
 
     def __init__(self) -> None:
+        # 동시 요청으로 인한 인덱스 손상 방지 — RLock: update()가 내부적으로 delete()/add() 재진입 허용
+        self._lock = threading.RLock()
         # GPU 사용 가능 여부 확인
         self._gpu_available: bool = faiss.get_num_gpus() > 0
         self._res: faiss.StandardGpuResources | None = (
@@ -75,46 +78,50 @@ class EmbeddingStore:
 
     # todo 생성 : 벡터 + 메타데이터 추가
     def add(self, todo_id: str, vec: np.ndarray, meta: dict) -> None:
-        # 중복 todo_id 방지 (active 항목 기준)
-        if any(m["todo_id"] == todo_id and not m["is_deleted"] for m in self._metadata):
-            raise ValueError(f"todo_id '{todo_id}' 이미 존재")
-        self._validate_vec(vec)
+        with self._lock:
+            # 중복 todo_id 방지 (active 항목 기준)
+            if any(m["todo_id"] == todo_id and not m["is_deleted"] for m in self._metadata):
+                raise ValueError(f"todo_id '{todo_id}' 이미 존재")
+            self._validate_vec(vec)
 
-        # 메타 정보 패킹
-        row: dict = {
-            "todo_id": todo_id,
-            **meta,
-            "is_deleted": False,
-            "_vec": vec.tolist(),  # JSON 직렬화 및 rebuild 재구축용
-        }
+            # 메타 정보 패킹
+            row: dict = {
+                "todo_id": todo_id,
+                **meta,
+                "is_deleted": False,
+                "_vec": vec.tolist(),  # JSON 직렬화 및 rebuild 재구축용
+            }
 
-        # FAISS(2차원 벡터로 변환해서), metadata에 추가
-        self._index.add(vec.reshape((1, -1)))  # type: ignore[call-arg]
-        self._metadata.append(row)
+            # FAISS(2차원 벡터로 변환해서), metadata에 추가
+            self._index.add(vec.reshape((1, -1)))  # type: ignore[call-arg]
+            self._metadata.append(row)
 
     # todo 삭제 (soft delete) — 동일 todo_id의 모든 active 항목 처리
     def delete(self, todo_id: str) -> None:
-        deleted = False
-        for row in self._metadata:
-            if row["todo_id"] == todo_id and not row["is_deleted"]:
-                row["is_deleted"] = True
-                deleted = True
-        if not deleted:
-            raise ValueError(f"todo_id '{todo_id}' 존재하지 않음")
+        with self._lock:
+            deleted = False
+            for row in self._metadata:
+                if row["todo_id"] == todo_id and not row["is_deleted"]:
+                    row["is_deleted"] = True
+                    deleted = True
+            if not deleted:
+                raise ValueError(f"todo_id '{todo_id}' 존재하지 않음")
 
     # todo 수정 : 기존 항목 삭제 후 새 벡터/메타데이터 추가
     def update(self, todo_id: str, new_vec: np.ndarray, new_meta: dict) -> None:
-        if not any(m["todo_id"] == todo_id and not m["is_deleted"] for m in self._metadata):
-            raise ValueError(f"todo_id '{todo_id}' 존재하지 않음")
-        self.delete(todo_id)
-        self.add(todo_id, new_vec, new_meta)
+        with self._lock:
+            if not any(m["todo_id"] == todo_id and not m["is_deleted"] for m in self._metadata):
+                raise ValueError(f"todo_id '{todo_id}' 존재하지 않음")
+            self.delete(todo_id)
+            self.add(todo_id, new_vec, new_meta)
 
     # 특정 유저의 active todo 수 반환
     def count_user(self, user_id: str) -> int:
-        return sum(
-            1 for m in self._metadata
-            if not m["is_deleted"] and m.get("user_id") == user_id
-        )
+        with self._lock:
+            return sum(
+                1 for m in self._metadata
+                if not m["is_deleted"] and m.get("user_id") == user_id
+            )
 
     # 유사 todo top-k 검색 : cosine similarity 기준 top-k 검색. is_deleted=True 항목 제외
     def search(self, query_vec: np.ndarray, top_k: int, user_id: str | None = None) -> list[dict]:
@@ -123,50 +130,53 @@ class EmbeddingStore:
         전체 인덱스를 검색한 뒤 삭제 항목을 필터링해 top_k 반환.
         user_id 지정 시 해당 유저 데이터만 대상으로 검색.
         """
-        # 빈 벡터 저장소 제외
-        if self._index.ntotal == 0:
-            return []
+        with self._lock:
+            # 빈 벡터 저장소 제외
+            if self._index.ntotal == 0:
+                return []
 
-        # 삭제된 항목을 제외하기 위해 전체 인덱스 검색 후 필터링
-        scores, indices = self._index.search(  # type: ignore[call-arg]
-            query_vec.reshape((1, -1)), self._index.ntotal
-        )
+            # 삭제된 항목을 제외하기 위해 전체 인덱스 검색 후 필터링
+            scores, indices = self._index.search(  # type: ignore[call-arg]
+                query_vec.reshape((1, -1)), self._index.ntotal
+            )
 
-        active_set: set[int] = {
-            i for i, m in enumerate(self._metadata)
-            if not m["is_deleted"] and (user_id is None or m.get("user_id") == user_id)
-        }
+            active_set: set[int] = {
+                i for i, m in enumerate(self._metadata)
+                if not m["is_deleted"] and (user_id is None or m.get("user_id") == user_id)
+            }
 
-        # cosine similarity 기반 top_k 검색
-        results: list[dict] = []
-        for score, idx in zip(scores[0], indices[0]):
-            if idx == -1 or idx not in active_set:
-                continue
-            entry = {k: v for k, v in self._metadata[idx].items() if k != "_vec"}
-            entry["score"] = float(score)
-            results.append(entry)
-            if len(results) >= top_k:
-                break
+            # cosine similarity 기반 top_k 검색
+            results: list[dict] = []
+            for score, idx in zip(scores[0], indices[0]):
+                if idx == -1 or idx not in active_set:
+                    continue
+                entry = {k: v for k, v in self._metadata[idx].items() if k != "_vec"}
+                entry["score"] = float(score)
+                results.append(entry)
+                if len(results) >= top_k:
+                    break
 
-        return results
+            return results
 
 
     ########## 인덱스 유지보수 ##########
 
     # 모든 데이터 삭제 후 빈 인덱스로 초기화
     def clear(self) -> None:
-        self._metadata = []
-        self._index = self._to_gpu(faiss.IndexFlatIP(_VECTOR_DIM))
+        with self._lock:
+            self._metadata = []
+            self._index = self._to_gpu(faiss.IndexFlatIP(_VECTOR_DIM))
 
     # soft delele 데이터 실제 제거 + faiss 인덱스 재구축
     def rebuild(self) -> None:
-        active = [m for m in self._metadata if not m["is_deleted"]]
-        cpu_index: faiss.Index = faiss.IndexFlatIP(_VECTOR_DIM)
-        if active:
-            vecs = np.array([m["_vec"] for m in active], dtype=np.float32)
-            cpu_index.add(vecs)  # type: ignore[call-arg]
-        self._index = self._to_gpu(cpu_index)
-        self._metadata = active
+        with self._lock:
+            active = [m for m in self._metadata if not m["is_deleted"]]
+            cpu_index: faiss.Index = faiss.IndexFlatIP(_VECTOR_DIM)
+            if active:
+                vecs = np.array([m["_vec"] for m in active], dtype=np.float32)
+                cpu_index.add(vecs)  # type: ignore[call-arg]
+            self._index = self._to_gpu(cpu_index)
+            self._metadata = active
 
 
     ########## 영구 저장 ##########
@@ -174,27 +184,29 @@ class EmbeddingStore:
     # index.faiss + metadata.json 디스크 저장
     # faiss.write_index는 CPU 인덱스만 지원하므로 GPU → CPU 변환 후 저장
     def save(self) -> None:
-        idx_path = self._index_path()
-        meta_path = self._metadata_path()
+        with self._lock:
+            idx_path = self._index_path()
+            meta_path = self._metadata_path()
 
-        idx_path.parent.mkdir(parents=True, exist_ok=True)
+            idx_path.parent.mkdir(parents=True, exist_ok=True)
 
-        faiss.write_index(self._to_cpu(), str(idx_path))
-        meta_path.write_text(
-            json.dumps(self._metadata, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+            faiss.write_index(self._to_cpu(), str(idx_path))
+            meta_path.write_text(
+                json.dumps(self._metadata, ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
 
     # 디스크에서 인덱스와 메타데이터 로드 (파일 없으면 빈 상태로 시작)
     # 로드 후 GPU로 이동 / 서버 시작 시 호출
     def load(self) -> None:
-        idx_path = self._index_path()
-        meta_path = self._metadata_path()
-        
-        if idx_path.exists() and meta_path.exists():
-            cpu_index = faiss.read_index(str(idx_path))
-            self._index = self._to_gpu(cpu_index)
-            self._metadata = json.loads(meta_path.read_text(encoding="utf-8"))
-        else:
-            self._index = self._to_gpu(faiss.IndexFlatIP(_VECTOR_DIM))
-            self._metadata = []
+        with self._lock:
+            idx_path = self._index_path()
+            meta_path = self._metadata_path()
+
+            if idx_path.exists() and meta_path.exists():
+                cpu_index = faiss.read_index(str(idx_path))
+                self._index = self._to_gpu(cpu_index)
+                self._metadata = json.loads(meta_path.read_text(encoding="utf-8"))
+            else:
+                self._index = self._to_gpu(faiss.IndexFlatIP(_VECTOR_DIM))
+                self._metadata = []

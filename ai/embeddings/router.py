@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, field_validator
 
@@ -43,13 +44,27 @@ class EmbeddingUpdateRequest(BaseModel):
         return v
 
 
+def _encode(model: EmbeddingModel, text: str) -> np.ndarray:
+    try:
+        return model.encode_passage(text)
+    except RuntimeError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+
+def _save(store: EmbeddingStore) -> None:
+    try:
+        store.save()
+    except OSError as e:
+        raise HTTPException(status_code=500, detail=f"디스크 저장 실패: {e}")
+
+
 @router.post("/ai/embeddings/todo")
 def add_todo_embedding(
     req: EmbeddingCreateRequest,
     model: EmbeddingModel = Depends(get_embedding_model),
     store: EmbeddingStore = Depends(get_embedding_store),
 ):
-    vec = model.encode_passage(req.text)
+    vec = _encode(model, req.text)
     meta = {
         "user_id": req.user_id,
         "category": req.category,
@@ -62,7 +77,7 @@ def add_todo_embedding(
         if "이미 존재" in str(e):
             raise HTTPException(status_code=409, detail=str(e))
         raise HTTPException(status_code=422, detail=str(e))
-    store.save()
+    _save(store)
     return {"todo_id": req.todo_id, "indexed": True}
 
 
@@ -75,7 +90,7 @@ def delete_todo_embedding(
         store.delete(todo_id)
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
-    store.save()
+    _save(store)
     return {"todo_id": todo_id, "deleted": True}
 
 
@@ -86,7 +101,7 @@ def update_todo_embedding(
     model: EmbeddingModel = Depends(get_embedding_model),
     store: EmbeddingStore = Depends(get_embedding_store),
 ):
-    vec = model.encode_passage(req.text)
+    vec = _encode(model, req.text)
     meta = {
         "user_id": req.user_id,
         "category": req.category,
@@ -99,5 +114,5 @@ def update_todo_embedding(
         if "존재하지 않음" in str(e):
             raise HTTPException(status_code=404, detail=str(e))
         raise HTTPException(status_code=422, detail=str(e))
-    store.save()
+    _save(store)
     return {"todo_id": todo_id, "updated": True}

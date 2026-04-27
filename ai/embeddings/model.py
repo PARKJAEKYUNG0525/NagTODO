@@ -19,9 +19,12 @@ class EmbeddingModel:
         return self._encode_with_prefix("passage", text)
 
     def _encode_with_prefix(self, prefix: str, text: str) -> np.ndarray:
-        vec = self._model.encode(
-            f"{prefix}: {text}",
-            normalize_embeddings=True,  # L2 정규화(벡터를 길이 1로) → 내적 = cosine similarity
-            convert_to_numpy=True,      # PyTorch tensor가 아닌 numpy 배열로 바로 반환 (FAISS는 numpy 배열과 궁합 좋음)
-        ).astype(np.float32)
+        try:
+            vec = self._model.encode(
+                f"{prefix}: {text}",
+                normalize_embeddings=True,  # L2 정규화(벡터를 길이 1로) → 내적 = cosine similarity
+                convert_to_numpy=True,      # PyTorch tensor가 아닌 numpy 배열로 바로 반환 (FAISS는 numpy 배열과 궁합 좋음)
+            ).astype(np.float32)
+        except RuntimeError as e:
+            raise RuntimeError(f"임베딩 생성 실패: {e}") from e
         return vec
