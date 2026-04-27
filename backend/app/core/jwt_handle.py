@@ -61,7 +61,6 @@ def verify_token(token:str) -> int:
     return payload.get("uid")
 
 
-
 async def get_current_user(
     # credentials: HTTPAuthorizationCredentials = Depends(security),
     request: Request,

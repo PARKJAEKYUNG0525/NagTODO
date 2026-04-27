@@ -62,11 +62,11 @@ const Main = () => {
                                     <div className="flex items-center gap-3">
                     <span
                         className="text-[10px] uppercase tracking-widest font-black text-slate-400 border border-slate-200 px-2 py-0.5 rounded">
-                      {board.category}
+                        {board.category}
                     </span>
-                                        <span className="text-xs text-slate-300">
-                      {new Date(board.created_at).toLocaleDateString()}
-                    </span>
+                      <span className="text-xs text-slate-300">
+                          {new Date(board.created_at).toLocaleDateString()}
+                      </span>
                                     </div>
 
                                     <h2 className="text-xl font-bold text-slate-900 leading-tight">
