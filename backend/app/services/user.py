@@ -19,7 +19,7 @@ class UserService:
         if await UserCrud.get_username(db, data.username):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="이미 동일한 이름의 사용자가 존재합니다."
+                detail="이미 동일한 닉네임이 존재합니다."
             )
 
         # 비밀번호 해시화
