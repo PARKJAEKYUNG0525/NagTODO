@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { format, isSameDay, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import NewTodoModal from "../../Components/Modal/NewTodoModal";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
+import { useAuth } from "../../hooks/useAuth";
+import api from "../../utils/api";
 
 /**
  * TodoMain 화면 (통합본)
@@ -24,60 +26,45 @@ import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
  * ※ shadcn/ui Calendar: npx shadcn-ui@latest add calendar
  * ※ date-fns: npm i date-fns
  */
+const CATEGORY_COLOR = {
+    study: "#E88A8A",
+    workout: "#F4D58A",
+    daily: "#A8D5B4",
+};
+
 export default function Todo() {
+    const { user } = useAuth();
+
     // ====== 상수/상태 ======
-    // 오늘 날짜
     const TODAY = startOfDay(new Date());
 
     const [selectedDate, setSelectedDate] = useState(TODAY);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [selectedTodoIds, setSelectedTodoIds] = useState([]);
+    const [todos, setTodos] = useState([]);
 
     // 모달 상태
     const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isNewOpen, setIsNewOpen] = useState(false);
     const [detailTodo, setDetailTodo] = useState(null);
 
-    // 날짜별 할 일 임시데이터 (isSameDay로 비교)
-    const todosByDate = [
-        {
-            date: new Date(2026, 3, 21),
-            todos: [
-                {
-                    id: 1,
-                    title: "React 복습하기",
-                    memo: "useContext, customHook",
-                    category: "공부",
-                    dotColor: "#D9DFE4",
-                    dotLetter: "",
-                },
-                {
-                    id: 2,
-                    title: "FastAPI 복습하기",
-                    memo: "DB 연동 연습하기",
-                    category: "공부",
-                    dotColor: "#E89B9B",
-                    dotLetter: "V",
-                },
-            ],
-        },
-        {
-            date: new Date(2026, 3, 15),
-            todos: [
-                {
-                    id: 3,
-                    title: "아침 러닝 30분",
-                    memo: "",
-                    category: "운동",
-                    dotColor: "#E89B9B",
-                    dotLetter: "",
-                },
-            ],
-        },
-    ];
+    const fetchTodos = useCallback(async () => {
+        if (!user?.user_id) return;
+        try {
+            const res = await api.get(`/todos/user/${user.user_id}`);
+            setTodos(res.data);
+        } catch {
+            // 조용히 실패 (목록 비움 유지)
+        }
+    }, [user?.user_id]);
 
-    const currentTodos =
-        todosByDate.find((entry) => isSameDay(entry.date, selectedDate))?.todos || [];
+    useEffect(() => {
+        fetchTodos();
+    }, [fetchTodos]);
+
+    const currentTodos = todos.filter((t) =>
+        isSameDay(startOfDay(new Date(t.created_at)), selectedDate)
+    );
     const isToday = isSameDay(selectedDate, TODAY);
     const formattedSelected = format(selectedDate, "M월 d일", { locale: ko });
 
@@ -120,7 +107,7 @@ export default function Todo() {
         setSelectedTodoIds([]);
     };
     const handleSelectAll = () => {
-        setSelectedTodoIds(currentTodos.map((t) => t.id));
+        setSelectedTodoIds(currentTodos.map((t) => t.todo_id));
     };
     const handleDeleteSelected = () =>
         alert(`선택한 ${selectedTodoIds.length}개의 할 일 삭제`);
@@ -128,9 +115,9 @@ export default function Todo() {
     const handleTodoClick = (todo) => {
         if (isDeleteMode) {
             setSelectedTodoIds((prev) =>
-                prev.includes(todo.id)
-                    ? prev.filter((id) => id !== todo.id)
-                    : [...prev, todo.id]
+                prev.includes(todo.todo_id)
+                    ? prev.filter((id) => id !== todo.todo_id)
+                    : [...prev, todo.todo_id]
             );
         } else {
             setDetailTodo(todo);
@@ -138,15 +125,15 @@ export default function Todo() {
     };
 
     // ====== 카테고리별 도트 표시용 날짜 (shadcn/ui Calendar modifiers) ======
-    const studyDays = [
-        new Date(2026, 3, 3),
-        new Date(2026, 3, 7),
-        new Date(2026, 3, 12),
-        new Date(2026, 3, 25),
-        new Date(2026, 3, 28),
-    ];
-    const workoutDays = [new Date(2026, 3, 9), new Date(2026, 3, 21)];
-    const dailyDays = [new Date(2026, 3, 5), new Date(2026, 3, 14)];
+    const studyDays = todos
+        .filter((t) => t.category_id === "study")
+        .map((t) => startOfDay(new Date(t.created_at)));
+    const workoutDays = todos
+        .filter((t) => t.category_id === "workout")
+        .map((t) => startOfDay(new Date(t.created_at)));
+    const dailyDays = todos
+        .filter((t) => t.category_id === "daily")
+        .map((t) => startOfDay(new Date(t.created_at)));
 
     return (
         <>
@@ -247,10 +234,11 @@ export default function Todo() {
                         </div>
                     ) : (
                         currentTodos.map((todo) => {
-                            const isChecked = selectedTodoIds.includes(todo.id);
+                            const isChecked = selectedTodoIds.includes(todo.todo_id);
+                            const dotColor = CATEGORY_COLOR[todo.category_id] ?? "#D9DFE4";
                             return (
                                 <button
-                                    key={todo.id}
+                                    key={todo.todo_id}
                                     onClick={() => handleTodoClick(todo)}
                                     className={`
                     w-full bg-white rounded-2xl p-4 shadow-sm text-left
@@ -261,29 +249,21 @@ export default function Todo() {
                                         <div className="flex items-start gap-3 flex-1">
                                             <div
                                                 className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center"
-                                                style={{ backgroundColor: todo.dotColor }}
-                                            >
-                                                {/* 아이콘 위치: 카테고리/완료 상태 아이콘
-                            예: 공부 bi-book, 운동 bi-activity, 완료 bi-check */}
-                                                {todo.dotLetter && (
-                                                    <span className="text-white text-xs font-bold">
-                            {todo.dotLetter}
-                          </span>
-                                                )}
-                                            </div>
+                                                style={{ backgroundColor: dotColor }}
+                                            />
                                             <div className="flex-1">
                                                 <p className="text-sm font-bold text-[#3D4D5C]">
                                                     {todo.title}
                                                 </p>
-                                                {todo.memo && (
+                                                {todo.detail && (
                                                     <p className="text-xs text-[#8B9BAA] mt-1">
-                                                        {todo.memo}
+                                                        {todo.detail}
                                                     </p>
                                                 )}
                                             </div>
                                         </div>
                                         <span className="text-[11px] text-[#87B4C4] bg-[#E4EEF3] px-2 py-0.5 rounded-full shrink-0">
-                      {todo.category}
+                      {todo.category_id}
                     </span>
                                     </div>
                                 </button>
@@ -315,7 +295,10 @@ export default function Todo() {
             <NewTodoModal
                 isOpen={isNewOpen}
                 onClose={() => setIsNewOpen(false)}
-                onSubmit={() => setIsNewOpen(false)}
+                onSubmit={() => {
+                    setIsNewOpen(false);
+                    fetchTodos();
+                }}
             />
             <TodoDetailModal
                 isOpen={!!detailTodo}
