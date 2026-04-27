@@ -315,7 +315,7 @@ export default function Todo() {
             <NewTodoModal
                 isOpen={isNewOpen}
                 onClose={() => setIsNewOpen(false)}
-                onSubmit={(todo) => alert(`새 할 일: ${todo.title}`)}
+                onSubmit={() => setIsNewOpen(false)}
             />
             <TodoDetailModal
                 isOpen={!!detailTodo}

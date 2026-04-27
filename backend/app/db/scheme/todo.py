@@ -32,3 +32,15 @@ class TodoInDB(TodoBase):
 
 class TodoRead(TodoInDB):
     pass
+
+
+class InterferenceResult(BaseModel):
+    global_rate: float | None
+    personal_rate: float | None
+    similar_count: int
+    feedback: str
+    similar_failures: list[str]
+
+
+class TodoCreateResponse(TodoRead):
+    interference: InterferenceResult | None = None
