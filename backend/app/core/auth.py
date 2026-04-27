@@ -14,26 +14,18 @@ def set_auth_cookies(response: Response, access_token:str, refresh_token:str) ->
         value= access_token,
         # 만료 시간(초 단위)
         max_age=int(settings.access_token_expire_seconds),
-        # 보안 관련(배포 시엔 True로)
-        secure=False,
-        # http에서만 접근 가능하게끔(쿠키를 만들면 js에서 접근 불가, xss 공격 방어)
+        # ngrok 등 cross-origin 환경에서 쿠키 전송을 위해 secure=True, samesite="none" 필요
+        secure=True,
         httponly=True,
-        # 외부 도메인 요청 시 쿠키 전송 제한 범위
-        # Lax : 외부 도메인은 ok(모든 브라우저의 기본) / Strict : 절대 전송X / None : 어디서 접속하든 쿠키 전송
-        samesite="Lax"
+        samesite="none"
     )
     response.set_cookie(
         key="refresh_token",
         value= refresh_token,
-        # 만료 시간(초 단위)
         max_age=int(settings.refresh_token_expire_seconds),
-        # 보안 관련(배포 시엔 True로)
-        secure=False,
-        # http에서만 접근 가능하게끔(쿠키를 만들면 js에서 접근 불가, xss 공격 방어)
+        secure=True,
         httponly=True,
-        # 보안 관련(공격 최소화? 완화 Lax, 엄격하게 Strict, 없이 None)
-        # 외부 도메인 요청 시 쿠키 전송 제한 범위
-        samesite="Lax"
+        samesite="none"
     )
 
 # 요청 토큰(사용자)에서 사용자id 가져오기
