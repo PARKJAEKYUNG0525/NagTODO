@@ -299,6 +299,7 @@ export default function Todo() {
                     setIsNewOpen(false);
                     fetchTodos();
                 }}
+                selectedDate={selectedDate}
             />
             <TodoDetailModal
                 isOpen={!!detailTodo}

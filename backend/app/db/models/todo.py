@@ -19,7 +19,7 @@ class Todo(Base):
     todo_status: Mapped[str]      = mapped_column(Enum("대기중", "완료", "실패"), nullable=False, default="대기중")
     detail:      Mapped[str]      = mapped_column(Text, nullable=False)
     visibility:  Mapped[str]      = mapped_column(Enum("친구공개", "비공개"), nullable=False, default="친구공개")
-    created_at:  Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now(), nullable=False)
+    created_at:  Mapped[datetime] = mapped_column(TIMESTAMP, default=lambda: datetime.now(), nullable=False)
     updated_at:  Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
     user_id:     Mapped[int]      = mapped_column(Integer, ForeignKey("user.user_id"), nullable=False)
     category_id: Mapped[str]      = mapped_column(String(100), ForeignKey("category.category_id"), nullable=False)

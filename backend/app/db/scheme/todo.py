@@ -12,6 +12,7 @@ class TodoBase(BaseModel):
 class TodoCreate(TodoBase):
     user_id: int
     category_id: Annotated[str, Field(max_length=100)]
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class TodoUpdate(BaseModel):
     title: str | None = None
