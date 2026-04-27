@@ -8,6 +8,7 @@ import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
 import { useAuth } from "../../hooks/useAuth";
 import api from "../../utils/api";
 import useTodo from "@/hooks/useTodo.jsx";
+import useCategory from "@/hooks/useCategory.jsx";
 
 /**
  * TodoMain 화면 (통합본)
@@ -53,16 +54,29 @@ export default function Todo() {
     const isToday = isSameDay(selectedDate, TODAY);
     const formattedSelected = format(selectedDate, "M월 d일", { locale: ko });
 
-    const { loading, getAllTodos } = useTodo();
+    // db에서 todo 불러오기
+    const { todoLoading, getAllTodos } = useTodo();
 
     const loadTodos = useCallback(async () => {
-        const data = await getAllTodos();
-        if (data) setTodos(data);
+        const db_todo = await getAllTodos();
+        if (db_todo) setTodos(db_todo);
     }, [getAllTodos]);
 
     useEffect(() => {
         loadTodos();
     }, [loadTodos]);
+
+    // db에서 category 불러오기
+    const { ctLoading, getCategory } = useCategory();
+
+    const loadCategory = useCallback(async () => {
+        const db_category = await getCategory();
+        if (db_category) setTodos(db_category);
+    }, [getCategory]);
+
+    useEffect(() => {
+        loadCategory();
+    }, [loadCategory]);
 
     const notifications = [
         {
@@ -130,6 +144,7 @@ export default function Todo() {
     const dailyDays = todos
         .filter((t) => t.category_id === "daily")
         .map((t) => startOfDay(new Date(t.created_at)));
+
 
     return (
         <>
@@ -293,7 +308,7 @@ export default function Todo() {
                 onClose={() => setIsNewOpen(false)}
                 onSubmit={() => {
                     setIsNewOpen(false);
-                    fetchTodos();
+                    getAllTodos();
                 }}
             />
             <TodoDetailModal

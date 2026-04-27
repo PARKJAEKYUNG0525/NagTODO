@@ -1,16 +1,18 @@
 import api from "../utils/api.js";
 import {showWarningAlert, showSuccessAlert} from "../utils/alertUtiles.js";
 
+import {useAuth} from "@/hooks/useAuth.jsx";
 import React, {useCallback, useState} from 'react';
-import {showErrorAlert} from "@/utils/alertUtiles.js";
 
 export const useTodo = () => {
 
-    const [loading, setLoading] = useState(false);
+    const { user } = useAuth();
+
+    const [todoLoading, setTodoLoading] = useState(false);
 
     // C 생성
     const createTodo = useCallback(async (newTodo) => {
-        setLoading(true);
+        setTodoLoading(true);
         try {
             const response = await api.post("/todos", newTodo);
 
@@ -20,18 +22,18 @@ export const useTodo = () => {
             }
         }
         catch (error) {
-            showErrorAlert("게시글을 생성할 수 없습니다.", error.message);
+            showWarningAlert("게시글을 생성할 수 없습니다.", error.message);
             return null;
         }
         finally {
-            setLoading(false);
+            setTodoLoading(false);
         }
     }, []);
 
 
     // R 조회 - todo 전체 조회
     const getAllTodos = useCallback(async() => {
-        setLoading(true);
+        setTodoLoading(true);
 
         if (!user?.user_id) return;
 
@@ -47,11 +49,11 @@ export const useTodo = () => {
 
         }
         finally {
-            setLoading(false);
+            setTodoLoading(false);
         }
     }, [user?.user_id])
 
-    return {loading, getAllTodos, createTodo};
+    return {todoLoading, getAllTodos, createTodo};
 };
 
 export default useTodo;
