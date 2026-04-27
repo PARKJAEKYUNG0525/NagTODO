@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { format, isSameDay, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
 import NewTodoModal from "../../Components/Modal/NewTodoModal";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
+import useTodo from "@/hooks/useTodo.jsx";
 
 /**
  * TodoMain 화면 (통합본)
@@ -28,16 +29,19 @@ export default function Todo() {
     // ====== 상수/상태 ======
     // 오늘 날짜
     const TODAY = startOfDay(new Date());
-
+    // 선택된 날짜
     const [selectedDate, setSelectedDate] = useState(TODAY);
+    // todo 삭제 모드인가
     const [isDeleteMode, setIsDeleteMode] = useState(false);
+    // 선택된 할 일 목록
     const [selectedTodoIds, setSelectedTodoIds] = useState([]);
 
-    // 모달 상태
+    /* 모달 상태 */
     const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isNewOpen, setIsNewOpen] = useState(false);
     const [detailTodo, setDetailTodo] = useState(null);
 
+    /*
     // 날짜별 할 일 임시데이터 (isSameDay로 비교)
     const todosByDate = [
         {
@@ -75,6 +79,22 @@ export default function Todo() {
             ],
         },
     ];
+    */
+
+    const { loading, getAllTodos } = useTodo();
+    const [todos, setTodos] = useState([]);
+
+    const loadTodos = useCallback(async () => {
+        const data = await getAllTodos();
+        if (data) setTodos(data);
+    }, [getAllTodos]);
+
+    useEffect(() => {
+        loadTodos();
+    }, [loadTodos]);
+
+    
+
 
     const currentTodos =
         todosByDate.find((entry) => isSameDay(entry.date, selectedDate))?.todos || [];
