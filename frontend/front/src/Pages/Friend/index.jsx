@@ -10,24 +10,19 @@ import { useFriend } from "../../hooks/useFriend";
 
 export default function Friend() {
     const [friends, setFriends] = useState([]);
-
-    const [isAdmin, setIsAdmin] = useState(false);
     const [view, setView] = useState("list");
     const [selectedFriend, setSelectedFriend] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
     const { searchUser } = useFriend();
-    const [friendDetailDate, setFriendDetailDate] = useState(
-        startOfDay(new Date(2026, 3, 21))
-    );
+
 
     // 모달 상태
     const [isFriendAddOpen, setIsFriendAddOpen] = useState(false);
     const [isNotiOpen, setIsNotiOpen] = useState(false);
 
-    // 검색 모달
-    const [isSearchOpen, setIsSearchOpen] = useState(false);
-    const [searchResults, setSearchResults] = useState([]);
 
+
+    // 알림 데이터
     const notifications = [
         {
             id: 1,
@@ -45,78 +40,14 @@ export default function Friend() {
         },
     ];
 
-    useEffect(() => {
-        const checkAdmin = () => false;
-        setIsAdmin(checkAdmin());
-    }, []);
 
-    const [members, setMembers] = useState([
-        { id: 1, name: "회원1", status: "상태메시지" },
-        { id: 2, name: "회원2", status: "상태메시지" },
-        { id: 3, name: "회원3", status: "상태메시지" },
-        { id: 4, name: "회원4", status: "상태메시지" },
-    ]);
-
-    const friendTodosByDate = [
-        {
-            date: new Date(2026, 3, 21),
-            todos: [
-                {
-                    id: 1,
-                    title: "React 복습하기",
-                    memo: "useContext, customHook",
-                    category: "공부",
-                    dotColor: "#D9DFE4",
-                    dotLetter: "",
-                },
-                {
-                    id: 2,
-                    title: "FastAPI 복습하기",
-                    memo: "DB 연동 연습하기",
-                    category: "공부",
-                    dotColor: "#E89B9B",
-                    dotLetter: "V",
-                },
-            ],
-        },
-    ];
-
-    const handleSearch = () => {
-        if (!searchQuery.trim()) return;
-        const mockUsers = ["codehaeun", "junseo", "minji", "jihun"];
-        const results = mockUsers.filter((user) =>
-            user.includes(searchQuery.trim())
-        );
-        setSearchResults(results);
-        setIsSearchOpen(true);
-    };
 
     const handleNotification = () => setIsNotiOpen(true);
     const handleAdvancedSearch = () => alert("검색 옵션 열기");
 
-    const handleFriendClick = (friend) => {
-        setSelectedFriend(friend);
-        setView("detail");
-    };
-    const handleBackToList = () => {
-        setView("list");
-        setSelectedFriend(null);
-    };
     const handleAddFriend = () => setIsFriendAddOpen(true);
 
-    const handleDeleteMember = async (member) => {
-        const ok = await showWarningDialog({
-            title: "회원을 삭제할까요?",
-            text: "삭제된 회원은 복구할 수 없어요.",
-        });
-        if (ok) {
-            setMembers((prev) => prev.filter((m) => m.id !== member.id));
-            showSuccessAlert({
-                title: "삭제 완료",
-                text: `${member.name} 님을 삭제했어요.`,
-            });
-        }
-    };
+
 
     // 공용 UI: 상단 벨 버튼
     const NotificationBell = () => (
@@ -153,176 +84,7 @@ export default function Friend() {
         </div>
     );
 
-    // ====== 렌더: 친구 상세 (비관리자) ======
-    if (!isAdmin && view === "detail" && selectedFriend) {
-        const todos =
-            friendTodosByDate.find((entry) =>
-                isSameDay(entry.date, friendDetailDate)
-            )?.todos || [];
 
-        const studyDays = [
-            new Date(2026, 3, 3),
-            new Date(2026, 3, 7),
-            new Date(2026, 3, 12),
-            new Date(2026, 3, 25),
-            new Date(2026, 3, 28),
-        ];
-        const workoutDays = [new Date(2026, 3, 9)];
-        const dailyDays = [new Date(2026, 3, 5), new Date(2026, 3, 14)];
-
-        const formattedFriendDate = format(friendDetailDate, "M월 d일", {
-            locale: ko,
-        });
-
-        const handleFriendDateSelect = (date) => {
-            if (!date) return;
-            setFriendDetailDate(startOfDay(date));
-        };
-
-        return (
-            <>
-                <header className="px-6 pt-6 flex items-center justify-between">
-                    <button onClick={handleBackToList} className="flex items-center gap-2">
-                        <h1 className="text-2xl font-bold text-[#3D4D5C]">
-                            {selectedFriend.name}
-                        </h1>
-                    </button>
-                    <NotificationBell />
-                </header>
-
-                <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
-                    <div className="bg-white rounded-2xl p-4 shadow-sm">
-                        <Calendar
-                            mode="single"
-                            selected={friendDetailDate}
-                            onSelect={handleFriendDateSelect}
-                            locale={ko}
-                            showOutsideDays
-                            modifiers={{
-                                study: studyDays,
-                                workout: workoutDays,
-                                daily: dailyDays,
-                            }}
-                            modifiersClassNames={{
-                                study: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E88A8A]",
-                                workout: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#F4D58A]",
-                                daily: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#A8D5B4]",
-                            }}
-                            className="w-full"
-                        />
-                    </div>
-
-                    <div className="mt-6">
-                        <h2 className="text-base font-bold text-[#3D4D5C]">
-                            {selectedFriend.name}의 할 일
-                        </h2>
-                        <p className="text-xs text-[#8B9BAA] mt-1">
-                            {formattedFriendDate} · {todos.length}개
-                        </p>
-                    </div>
-
-                    <div className="mt-3 flex flex-col gap-3">
-                        {todos.map((todo) => (
-                            <div key={todo.id} className="w-full bg-white rounded-2xl p-4 shadow-sm">
-                                <div className="flex items-start justify-between">
-                                    <div className="flex items-start gap-3 flex-1">
-                                        <div
-                                            className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center"
-                                            style={{ backgroundColor: todo.dotColor }}
-                                        >
-                                            {todo.dotLetter && (
-                                                <span className="text-white text-xs font-bold">
-                                                    {todo.dotLetter}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="flex-1">
-                                            <p className="text-sm font-bold text-[#3D4D5C]">{todo.title}</p>
-                                            {todo.memo && (
-                                                <p className="text-xs text-[#8B9BAA] mt-1">{todo.memo}</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <span className="text-[11px] text-[#87B4C4] bg-[#E4EEF3] px-2 py-0.5 rounded-full shrink-0">
-                                        {todo.category}
-                                    </span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-                <NotificationModal
-                    isOpen={isNotiOpen}
-                    onClose={() => setIsNotiOpen(false)}
-                    notifications={notifications}
-                    onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
-                />
-                <FriendAddModal
-                    isOpen={isFriendAddOpen}
-                    onClose={() => setIsFriendAddOpen(false)}
-                    onSearch={searchUser}
-                />
-            </>
-        );
-    }
-
-    // ====== 렌더: 관리자 - 회원 관리 ======
-    if (isAdmin) {
-        const filtered = members.filter((m) =>
-            m.name.includes(searchQuery.trim())
-        );
-
-        return (
-            <>
-                <header className="px-6 pt-6 flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-[#3D4D5C]">회원 관리</h1>
-                    <NotificationBell />
-                </header>
-
-                <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
-                    <SearchBar placeholder="회원 검색" />
-
-                    <div className="mt-4 flex flex-col gap-3">
-                        {filtered.length === 0 ? (
-                            <div className="bg-white rounded-2xl py-10 text-center text-sm text-[#8B9BAA]">
-                                검색 결과가 없어요.
-                            </div>
-                        ) : (
-                            filtered.map((member) => (
-                                <div
-                                    key={member.id}
-                                    className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 relative"
-                                >
-                                    <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
-                                    <div className="flex-1">
-                                        <p className="text-sm font-bold text-[#3D4D5C]">{member.name}</p>
-                                        <p className="text-xs text-[#8B9BAA] mt-1">{member.status}</p>
-                                    </div>
-                                    <button
-                                        onClick={() => handleDeleteMember(member)}
-                                        className="absolute right-4 bottom-3 px-4 py-1.5 rounded-full bg-[#E89B9B] text-[11px] font-semibold text-white"
-                                    >
-                                        삭제
-                                    </button>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
-                <NotificationModal
-                    isOpen={isNotiOpen}
-                    onClose={() => setIsNotiOpen(false)}
-                    notifications={notifications}
-                    onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
-                />
-                <FriendAddModal
-                    isOpen={isFriendAddOpen}
-                    onClose={() => setIsFriendAddOpen(false)}
-                    onSearch={searchUser}
-                />
-            </>
-        );
-    }
 
     // ====== 렌더: 비관리자 - 친구 목록 (기본) ======
     const filteredFriends = friends.filter((f) =>
@@ -385,6 +147,7 @@ export default function Friend() {
                     <line x1="22" y1="11" x2="16" y2="11" />
                 </svg>
             </button>
+
             <NotificationModal
                 isOpen={isNotiOpen}
                 onClose={() => setIsNotiOpen(false)}

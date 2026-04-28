@@ -19,6 +19,7 @@ const FriendAddModal = ({ isOpen, onClose, onSearch }) => {
     }
   }, [isOpen]);
 
+  // 실제 검색 실행
   const runSearch = async (value) => {
       const trimmed = value.trim();
       if (!trimmed) {
