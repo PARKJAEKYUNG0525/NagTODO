@@ -24,6 +24,12 @@ import { useFriend } from "../../hooks/useFriend";
  * ※ shadcn/ui Calendar, date-fns 사용.
  */
 export default function Friend() {
+    // const { 
+    //     friends, notifications, members, friendTodosByDate, loading,
+    //     sendFriendRequest, acceptFriendRequest, deleteMember 
+    // } = useFriend();
+    const [friends, setFriends] = useState([]);
+
     const [isAdmin, setIsAdmin] = useState(false);
     const [view, setView] = useState("list"); // "list" | "detail"
     const [selectedFriend, setSelectedFriend] = useState(null);
@@ -35,6 +41,12 @@ export default function Friend() {
     // 모달 상태
     const [isFriendAddOpen, setIsFriendAddOpen] = useState(false);
     const [isNotiOpen, setIsNotiOpen] = useState(false);
+
+    //검색 모달
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchResults, setSearchResults] = useState([]);
+
+    
 
     const notifications = [
         {
@@ -59,13 +71,6 @@ export default function Friend() {
         setIsAdmin(checkAdmin());
     }, []);
 
-    const friends = [
-        { id: 1, name: "친구1", status: "상태메시지" },
-        { id: 2, name: "친구2", status: "상태메시지" },
-        { id: 3, name: "친구3", status: "상태메시지" },
-        { id: 4, name: "친구4", status: "상태메시지" },
-        { id: 5, name: "친구5", status: "상태메시지" },
-    ];
 
     const [members, setMembers] = useState([
         { id: 1, name: "회원1", status: "상태메시지" },
@@ -98,8 +103,24 @@ export default function Friend() {
         },
     ];
 
+    const handleSearch = () => {
+        if (!searchQuery.trim()) return;
+
+        //테스트용 (나중에 API로 교체)
+        const mockUsers = ["codehaeun", "junseo", "minji", "jihun"];
+
+        const results = mockUsers.filter((user) =>
+            user.includes(searchQuery.trim())
+        );
+
+        setSearchResults(results);
+        setIsSearchOpen(true);
+    };    
+
+
+
+
     const handleNotification = () => setIsNotiOpen(true);
-    const handleSearch = () => alert(`검색 실행: "${searchQuery}"`);
     const handleAdvancedSearch = () => alert("검색 옵션 열기");
 
     const handleFriendClick = (friend) => {
