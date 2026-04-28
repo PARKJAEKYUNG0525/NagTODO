@@ -44,6 +44,18 @@ class EmbeddingUpdateRequest(BaseModel):
         return v
 
 
+class EmbeddingPatchRequest(BaseModel):
+    completed: bool | None = None
+    category: str | None = None
+
+    @field_validator("category")
+    @classmethod
+    def not_empty(cls, v: str | None) -> str | None:
+        if v is not None and not v.strip():
+            raise ValueError("빈 문자열은 허용되지 않습니다")
+        return v
+
+
 def _encode(model: EmbeddingModel, text: str) -> np.ndarray:
     try:
         return model.encode_passage(text)
@@ -92,6 +104,23 @@ def delete_todo_embedding(
         raise HTTPException(status_code=404, detail=str(e))
     _save(store)
     return {"todo_id": todo_id, "deleted": True}
+
+
+@router.patch("/ai/embeddings/todo/{todo_id}")
+def patch_todo_embedding(
+    todo_id: str,
+    req: EmbeddingPatchRequest,
+    store: EmbeddingStore = Depends(get_embedding_store),
+):
+    fields = req.model_dump(exclude_none=True)
+    if not fields:
+        raise HTTPException(status_code=422, detail="변경할 필드가 없습니다")
+    try:
+        store.patch_meta(todo_id, fields)
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    _save(store)
+    return {"todo_id": todo_id, "patched": True}
 
 
 @router.put("/ai/embeddings/todo/{todo_id}")

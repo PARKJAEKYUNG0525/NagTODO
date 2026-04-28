@@ -3,7 +3,7 @@ from fastapi import HTTPException, status
 from app.db.crud.todo import TodoCrud
 from app.db.scheme.todo import TodoCreate, TodoUpdate, TodoCreateResponse, InterferenceResult
 from app.db.models.todo import Todo
-from app.services.ai_client import get_interference
+from app.services.ai_client import get_interference, update_embedding, patch_embedding, delete_embedding
 
 class TodoService:
 
@@ -101,14 +101,30 @@ class TodoService:
             updated = await TodoCrud.update_todo(db, todo, data)
             await db.commit()
             await db.refresh(updated)
-            return updated
-
         except Exception as e:
             await db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"todo 수정에 실패했습니다: {e}"
             )
+
+        if data.title is not None:
+            # 제목 변경 → soft delete + 재임베딩
+            await update_embedding(
+                todo_id=todo_id,
+                user_id=str(updated.user_id),
+                category=updated.category_id,
+                text=updated.title,
+                completed=(updated.todo_status == "완료"),
+            )
+        elif data.todo_status is not None or data.category_id is not None:
+            # 상태·카테고리만 변경 → 벡터 재계산 없이 메타데이터만 갱신
+            await patch_embedding(
+                todo_id=todo_id,
+                completed=(updated.todo_status == "완료") if data.todo_status is not None else None,
+                category=updated.category_id if data.category_id is not None else None,
+            )
+        return updated
         
     # D 삭제
     @staticmethod
@@ -123,11 +139,12 @@ class TodoService:
         try:
             await TodoCrud.delete_todo(db, todo)
             await db.commit()
-            return {"message": f"todo_id '{todo_id}' 삭제 완료"}
-
         except Exception:
             await db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="todo 삭제에 실패했습니다."
             )
+
+        await delete_embedding(todo_id=todo_id)
+        return {"message": f"todo_id '{todo_id}' 삭제 완료"}
