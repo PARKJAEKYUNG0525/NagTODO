@@ -28,22 +28,22 @@ export default function Friend() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
 
-    const notifications = [
-        {
-            id: 1,
-            title: "새 친구 요청",
-            body: "'codehaeun' 님이 친구 요청을 보냈어요.",
-            time: "방금 전",
-            read: false,
-        },
-        {
-            id: 2,
-            title: "친구 목표 달성",
-            body: "'친구1' 님이 오늘의 할 일을 모두 완료했어요.",
-            time: "1시간 전",
-            read: true,
-        },
-    ];
+    // const notifications = [
+    //     {
+    //         id: 1,
+    //         title: "새 친구 요청",
+    //         body: "'codehaeun' 님이 친구 요청을 보냈어요.",
+    //         time: "방금 전",
+    //         read: false,
+    //     },
+    //     {
+    //         id: 2,
+    //         title: "친구 목표 달성",
+    //         body: "'친구1' 님이 오늘의 할 일을 모두 완료했어요.",
+    //         time: "1시간 전",
+    //         read: true,
+    //     },
+    // ];
 
     useEffect(() => {
         const checkAdmin = () => false;
@@ -254,7 +254,7 @@ export default function Friend() {
                 <NotificationModal
                     isOpen={isNotiOpen}
                     onClose={() => setIsNotiOpen(false)}
-                    notifications={notifications}
+                    // notifications={notifications}
                     onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
                 />
                 <FriendAddModal
@@ -312,7 +312,7 @@ export default function Friend() {
                 <NotificationModal
                     isOpen={isNotiOpen}
                     onClose={() => setIsNotiOpen(false)}
-                    notifications={notifications}
+                    // notifications={notifications}
                     onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
                 />
                 <FriendAddModal
@@ -388,7 +388,7 @@ export default function Friend() {
             <NotificationModal
                 isOpen={isNotiOpen}
                 onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
+                // notifications={notifications}
                 onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
             />
             <FriendAddModal
