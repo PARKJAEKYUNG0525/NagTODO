@@ -195,10 +195,8 @@ export default function MyPage() {
                 <div className="mt-6 flex flex-col gap-4">
                     <Field label="닉네임" value={form.username} onChange={(e) => setForm({...form, username: e.target.value})} />
                     <Field label="이메일" value={form.email} readOnly />
-                    <Field label="비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} />
-                    <Field
-                        label="비밀번호 확인"
-                        type="password"
+                    <Field label="새 비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} />
+                    <Field label="새 비밀번호 확인" type="password"
                         value={form.confirmPassword} onChange={(e) => setForm({...form, confirmPassword: e.target.value})}
                     />
 
