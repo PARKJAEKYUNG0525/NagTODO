@@ -78,7 +78,15 @@ export default function MyPage() {
     const handleNotification = () => alert("알림 아이콘 클릭");
 
     const handleWithdraw = () => alert("회원탈퇴 안내");
-    const handleEditProfile = () => setView("edit-profile");
+    const handleEditProfile = () => {
+        setForm(prev => ({
+            ...prev,
+            currentPassword: "",
+            password: "",
+            confirmPassword: "",
+        }));
+        setView("edit-profile");
+    };
     const handleCancelEditProfile = () => setView("main");
 
     const handleChangeProfileImage = () => alert("프로필 사진 변경");
@@ -175,13 +183,13 @@ export default function MyPage() {
         const isChangingUsername = form.username.trim() !== user?.username;
         const isChangingPassword = form.currentPassword || form.password || form.confirmPassword;
         if (!isChangingUsername && !isChangingPassword) {
-            alert("변경된 내용이 없습니다.");
+            alert("(Mypage/index)변경된 내용이 없습니다.");
             return;
         }
 
         if (isChangingUsername) {
             if (!form.username.trim()) {
-                alert("닉네임을 입력해주세요.");
+                alert("(Mypage/index)닉네임을 입력해주세요.");
                 return;
             }
             const isAvailable = await checkUsername(form.username.trim());
@@ -190,16 +198,16 @@ export default function MyPage() {
 
         if (isChangingPassword) {
             if (!form.currentPassword) {
-                alert("현재 비밀번호를 입력해주세요.");
+                alert("(Mypage/index)현재 비밀번호를 입력해주세요.");
                 return;
             }
             const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
             if (!pwRegex.test(form.password)) {
-                alert("새 비밀번호는 8자 이상, 영문·숫자·특수문자를 포함해야 합니다.");
+                alert("(Mypage/index)새 비밀번호는 8자 이상, 영문·숫자·특수문자를 포함해야 합니다.");
                 return;
             }
             if (form.password !== form.confirmPassword) {
-                alert("새 비밀번호가 일치하지 않습니다.");
+                alert("(Mypage/index)새 비밀번호가 일치하지 않습니다.");
                 return;
             }
         }
@@ -218,16 +226,24 @@ export default function MyPage() {
                     confirmPassword: form.confirmPassword,
                 });
                 if (!pwOk) {
-                    alert("현재 비밀번호가 틀립니다.");
+                    alert("(Mypage/index)비밀번호를 다시 확인해주세요.");
                     return;   
                 }
                 alert("비밀번호가 변경되었습니다.");
+
             }
+
+            setForm(prev => ({
+                    ...prev,
+                    currentPassword: "",
+                    password: "",
+                    confirmPassword: "",
+            }));
 
             setView("main");
         } catch (e) {
             console.error(e);
-            alert("저장 중 오류가 발생했습니다.");
+            alert("(Mypage/index)저장 중 오류가 발생했습니다.");
         }
     };
 
