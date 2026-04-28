@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends
+import calendar
+
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
-from app.db.scheme.todo import TodoCreate, TodoUpdate, TodoRead, TodoCreateResponse
+from app.db.scheme.todo import TodoCreate, TodoUpdate, TodoRead, TodoCreateResponse, MonthlyStatsResponse
 from app.services.todo import TodoService as todo_svc
 
 router = APIRouter(prefix="/todos", tags=["Todo"])
@@ -10,6 +12,16 @@ router = APIRouter(prefix="/todos", tags=["Todo"])
 @router.post("/", response_model=TodoCreateResponse, status_code=201)
 async def create_todo(data: TodoCreate, db: AsyncSession = Depends(get_db)):
     return await todo_svc.create_todo_svc(db, data)
+
+# R 월간 통계 조회 (유저 성공률, 전체 사용자 성공률, 카테고리별 달성률)
+@router.get("/stats", response_model=MonthlyStatsResponse)
+async def get_monthly_stats(
+    user_id: int = Query(...),
+    month_start: str = Query(..., description="YYYY-MM-DD"),
+    month_end: str = Query(..., description="YYYY-MM-DD"),
+    db: AsyncSession = Depends(get_db),
+):
+    return await todo_svc.get_monthly_stats_svc(db, user_id, month_start, month_end)
 
 # R 단일 조회
 @router.get("/{todo_id}", response_model=TodoRead)
@@ -30,3 +42,5 @@ async def update_todo(todo_id: str, data: TodoUpdate, db: AsyncSession = Depends
 @router.delete("/{todo_id}")
 async def delete_todo(todo_id: str, db: AsyncSession = Depends(get_db)):
     return await todo_svc.delete_todo_svc(db, todo_id)
+
+

@@ -6,39 +6,6 @@ import networkx as nx
 from unittest.mock import AsyncMock, MagicMock, patch
 
 
-# ── compute_stats ──────────────────────────────────────────────────────────────
-
-from ai.report.nodes.compute_stats import compute_stats
-
-class TestComputeStats:
-    def test_basic_aggregation(self):
-        logs = [
-            {"category": "운동", "completed": True},
-            {"category": "운동", "completed": False},
-            {"category": "공부", "completed": True},
-        ]
-        result = compute_stats({"monthly_logs": logs})
-        stats = result["category_stats"]
-        assert stats["운동"]["total"] == 2
-        assert stats["운동"]["completed"] == 1
-        assert stats["운동"]["rate"] == 50.0
-        assert stats["공부"]["rate"] == 100.0
-
-    def test_no_category_defaults_to_기타(self):
-        logs = [{"completed": False}]
-        result = compute_stats({"monthly_logs": logs})
-        assert "기타" in result["category_stats"]
-
-    def test_empty_logs(self):
-        result = compute_stats({"monthly_logs": []})
-        assert result["category_stats"] == {}
-
-    def test_rate_precision(self):
-        logs = [{"category": "A", "completed": i < 1} for i in range(3)]
-        result = compute_stats({"monthly_logs": logs})
-        assert result["category_stats"]["A"]["rate"] == round(1 / 3 * 100, 1)
-
-
 # ── embed_failures ─────────────────────────────────────────────────────────────
 
 from ai.report.nodes.embed_failures import embed_failures
@@ -222,17 +189,21 @@ class TestLoadLogs:
             {"text": "운동", "completed": True},
             {"text": "공부", "completed": False},
         ]
-        mock_response = MagicMock()
-        mock_response.json.return_value = todos
-        mock_response.raise_for_status = MagicMock()
+        todos_response = MagicMock()
+        todos_response.json.return_value = todos
+        todos_response.raise_for_status = MagicMock()
+
+        stats_response = MagicMock()
+        stats_response.json.return_value = {"category_stats": {}}
+        stats_response.raise_for_status = MagicMock()
 
         mock_client = AsyncMock()
         mock_client.__aenter__ = AsyncMock(return_value=mock_client)
         mock_client.__aexit__ = AsyncMock(return_value=False)
-        mock_client.get = AsyncMock(return_value=mock_response)
+        mock_client.get = AsyncMock(side_effect=[todos_response, stats_response])
 
         with patch("ai.report.nodes.load_logs.httpx.AsyncClient", return_value=mock_client):
-            result = await load_logs({"user_id": "u1", "month_start": "2026-04-01"})
+            result = await load_logs({"user_id": "u1", "month_start": "2026-04-01", "month_end": "2026-04-30"})
 
         assert len(result["monthly_logs"]) == 2
         assert len(result["failed_tasks"]) == 1
@@ -248,31 +219,23 @@ class TestLoadLogs:
 
         with patch("ai.report.nodes.load_logs.httpx.AsyncClient", return_value=mock_client):
             with pytest.raises(ConnectionError):
-                await load_logs({"user_id": "u1", "month_start": "2026-04-01"})
-
-
-# ── llm_analysis (async, mock LLM) ────────────────────────────────────────────
-
-from ai.report.nodes.llm_analysis import llm_analysis
-
-class TestLlmAnalysis:
-    @pytest.mark.asyncio
-    async def test_returns_pattern_analysis(self):
-        mock_client = AsyncMock()
-        mock_client.generate = AsyncMock(return_value="클러스터 0: 의지력 부족")
-        with patch("ai.report.nodes.llm_analysis.get_ollama_client", return_value=mock_client):
-            result = await llm_analysis({"cluster_summaries": [
-                {"cluster_id": 0, "size": 2, "dominant_category": "운동", "sample_texts": ["운동1"]}
-            ]})
-        assert result["pattern_analysis"] == "클러스터 0: 의지력 부족"
+                await load_logs({"user_id": "u1", "month_start": "2026-04-01", "month_end": "2026-04-30"})
 
     @pytest.mark.asyncio
-    async def test_empty_clusters_still_calls_llm(self):
-        mock_client = AsyncMock()
-        mock_client.generate = AsyncMock(return_value="분석 없음")
-        with patch("ai.report.nodes.llm_analysis.get_ollama_client", return_value=mock_client):
-            result = await llm_analysis({"cluster_summaries": []})
-        assert "pattern_analysis" in result
+    async def test_demo_path_includes_category_stats(self):
+        """monthly_logs 주입 경로도 category_stats를 반환해 HTTP 경로와 스키마가 동일해야 함"""
+        result = await load_logs({"monthly_logs": [{"text": "운동", "completed": False}]})
+        assert "category_stats" in result
+        assert isinstance(result["category_stats"], dict)
+
+    @pytest.mark.asyncio
+    async def test_demo_path_category_stats_passthrough(self):
+        """state에 category_stats가 있으면 그대로 전달된다"""
+        result = await load_logs({
+            "monthly_logs": [],
+            "category_stats": {"운동": {"total": 5, "completed": 3, "rate": 60.0}},
+        })
+        assert result["category_stats"] == {"운동": {"total": 5, "completed": 3, "rate": 60.0}}
 
 
 # ── llm_report (async, mock LLM) ──────────────────────────────────────────────
@@ -282,7 +245,7 @@ from ai.report.nodes.llm_report import llm_report
 class TestLlmReport:
     def _base_state(self, retry=0, issues=None):
         return {
-            "pattern_analysis": "테스트 분석",
+            "cluster_summaries": [{"cluster_id": 0, "size": 2, "dominant_category": "운동", "sample_texts": ["운동1"]}],
             "category_stats": {"운동": {"total": 10, "completed": 7, "rate": 70.0}},
             "retry_count": retry,
             "quality_issues": issues or [],

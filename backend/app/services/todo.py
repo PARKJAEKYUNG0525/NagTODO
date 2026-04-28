@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from app.db.crud.todo import TodoCrud
-from app.db.scheme.todo import TodoCreate, TodoUpdate, TodoCreateResponse, InterferenceResult
+from app.db.scheme.todo import TodoCreate, TodoUpdate, TodoCreateResponse, InterferenceResult, MonthlyStatsResponse
 from app.db.models.todo import Todo
 from app.services.ai_client import get_interference, update_embedding, patch_embedding, delete_embedding
 
@@ -130,6 +130,31 @@ class TodoService:
             )
         return updated
         
+    # R 조회 - 월간 통계
+    @staticmethod
+    async def get_monthly_stats_svc(
+        db: AsyncSession, user_id: int, month_start: str, month_end: str
+    ) -> MonthlyStatsResponse:
+        user = await TodoCrud.get_user(db, user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"user_id '{user_id}'에 해당하는 user가 없습니다.",
+            )
+
+        category_stats = await TodoCrud.get_user_category_stats(db, user_id, month_start, month_end)
+        all_users_success_rate = await TodoCrud.get_all_users_success_rate(db, month_start, month_end)
+
+        total = sum(s["total"] for s in category_stats.values())
+        completed = sum(s["completed"] for s in category_stats.values())
+        user_success_rate = round(completed / total * 100, 1) if total > 0 else 0.0
+
+        return MonthlyStatsResponse(
+            user_success_rate=user_success_rate,
+            all_users_success_rate=all_users_success_rate,
+            category_stats=category_stats,
+        )
+
     # D 삭제
     @staticmethod
     async def delete_todo_svc(db: AsyncSession, todo_id: str) -> dict:

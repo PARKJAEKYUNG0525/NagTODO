@@ -95,7 +95,7 @@ from ai.report.nodes.llm_report import llm_report
 
 class TestLlmReportRetryPrompt:
     _BASE_STATE = {
-        "pattern_analysis": "실패 클러스터 분석 결과",
+        "cluster_summaries": [{"cluster_id": 0, "size": 2, "dominant_category": "운동", "sample_texts": ["운동1"]}],
         "category_stats": {"운동": {"total": 10, "completed": 7, "rate": 70.0}},
     }
 

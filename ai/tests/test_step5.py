@@ -27,13 +27,13 @@ class TestCheckTaskCount:
         state = {"monthly_logs": self._logs(MIN_MONTHLY_TASKS - 1)}
         assert _check_task_count(state) == "too_few_tasks"
 
-    def test_exact_threshold_routes_to_stats(self):
+    def test_exact_threshold_routes_to_embed(self):
         state = {"monthly_logs": self._logs(MIN_MONTHLY_TASKS)}
-        assert _check_task_count(state) == "compute_category_stats"
+        assert _check_task_count(state) == "embed_failures"
 
-    def test_plenty_routes_to_stats(self):
+    def test_plenty_routes_to_embed(self):
         state = {"monthly_logs": self._logs(100)}
-        assert _check_task_count(state) == "compute_category_stats"
+        assert _check_task_count(state) == "embed_failures"
 
     def test_empty_logs_routes_to_terminal(self):
         assert _check_task_count({}) == "too_few_tasks"

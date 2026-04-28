@@ -91,6 +91,13 @@ class HistoryService:
                 detail="history 수정에 실패했습니다."
             )
         
+    # R 조회 - AI 서버 리포트용 월간 로그
+    @staticmethod
+    async def get_monthly_logs_svc(
+        db: AsyncSession, user_id: int, month_start: str, month_end: str
+    ) -> list[dict]:
+        return await HistoryCrud.get_monthly_logs(db, user_id, month_start, month_end)
+
     # D 삭제
     @staticmethod
     async def delete_history_svc(db: AsyncSession, history_id: str) -> dict:
