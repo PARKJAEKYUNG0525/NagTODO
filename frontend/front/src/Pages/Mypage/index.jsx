@@ -79,7 +79,7 @@ export default function MyPage() {
 
     const handleNotification = () => alert("알림 아이콘 클릭");
 
-    const handleWithdraw = () => alert("회원탈퇴 안내");
+    const handleWithdraw = () => alert("로그아웃 안내");
     const handleEditProfile = () => {
         setForm(prev => ({
             ...prev,
@@ -500,7 +500,7 @@ export default function MyPage() {
                         onClick={handleWithdraw}
                         className="absolute top-4 right-5 text-[11px] text-[#8B9BAA]"
                     >
-                        회원탈퇴
+                        로그아웃
                     </button>
 
                     <div className="flex flex-col items-center">
