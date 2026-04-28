@@ -17,12 +17,12 @@ import api from "../../../utils/api";
  *   - selectedDate  : Date          — 캘린더에서 선택한 날짜 (기본값: 오늘)
  */
 const CATEGORIES = [
-    { key: "study",       label: "공부", color: "#E88A8A" },
-    { key: "workout",     label: "운동", color: "#F4D58A" },
-    { key: "daily",       label: "일상", color: "#A8D5B4" },
-    { key: "appointment", label: "약속", color: "#C5A8D8" },
-    { key: "work",        label: "업무", color: "#A8B8D8" },
-    { key: "etc",         label: "기타", color: "#B8C8D0" },
+    { key: "study",       label: "공부" },
+    { key: "workout",     label: "운동" },
+    { key: "daily",       label: "일상" },
+    { key: "appointment", label: "약속" },
+    { key: "work",        label: "업무" },
+    { key: "etc",         label: "기타" },
 ];
 
 const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) => {
@@ -108,16 +108,12 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) 
                                     key={cat.key}
                                     type="button"
                                     onClick={() => setCategory(cat.key)}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-medium transition ${
+                                    className={`px-3 py-2 rounded-full text-xs font-medium transition ${
                                         active
                                             ? "bg-[#3D4D5C] text-white"
                                             : "bg-[#F5F8FA] text-[#8B9BAA]"
                                     }`}
                                 >
-                                    <span
-                                        className="w-2 h-2 rounded-full"
-                                        style={{ backgroundColor: cat.color }}
-                                    />
                                     {cat.label}
                                 </button>
                             );

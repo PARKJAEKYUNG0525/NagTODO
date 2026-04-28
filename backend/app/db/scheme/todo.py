@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 
 class TodoBase(BaseModel):
     title: str
-    todo_status: str = "대기중"
+    todo_status: str = "시작전"
     detail: str
     visibility: str = "친구공개"
     category_id: str

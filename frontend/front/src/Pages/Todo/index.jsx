@@ -26,13 +26,19 @@ import api from "../../utils/api";
  * ※ shadcn/ui Calendar: npx shadcn-ui@latest add calendar
  * ※ date-fns: npm i date-fns
  */
-const CATEGORY_COLOR = {
-    study:       "#E88A8A",
-    workout:     "#F4D58A",
-    daily:       "#A8D5B4",
-    appointment: "#C5A8D8",
-    work:        "#A8B8D8",
-    etc:         "#B8C8D0",
+const STATUS_COLOR = {
+    "시작전": "#E88A8A",
+    "진행중": "#F4D58A",
+    "완료":   "#A8D5B4",
+};
+
+const CATEGORY_LABEL = {
+    study:       "공부",
+    workout:     "운동",
+    daily:       "일상",
+    appointment: "약속",
+    work:        "업무",
+    etc:         "기타",
 };
 
 export default function Todo() {
@@ -127,13 +133,20 @@ export default function Todo() {
         }
     };
 
-    // ====== 카테고리별 도트 표시용 날짜 (shadcn/ui Calendar modifiers) ======
-    const studyDays       = todos.filter((t) => t.category_id === "study").map((t) => startOfDay(new Date(t.created_at)));
-    const workoutDays     = todos.filter((t) => t.category_id === "workout").map((t) => startOfDay(new Date(t.created_at)));
-    const dailyDays       = todos.filter((t) => t.category_id === "daily").map((t) => startOfDay(new Date(t.created_at)));
-    const appointmentDays = todos.filter((t) => t.category_id === "appointment").map((t) => startOfDay(new Date(t.created_at)));
-    const workDays        = todos.filter((t) => t.category_id === "work").map((t) => startOfDay(new Date(t.created_at)));
-    const etcDays         = todos.filter((t) => t.category_id === "etc").map((t) => startOfDay(new Date(t.created_at)));
+    // ====== 캘린더 dot: 날짜별 완료 비율에 따라 연→진 붉은색 5단계 ======
+    const todosByDate = todos.reduce((acc, t) => {
+        const key = format(startOfDay(new Date(t.created_at)), "yyyy-MM-dd");
+        (acc[key] = acc[key] || []).push(t);
+        return acc;
+    }, {});
+
+    // calDot[0]=완료0%, [1]=1~33%, [2]=34~66%, [3]=67~99%, [4]=100%
+    const calDot = [[], [], [], [], []];
+    Object.entries(todosByDate).forEach(([dateStr, dayTodos]) => {
+        const ratio = dayTodos.filter((t) => t.todo_status === "완료").length / dayTodos.length;
+        const level = ratio === 0 ? 0 : ratio < 0.34 ? 1 : ratio < 0.67 ? 2 : ratio < 1 ? 3 : 4;
+        calDot[level].push(startOfDay(new Date(dateStr)));
+    });
 
     return (
         <>
@@ -171,20 +184,18 @@ export default function Todo() {
                         locale={ko}
                         showOutsideDays
                         modifiers={{
-                            study:       studyDays,
-                            workout:     workoutDays,
-                            daily:       dailyDays,
-                            appointment: appointmentDays,
-                            work:        workDays,
-                            etc:         etcDays,
+                            dot0: calDot[0],
+                            dot1: calDot[1],
+                            dot2: calDot[2],
+                            dot3: calDot[3],
+                            dot4: calDot[4],
                         }}
                         modifiersClassNames={{
-                            study:       "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E88A8A]",
-                            workout:     "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#F4D58A]",
-                            daily:       "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#A8D5B4]",
-                            appointment: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#C5A8D8]",
-                            work:        "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#A8B8D8]",
-                            etc:         "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#B8C8D0]",
+                            dot0: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#FFCCCC]",
+                            dot1: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#FF9999]",
+                            dot2: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#FF6666]",
+                            dot3: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E03333]",
+                            dot4: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#B00000]",
                         }}
                         className="w-full"
                     />
@@ -238,7 +249,7 @@ export default function Todo() {
                     ) : (
                         currentTodos.map((todo) => {
                             const isChecked = selectedTodoIds.includes(todo.todo_id);
-                            const dotColor = CATEGORY_COLOR[todo.category_id] ?? "#D9DFE4";
+                            const dotColor = STATUS_COLOR[todo.todo_status] ?? "#D9DFE4";
                             return (
                                 <button
                                     key={todo.todo_id}
@@ -266,7 +277,7 @@ export default function Todo() {
                                             </div>
                                         </div>
                                         <span className="text-[11px] text-[#87B4C4] bg-[#E4EEF3] px-2 py-0.5 rounded-full shrink-0">
-                      {todo.category_id}
+                      {CATEGORY_LABEL[todo.category_id] ?? todo.category_id}
                     </span>
                                     </div>
                                 </button>
