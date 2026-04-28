@@ -97,6 +97,8 @@ class TodoService:
                     detail=f"user_id '{data.user_id}'에 해당하는 user가 없습니다."
                 )
 
+        old_title = todo.title
+
         try:
             updated = await TodoCrud.update_todo(db, todo, data)
             await db.commit()
@@ -108,7 +110,9 @@ class TodoService:
                 detail=f"todo 수정에 실패했습니다: {e}"
             )
 
-        if data.title is not None:
+        title_changed = data.title is not None and data.title != old_title
+
+        if title_changed:
             # 제목 변경 → soft delete + 재임베딩
             await update_embedding(
                 todo_id=todo_id,
@@ -118,7 +122,7 @@ class TodoService:
                 completed=(updated.todo_status == "완료"),
             )
         elif data.todo_status is not None or data.category_id is not None:
-            # 상태·카테고리만 변경 → 벡터 재계산 없이 메타데이터만 갱신
+            # 상태·카테고리만 변경 → 메타데이터만 갱신
             await patch_embedding(
                 todo_id=todo_id,
                 completed=(updated.todo_status == "완료") if data.todo_status is not None else None,

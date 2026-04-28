@@ -70,6 +70,15 @@ def _save(store: EmbeddingStore) -> None:
         raise HTTPException(status_code=500, detail=f"디스크 저장 실패: {e}")
 
 
+@router.post("/ai/embeddings/clear")
+def clear_embeddings(
+    store: EmbeddingStore = Depends(get_embedding_store),
+):
+    store.clear()
+    _save(store)
+    return {"cleared": True}
+
+
 @router.post("/ai/embeddings/todo")
 def add_todo_embedding(
     req: EmbeddingCreateRequest,
