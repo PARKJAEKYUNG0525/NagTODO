@@ -20,7 +20,7 @@ import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
  * ※ 9:16 프레임 / 하단 Navbar 는 App.jsx 담당.
  */
 export default function MyPage() {
-    const { user } = useAuth();
+    const { user, setUser, logout } = useAuth();
     const [isAdmin, setIsAdmin] = useState(false);
     const { updateProfile, updatePassword, checkUsername } = useMypage();
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
@@ -79,7 +79,7 @@ export default function MyPage() {
 
     const handleNotification = () => alert("알림 아이콘 클릭");
 
-    const handleWithdraw = () => alert("로그아웃 안내");
+    // const handleWithdraw = () => alert("로그아웃 안내");
     const handleEditProfile = () => {
         setForm(prev => ({
             ...prev,
@@ -497,7 +497,7 @@ export default function MyPage() {
             <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
                 <div className="bg-white rounded-2xl p-6 shadow-sm relative">
                     <button
-                        onClick={handleWithdraw}
+                        onClick={logout}
                         className="absolute top-4 right-5 text-[11px] text-[#8B9BAA]"
                     >
                         로그아웃
