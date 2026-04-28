@@ -30,29 +30,6 @@ class TestQualityCheckTypeSafety:
             quality_check(state)
 
 
-class TestLlmReportKeyErrors:
-    """llm_report가 KeyError를 제대로 처리하지 않음"""
-
-    @pytest.mark.asyncio
-    async def test_missing_pattern_analysis_key_crashes(self):
-        """CRITICAL: state["pattern_analysis"]에 .get() 미사용"""
-        state = {
-            "category_stats": {"운동": {"total": 10, "completed": 7}},
-        }
-        
-        with pytest.raises(KeyError, match="pattern_analysis"):
-            await llm_report(state)
-
-    @pytest.mark.asyncio
-    async def test_missing_category_stats_key_crashes(self):
-        """CRITICAL: state["category_stats"]에 .get() 미사용"""
-        state = {
-            "pattern_analysis": "실패 분석 결과",
-        }
-        
-        with pytest.raises(KeyError, match="category_stats"):
-            await llm_report(state)
-
 
 class TestLlmReportNoneReturn:
     """ollama_client.generate()가 None을 반환하는 경우"""
@@ -65,7 +42,7 @@ class TestLlmReportNoneReturn:
         
         with patch("ai.report.nodes.llm_report.get_ollama_client", return_value=mock_client):
             result = await llm_report({
-                "pattern_analysis": "분석",
+                "cluster_summaries": [],
                 "category_stats": {"운동": {"total": 10}},
             })
         
@@ -86,7 +63,7 @@ class TestLlmReportStateLoss:
         
         with patch("ai.report.nodes.llm_report.get_ollama_client", return_value=mock_client):
             state = {
-                "pattern_analysis": "분석",
+                "cluster_summaries": [],
                 "category_stats": {"운동": {"total": 10, "completed": 7}},
                 "failed_tasks": [{"id": "task1"}],
                 "retry_count": 1,

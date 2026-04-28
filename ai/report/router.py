@@ -69,7 +69,6 @@ async def monthly_report(req: MonthlyReportRequest):
         "similarity_graph": None,
         "clusters": [],
         "cluster_summaries": [],
-        "pattern_analysis": "",
         "retrospective_report": "",
         "retry_count": 0,
         "quality_passed": False,

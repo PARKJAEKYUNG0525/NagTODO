@@ -27,7 +27,6 @@ class ReportState(TypedDict, total=False):
     cluster_summaries: list[dict]
 
     # LLM 결과
-    pattern_analysis: str
     retrospective_report: str
     retry_count: int
 

@@ -25,14 +25,12 @@ ai/
 │   ├── graph.py               # LangGraph 워크플로우 정의
 │   ├── nodes/
 │   │   ├── __init__.py
-│   │   ├── load_logs.py       # async: 백엔드 API에서 월간 로그 fetch (monthly_logs 주입 시 생략)
-│   │   ├── compute_stats.py   # 카테고리별 달성률 집계
+│   │   ├── load_logs.py       # async: 백엔드 API에서 월간 로그 + 카테고리 통계 fetch
 │   │   ├── embed_failures.py  # 실패 task 임베딩 (list로 직렬화)
 │   │   ├── build_similarity_graph.py  # cosine similarity 그래프 구성
 │   │   ├── extract_clusters.py        # connected components 클러스터 추출
 │   │   ├── summarize_clusters.py      # LLM 입력용 클러스터 요약
-│   │   ├── llm_analysis.py    # async: 클러스터 실패 원인 분석
-│   │   ├── llm_report.py      # async: 월간 회고 리포트 생성
+│   │   ├── llm_report.py      # async: 클러스터 분석 + 월간 회고 리포트 생성 (LLM 1회)
 │   │   └── quality_check.py   # 리포트 품질 검증 (길이/bullet/숫자)
 │   └── state.py               # ReportState(TypedDict) 정의
 ├── demo/                      # HTTP 데모 스크립트 모음
