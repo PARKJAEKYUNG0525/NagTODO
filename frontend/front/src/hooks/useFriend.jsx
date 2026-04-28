@@ -57,7 +57,7 @@ export const useFriend = () => {
     //         const response = await api.post("/friends/", { receiver_id: receiverId });
             
     //         if (response.status === 201) {
-    //             showSuccessAlert("신청 완료", "성공적으로 요청을 보냈습니다.");
+    //             showSuccessAlert({title:"신청 완료", text:"성공적으로 요청을 보냈습니다."});
     //             return true;
     //         }
     //     } catch (error) {

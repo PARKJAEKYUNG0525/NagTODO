@@ -66,7 +66,7 @@ const useMypage = () => {
                 confirm_pw: confirmPassword,
             });
             if (response.status === 200) {
-                showSuccessAlert("비밀번호가 변경되었습니다");
+                showSuccessAlert({title:"비밀번호가 변경되었습니다"});
                 return true;
             }
         } catch (error) {
@@ -81,7 +81,7 @@ const useMypage = () => {
         try {
             const response = await api.delete("/users/me");
             if (response.status === 200) {
-                showSuccessAlert("회원 탈퇴가 완료되었습니다");
+                showSuccessAlert({title:"회원 탈퇴가 완료되었습니다"});
                 await logout();
                 navigate("/");
                 return true;

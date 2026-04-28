@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
                 setUser(response.data.user);
                 setIsAuthenticated(true);
                 await verifyJWT();
-                showSuccessAlert("환영합니다");
+                showSuccessAlert({title:"환영합니다"});
                 navigate("/main");
                 return true;
             }
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await api.post("/users/", { email, username, pw: password, birthday })
             if (response.status === 201) {
-                showSuccessAlert("(useAuth)회원가입이 완료되었습니다");
+                showSuccessAlert({title:"(useAuth)회원가입이 완료되었습니다"});
                 return true;
             }
         } catch (error) {
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
 
             if (response.status === 200) {
-                showSuccessAlert("로그아웃 되었습니다");
+                showSuccessAlert({title:"로그아웃 되었습니다"});
                 navigate("/");
             }
         }

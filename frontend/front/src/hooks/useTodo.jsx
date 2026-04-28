@@ -17,7 +17,7 @@ export const useTodo = () => {
             const response = await api.post("/todos", newTodo);
 
             if (response.status === 200 || response.status === 201) {
-                showSuccessAlert({ title: "게시글이 생성되었습니다." });
+                showSuccessAlert({title: "게시글이 생성되었습니다."});
                 return response.data;
             }
         }
