@@ -1,7 +1,7 @@
 import { useState, createContext, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import { showSuccessAlert, showWarningAlert } from "../utils/alertUtiles.js";
+import { showSuccessAlert, showWarningAlert } from "../utils/alertUtils.js";
 
 const AuthContext = createContext(null);
 
@@ -113,10 +113,11 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
-        throw new Error("useAuth 사용하기 위해 AuthProvider로 감싸야한다");
+        throw new Error("useAuth 사용하기 위해 AuthProvider로 감싸야 합니다");
     }
     return context;
 };

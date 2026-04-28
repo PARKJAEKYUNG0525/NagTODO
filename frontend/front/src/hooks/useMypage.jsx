@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import { showSuccessAlert } from "../utils/alertUtiles.js";
+import { showSuccessAlert } from "../utils/alertUtils.js";
 import { useAuth } from "./useAuth";
 
 const useMypage = () => {

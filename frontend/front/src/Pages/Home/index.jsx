@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 import BgChangeModal from "../../Components/Modal/BgChangeModal";
+import {useAudio} from "@/hooks/useAudio.jsx";
+import api from "@/utils/api.js";
 
 /**
  * Home 화면
@@ -12,6 +14,11 @@ import BgChangeModal from "../../Components/Modal/BgChangeModal";
  *   이 컴포넌트는 프레임 내부에 들어갈 콘텐츠만 Fragment 로 반환합니다.
  */
 export default function Home() {
+    const { play, currentMusic, toggle } = useAudio();
+    const [musics, setMusics] = useState([]);
+    const [isMusicListOpen, setIsMusicListOpen] = useState(false);
+    const playerRef = useRef(null);
+
     const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isBgOpen, setIsBgOpen] = useState(false);
     const [currentBg, setCurrentBg] = useState("forest");
@@ -40,7 +47,32 @@ export default function Home() {
         },
     ];
 
-    const handlePlayToggle = () => alert("백색소음 재생/정지");
+    // 백엔드에서 음악 목록 fetch
+    useEffect(() => {
+        api.get("/musics")
+            .then((res) => {
+                setMusics(Array.isArray(res.data) ? res.data : []);
+            })
+            .catch((err) => {
+                console.error("음악 목록 불러오기 실패:", err);
+                setMusics([]);
+            });
+    }, []);
+
+    // 바깥 클릭 시 드롭다운 닫기
+    useEffect(() => {
+        if (!isMusicListOpen) return;
+        const handleClickOutside = (e) => {
+            if (playerRef.current && !playerRef.current.contains(e.target)) {
+                setIsMusicListOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [isMusicListOpen]);
+
+    // 음악 재생/중지
+    const handlePlayToggle = () => toggle();
 
     return (
         <>
@@ -69,25 +101,74 @@ export default function Home() {
 
             {/* 미니 뮤직 플레이어 + 배경 이미지 변경 */}
             <section className="px-6 pb-4 flex items-center gap-3">
-                <div className="flex-1 bg-white rounded-full px-4 py-3 flex items-center gap-3 shadow-sm">
+                <div
+                    ref={playerRef}
+                    className="flex-1 bg-white rounded-full px-4 py-3 flex items-center gap-3 shadow-sm relative"
+                >
+                    {/* 재생/정지 버튼 — 자기만의 onClick */}
                     <button
                         onClick={handlePlayToggle}
                         className="w-8 h-8 rounded-xl bg-[#A8C8D8] flex items-center justify-center shrink-0"
                         aria-label="재생/정지"
                     >
-                        {/* 아이콘 위치: 정지/재생 (bi-stop-fill / bi-play-fill) */}
                         <span className="w-4 h-4 block" />
                     </button>
-                    <span className="text-sm font-semibold text-[#3D4D5C]">
-            비 내리는 숲
-          </span>
+
+                    {/* 재생 버튼을 제외한 나머지 영역 — 클릭 시 드롭다운 토글 */}
+                    <button
+                        type="button"
+                        onClick={() => setIsMusicListOpen((v) => !v)}
+                        className="flex-1 text-left text-sm font-semibold text-[#3D4D5C] truncate"
+                        aria-haspopup="listbox"
+                        aria-expanded={isMusicListOpen}
+                    >
+                        {currentMusic?.title ?? "음악 선택"}
+                    </button>
+
+                    {/* 드롭다운 리스트 — absolute로 컨테이너 아래에 띄움 */}
+                    {isMusicListOpen && (
+                        <ul
+                            role="listbox"
+                            className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-lg z-10 max-h-60 overflow-y-auto py-2"
+                        >
+                            {musics.length === 0 ? (
+                                <li className="px-4 py-2 text-sm text-[#8B9BAA]">
+                                    음악이 없어요
+                                </li>
+                            ) : (
+                                musics.map((m) => {
+                                    const isActive = currentMusic?.music_id === m.music_id;
+                                    return (
+                                        <li key={m.music_id}>
+                                            <button
+                                                type="button"
+                                                role="option"
+                                                aria-selected={isActive}
+                                                onClick={() => {
+                                                    play(m);
+                                                    setIsMusicListOpen(false);
+                                                }}
+                                                className={`w-full text-left px-4 py-2 text-sm transition ${
+                                                    isActive
+                                                        ? "bg-[#F5F8FA] text-[#3D4D5C] font-bold"
+                                                        : "text-[#3D4D5C] hover:bg-[#F5F8FA]"
+                                                }`}
+                                            >
+                                                {m.title}
+                                            </button>
+                                        </li>
+                                    );
+                                })
+                            )}
+                        </ul>
+                    )}
                 </div>
+
                 <button
                     onClick={() => setIsBgOpen(true)}
                     className="w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
                     aria-label="배경 이미지 변경"
                 >
-                    {/* 아이콘 위치: 이미지 (bi-image) */}
                     <span className="w-5 h-5 block" />
                 </button>
             </section>
