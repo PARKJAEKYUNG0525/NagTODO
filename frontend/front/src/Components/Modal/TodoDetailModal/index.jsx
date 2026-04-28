@@ -16,9 +16,12 @@ import ModalLayout from "../ModalLayout";
  * ※ 추후 "완료/해제", "반복 설정", "알림 설정" 등을 확장하기 위한 기본 틀.
  */
 const CATEGORIES = [
-  { key: "공부", color: "#E88A8A" },
-  { key: "운동", color: "#F4D58A" },
-  { key: "일상", color: "#A8D5B4" },
+  { key: "study",       label: "공부", color: "#E88A8A" },
+  { key: "workout",     label: "운동", color: "#F4D58A" },
+  { key: "daily",       label: "일상", color: "#A8D5B4" },
+  { key: "appointment", label: "약속", color: "#C5A8D8" },
+  { key: "work",        label: "업무", color: "#A8B8D8" },
+  { key: "etc",         label: "기타", color: "#B8C8D0" },
 ];
 
 const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
@@ -105,7 +108,7 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
                       className="w-2 h-2 rounded-full"
                       style={{ backgroundColor: cat.color }}
                   />
-                      {cat.key}
+                      {cat.label}
                     </button>
                 );
               })}

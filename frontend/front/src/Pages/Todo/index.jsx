@@ -27,9 +27,12 @@ import api from "../../utils/api";
  * ※ date-fns: npm i date-fns
  */
 const CATEGORY_COLOR = {
-    study: "#E88A8A",
-    workout: "#F4D58A",
-    daily: "#A8D5B4",
+    study:       "#E88A8A",
+    workout:     "#F4D58A",
+    daily:       "#A8D5B4",
+    appointment: "#C5A8D8",
+    work:        "#A8B8D8",
+    etc:         "#B8C8D0",
 };
 
 export default function Todo() {
@@ -125,15 +128,12 @@ export default function Todo() {
     };
 
     // ====== 카테고리별 도트 표시용 날짜 (shadcn/ui Calendar modifiers) ======
-    const studyDays = todos
-        .filter((t) => t.category_id === "study")
-        .map((t) => startOfDay(new Date(t.created_at)));
-    const workoutDays = todos
-        .filter((t) => t.category_id === "workout")
-        .map((t) => startOfDay(new Date(t.created_at)));
-    const dailyDays = todos
-        .filter((t) => t.category_id === "daily")
-        .map((t) => startOfDay(new Date(t.created_at)));
+    const studyDays       = todos.filter((t) => t.category_id === "study").map((t) => startOfDay(new Date(t.created_at)));
+    const workoutDays     = todos.filter((t) => t.category_id === "workout").map((t) => startOfDay(new Date(t.created_at)));
+    const dailyDays       = todos.filter((t) => t.category_id === "daily").map((t) => startOfDay(new Date(t.created_at)));
+    const appointmentDays = todos.filter((t) => t.category_id === "appointment").map((t) => startOfDay(new Date(t.created_at)));
+    const workDays        = todos.filter((t) => t.category_id === "work").map((t) => startOfDay(new Date(t.created_at)));
+    const etcDays         = todos.filter((t) => t.category_id === "etc").map((t) => startOfDay(new Date(t.created_at)));
 
     return (
         <>
@@ -171,17 +171,20 @@ export default function Todo() {
                         locale={ko}
                         showOutsideDays
                         modifiers={{
-                            study: studyDays,
-                            workout: workoutDays,
-                            daily: dailyDays,
+                            study:       studyDays,
+                            workout:     workoutDays,
+                            daily:       dailyDays,
+                            appointment: appointmentDays,
+                            work:        workDays,
+                            etc:         etcDays,
                         }}
                         modifiersClassNames={{
-                            study:
-                                "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E88A8A]",
-                            workout:
-                                "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#F4D58A]",
-                            daily:
-                                "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#A8D5B4]",
+                            study:       "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E88A8A]",
+                            workout:     "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#F4D58A]",
+                            daily:       "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#A8D5B4]",
+                            appointment: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#C5A8D8]",
+                            work:        "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#A8B8D8]",
+                            etc:         "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#B8C8D0]",
                         }}
                         className="w-full"
                     />

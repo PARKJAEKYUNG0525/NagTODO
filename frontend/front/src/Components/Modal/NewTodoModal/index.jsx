@@ -17,9 +17,12 @@ import api from "../../../utils/api";
  *   - selectedDate  : Date          — 캘린더에서 선택한 날짜 (기본값: 오늘)
  */
 const CATEGORIES = [
-    { key: "study", label: "공부", color: "#E88A8A" },
-    { key: "workout", label: "운동", color: "#F4D58A" },
-    { key: "daily", label: "일상", color: "#A8D5B4" },
+    { key: "study",       label: "공부", color: "#E88A8A" },
+    { key: "workout",     label: "운동", color: "#F4D58A" },
+    { key: "daily",       label: "일상", color: "#A8D5B4" },
+    { key: "appointment", label: "약속", color: "#C5A8D8" },
+    { key: "work",        label: "업무", color: "#A8B8D8" },
+    { key: "etc",         label: "기타", color: "#B8C8D0" },
 ];
 
 const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) => {
