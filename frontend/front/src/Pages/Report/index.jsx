@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { format, subMonths, subDays, startOfDay, getDaysInMonth } from "date-fns";
 import { ko } from "date-fns/locale";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { useAuth } from "@/hooks/useAuth";
 import { useReport } from "@/hooks/useReport";
 
@@ -10,6 +12,35 @@ const YEARS = [2024, 2025, 2026];
 const MONTHS = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
 
 const getCategoryColor = (idx) => CATEGORY_COLORS[idx % CATEGORY_COLORS.length];
+
+function ReportMarkdown({ content }) {
+    return (
+        <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+                h1: ({ children }) => <h1 className="mt-4 text-base font-bold text-[#3D4D5C] first:mt-0">{children}</h1>,
+                h2: ({ children }) => <h2 className="mt-4 text-sm font-bold text-[#3D4D5C] first:mt-0">{children}</h2>,
+                h3: ({ children }) => <h3 className="mt-3 text-xs font-bold text-[#3D4D5C] first:mt-0">{children}</h3>,
+                p: ({ children }) => <p className="mt-2 text-xs text-[#3D4D5C] leading-5 first:mt-0">{children}</p>,
+                ul: ({ children }) => <ul className="mt-2 list-disc pl-5 text-xs text-[#3D4D5C] first:mt-0">{children}</ul>,
+                ol: ({ children }) => <ol className="mt-2 list-decimal pl-5 text-xs text-[#3D4D5C] first:mt-0">{children}</ol>,
+                li: ({ children }) => <li className="mt-1 leading-5">{children}</li>,
+                strong: ({ children }) => <strong className="font-bold text-[#2C3946]">{children}</strong>,
+                em: ({ children }) => <em className="italic">{children}</em>,
+                blockquote: ({ children }) => (
+                    <blockquote className="mt-3 border-l-4 border-[#A8C8D8] pl-3 text-xs text-[#4A5C6E]">
+                        {children}
+                    </blockquote>
+                ),
+                code: ({ children }) => (
+                    <code className="rounded bg-white px-1 py-0.5 text-[11px] text-[#3D4D5C]">{children}</code>
+                ),
+            }}
+        >
+            {content}
+        </ReactMarkdown>
+    );
+}
 
 export default function MonthlyReport() {
     const TODAY = startOfDay(new Date());
@@ -350,9 +381,9 @@ export default function MonthlyReport() {
                                 {/* 분석 리포트 */}
                                 <div className="mt-4 bg-[#DEE4EA] rounded-xl px-4 py-3">
                                     <p className="text-xs font-bold text-[#3D4D5C]">분석 리포트</p>
-                                    <p className="mt-2 text-xs text-[#3D4D5C] leading-5 whitespace-pre-line">
-                                        {aiReport.report || "리포트를 생성하지 못했습니다."}
-                                    </p>
+                                    <div className="mt-2">
+                                        <ReportMarkdown content={aiReport.report || "리포트를 생성하지 못했습니다."} />
+                                    </div>
                                 </div>
                             </>
                         )}
