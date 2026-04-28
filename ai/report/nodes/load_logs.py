@@ -15,6 +15,7 @@ async def load_logs(state: dict) -> dict:
         return {
             "monthly_logs": monthly_logs,
             "failed_tasks": [t for t in monthly_logs if not t.get("completed", False)],
+            "category_stats": state.get("category_stats", {}),
         }
 
     user_id: str = state["user_id"]

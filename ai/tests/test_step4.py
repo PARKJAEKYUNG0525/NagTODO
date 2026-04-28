@@ -221,6 +221,22 @@ class TestLoadLogs:
             with pytest.raises(ConnectionError):
                 await load_logs({"user_id": "u1", "month_start": "2026-04-01", "month_end": "2026-04-30"})
 
+    @pytest.mark.asyncio
+    async def test_demo_path_includes_category_stats(self):
+        """monthly_logs 주입 경로도 category_stats를 반환해 HTTP 경로와 스키마가 동일해야 함"""
+        result = await load_logs({"monthly_logs": [{"text": "운동", "completed": False}]})
+        assert "category_stats" in result
+        assert isinstance(result["category_stats"], dict)
+
+    @pytest.mark.asyncio
+    async def test_demo_path_category_stats_passthrough(self):
+        """state에 category_stats가 있으면 그대로 전달된다"""
+        result = await load_logs({
+            "monthly_logs": [],
+            "category_stats": {"운동": {"total": 5, "completed": 3, "rate": 60.0}},
+        })
+        assert result["category_stats"] == {"운동": {"total": 5, "completed": 3, "rate": 60.0}}
+
 
 # ── llm_report (async, mock LLM) ──────────────────────────────────────────────
 

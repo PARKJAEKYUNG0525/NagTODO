@@ -5,8 +5,8 @@ from ai.core.dependencies import get_ollama_client
 
 async def llm_report(state: dict) -> dict:
     """cluster_summaries와 category_stats를 바탕으로 월간 회고 리포트를 생성한다."""
-    cluster_summaries: list[dict] = state.get("cluster_summaries", [])
-    category_stats: dict = state.get("category_stats", {})
+    cluster_summaries: list[dict] = state.get("cluster_summaries") or []
+    category_stats: dict = state.get("category_stats") or {}
     retry_count: int = state.get("retry_count", 0)
     quality_issues: list[str] = state.get("quality_issues", [])
 

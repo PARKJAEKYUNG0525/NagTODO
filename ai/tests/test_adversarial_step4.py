@@ -118,3 +118,16 @@ class TestLlmReportRetryLogic:
                 "quality_issues": [],
             })
         assert set(result.keys()) == {"retrospective_report", "retry_count"}
+
+    @pytest.mark.asyncio
+    async def test_explicit_none_cluster_summaries_not_passed_as_json_null(self):
+        """state에 cluster_summaries=None이 명시된 경우 or-fallback으로 []로 처리돼야 함"""
+        captured_prompts = []
+        mock_client = AsyncMock()
+        async def capture(prompt):
+            captured_prompts.append(prompt)
+            return "report"
+        mock_client.generate = capture
+        with patch("ai.report.nodes.llm_report.get_ollama_client", return_value=mock_client):
+            await llm_report({"cluster_summaries": None, "category_stats": None})
+        assert "null" not in captured_prompts[0]
