@@ -16,8 +16,6 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const response = await api.post("/users/login", { email, pw: password })
-            console.log(response.data);
-
             if (response.status === 200) {
                 setUser(response.data.user);
                 setIsAuthenticated(true);

@@ -20,7 +20,7 @@ const useMypage = () => {
             }
         } catch (error) {
             console.log(error);
-            setError(error.response?.data.detail || "프로필 조회에 실패했습니다.");
+            setError(error.response?.data.detail || "(useMypage)프로필 조회에 실패했습니다.");
         }
     };
 
@@ -35,7 +35,7 @@ const useMypage = () => {
             if (error.response?.status === 409) {
                 setError("이미 사용 중인 닉네임입니다.");
             } else {
-                setError(error.response?.data.detail || "닉네임 확인에 실패했습니다.");
+                setError(error.response?.data.detail || "(useMypage)닉네임 확인에 실패했습니다.");
             }
             return false; // 사용 불가
         }
@@ -71,7 +71,7 @@ const useMypage = () => {
             }
         } catch (error) {
             console.log(error);
-            setError(error.response?.data.detail || "비밀번호 변경에 실패했습니다.");
+            setError(error.response?.data.detail || "(useMypage)비밀번호 변경에 실패했습니다.");
             return false;
         }
     };
@@ -88,7 +88,7 @@ const useMypage = () => {
             }
         } catch (error) {
             console.log(error);
-            setError(error.response?.data.detail || "회원 탈퇴에 실패했습니다.");
+            setError(error.response?.data.detail || "(useMypage)회원 탈퇴에 실패했습니다.");
             return false;
         }
     };
