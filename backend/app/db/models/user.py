@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from .cloth import Cloth
     from .img import Img
     from .music import Music
+    from .notification import Notification
 
 class User(Base):
     __tablename__ = "user"
@@ -51,3 +52,4 @@ class User(Base):
     recommends:       Mapped[List["Recommend"]]      = relationship("Recommend", back_populates="user", cascade="all, delete-orphan")
     pw_histories:     Mapped[List["PwHistory"]]      = relationship("PwHistory", back_populates="user", cascade="all, delete-orphan")
     cloths:           Mapped[List["Cloth"]]          = relationship("Cloth", back_populates="user", cascade="all, delete-orphan")
+    notifications:    Mapped[List["Notification"]]   = relationship("Notification", back_populates="user")

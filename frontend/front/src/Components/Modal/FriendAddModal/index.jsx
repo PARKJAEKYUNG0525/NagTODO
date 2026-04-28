@@ -1,58 +1,135 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import ModalLayout from "../ModalLayout";
 
-/**
- * FriendAddModal
- * - 친구 목록 화면에서 "+" 버튼 클릭 시 열리는 친구 추가 모달.
- * - 닉네임/이메일 입력 → 검색 → onSubmit(query).
- *
- * props:
- *   - isOpen   : boolean
- *   - onClose  : ()=>void
- *   - onSubmit : (query)=>void
- *
- * ※ 실제 검색 결과 렌더링은 추후. 지금은 입력 + 제출까지만.
- */
-const FriendAddModal = ({ isOpen, onClose, onSubmit }) => {
-  const [query, setQuery] = useState("");
+const FriendAddModal = ({ isOpen, onClose, onSearch }) => {
+  const [query, setQuery] = useState("");                 // 검색창에 입력된 텍스트
+  const [searchResults, setSearchResults] = useState([]); // API에서 받아온 검색 결과 목록
+  const [hasSearched, setHasSearched] = useState(false);  // 검색을 한 번이라도 했는지 여부 (결과 없음 vs 아직 검색 안 함 구분용)
+  const [isLoading, setIsLoading] = useState(false);      // API 호출 중인지 여부 (로딩 스피너 표시용)
+  const [isComposing, setIsComposing] = useState(false);  // 한글 조합 중인지 여부 (조합 완료 전에 검색 실행 방지용)
+  const debounceTimer = useRef(null);                     // 디바운스 타이머 ID 저장 (타이핑할 때마다 API 호출 방지, 입력 멈춘 후 500ms 뒤에만 검색)
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!query.trim()) {
-      alert("닉네임 또는 이메일을 입력해 주세요.");
+  // 모달 닫힐 때 상태 초기화
+  useEffect(() => {
+    if (!isOpen) {
+      setQuery("");
+      setSearchResults([]);
+      setHasSearched(false);
+      setIsLoading(false);
+    }
+  }, [isOpen]);
+
+  const runSearch = async (value) => {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        setSearchResults([]);
+        setHasSearched(false);
+        setIsLoading(false);
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const results = await onSearch?.(trimmed); // 실제 API 호출
+        setSearchResults(results || []);
+        setHasSearched(true);
+      } catch (error) {
+        console.error("검색 중 에러:", error);
+        setSearchResults([]);
+        setHasSearched(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setQuery(value);
+
+    if (isComposing) return; // 한글 조합 중엔 검색 안 함
+
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+    if (!value.trim()) {
+      setSearchResults([]);
+      setHasSearched(false);
       return;
     }
-    onSubmit?.(query.trim());
-    setQuery("");
-    onClose?.();
+
+    debounceTimer.current = setTimeout(() => {
+      runSearch(value);
+    }, 500);
+  };
+
+  const handleCompositionStart = () => {
+    setIsComposing(true);
+  };
+
+  const handleCompositionEnd = (e) => {
+    setIsComposing(false);
+    const value = e.target.value;
+    setQuery(value);
+
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      runSearch(value);
+    }, 500);
   };
 
   return (
     <ModalLayout isOpen={isOpen} onClose={onClose} title="친구 추가">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1">
-          <span className="text-xs text-[#8B9BAA]">닉네임 또는 이메일</span>
+      <div className="flex flex-col gap-4">
+        <div className="relative">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-base pointer-events-none">
+            {isLoading ? "⏳" : "🔍"}
+          </span>
           <input
             type="text"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="예: nagtodo_user 또는 user@email.com"
-            className="px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8]"
+            onChange={handleChange}
+            onCompositionStart={handleCompositionStart}
+            onCompositionEnd={handleCompositionEnd}
+            placeholder="닉네임 또는 이메일로 검색"
+            className="w-full pl-10 px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8]"
           />
-        </label>
+        </div>
 
-        <p className="text-[11px] text-[#8B9BAA] leading-relaxed">
-          * 친구 요청을 보내면 상대가 수락해야 친구로 추가됩니다.
-        </p>
+        <div className="mt-2">
+          <span className="text-sm font-bold text-[#3D4D5C]">검색 결과</span>
+        </div>
 
-        <button
-          type="submit"
-          className="w-full py-3 rounded-xl bg-[#A8C8D8] text-white font-semibold text-sm hover:bg-[#97BAC9] disabled:opacity-60"
-          disabled={!query.trim()}
-        >
-          친구 요청 보내기
-        </button>
-      </form>
+        <div className="flex flex-col gap-3 min-h-[100px] max-h-[300px] overflow-y-auto">
+          {hasSearched ? (
+            searchResults.length > 0 ? (
+              searchResults.map((user) => (
+                <div
+                  key={user.user_id}
+                  className="flex items-center p-4 rounded-2xl bg-white border border-[#E1E8ED]"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#A8C8D8] opacity-50"></div>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-bold text-[#3D4D5C]">
+                        {user.username}
+                      </span>
+                      <span className="text-xs text-[#8B9BAA]">
+                        {user.status_message || "상태메시지"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="flex items-center justify-center py-10">
+                <p className="text-xs text-[#8B9BAA]">검색 결과가 없습니다.</p>
+              </div>
+            )
+          ) : (
+            <div className="flex items-center justify-center py-10 border-2 border-dashed border-[#F5F8FA] rounded-2xl">
+              <p className="text-xs text-[#8B9BAA]">친구를 검색해 보세요!</p>
+            </div>
+          )}
+        </div>
+      </div>
     </ModalLayout>
   );
 };
