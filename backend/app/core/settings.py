@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     db_port: int = Field("3306", alias="DB_PORT")
     db_name: str = Field(..., alias="DB_NAME")
 
+    ai_server_url: str = Field("http://localhost:8000", alias="AI_SERVER_URL")
+
     secret_key: str = Field(..., alias="SECRET_KEY")
     jwt_algorithm: str = Field("HS256", alias="JWT_ALGORITHM")
     access_token_expire_seconds: int = Field(900, alias="ACCESS_TOKEN_EXPIRE")

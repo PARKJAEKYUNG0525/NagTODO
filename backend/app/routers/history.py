@@ -1,10 +1,21 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.db.scheme.history import HistoryCreate, HistoryUpdate, HistoryRead
 from app.services.history import HistoryService as history_svc
 
 router = APIRouter(prefix="/history", tags=["History"])
+
+# R 조회 - AI 서버 리포트용 월간 로그 (text, completed, category)
+@router.get("/monthly-logs", response_model=list[dict])
+async def get_monthly_logs(
+    user_id: int = Query(...),
+    month_start: str = Query(..., description="YYYY-MM-DD"),
+    month_end: str = Query(..., description="YYYY-MM-DD"),
+    db: AsyncSession = Depends(get_db),
+):
+    return await history_svc.get_monthly_logs_svc(db, user_id, month_start, month_end)
+
 
 # C 생성
 @router.post("/", response_model=HistoryRead, status_code=201)

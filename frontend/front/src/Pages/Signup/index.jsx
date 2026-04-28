@@ -27,23 +27,23 @@ export default function Signup({ onLoginClick }) {
         setError("");
 
         if (form.username.length < 2) {
-            setError("닉네임은 최소 2글자 이상이어야 합니다");
+            setError("(index)닉네임은 최소 2글자 이상이어야 합니다");
             return;
         }
 
         const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{8,30}$/;
         if (!pwRegex.test(form.password)) {
-            setError("비밀번호는 8~30자, 영문/숫자/특수문자를 포함해야 합니다");
+            setError("(index)비밀번호는 8~30자, 영문/숫자/특수문자를 포함해야 합니다");
             return;
         }
 
         if (form.password !== form.confirmPassword) {
-            setError("비밀번호가 일치하지 않습니다");
+            setError("(index)비밀번호가 일치하지 않습니다");
             return;
         }
 
         if (!form.birthYear || !form.birthMonth || !form.birthDay) {
-            setError("생년월일을 모두 선택해주세요");
+            setError("(index)생년월일을 모두 선택해주세요");
             return;
         }
 
@@ -109,7 +109,7 @@ export default function Signup({ onLoginClick }) {
                 <form onSubmit={handleSignup} className="flex flex-col gap-4">
                     {/* 이름 */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-medium text-[#4A5568]">이름</label>
+                        <label className="text-xs font-medium text-[#4A5568]">닉네임</label>
                         <input
                             type="text"
                             name="username"

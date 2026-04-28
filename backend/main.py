@@ -2,7 +2,8 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.db.database import Base, async_engine
+from app.db.database import Base, async_engine, AsyncSessionLocal
+from app.db.seed import seed_categories
 from fastapi.concurrency import asynccontextmanager
 
 from app.middleware.token_refresh import RefreshTokenMiddleware
@@ -20,16 +21,16 @@ from app.routers.pw_history import router as pw_history_router
 # from app.routers.recommend import router as recommend_router
 from app.routers.report import router as report_router
 from app.routers.todo import router as todo_router
+from app.routers.notification import router as notification_router
 load_dotenv(dotenv_path=".env")
 
-# DB연결 후 모든 테이블 생성(metadata.create_all)
-# 종료 시에 DB 연결 해제
 @asynccontextmanager
 async def lifespan(app:FastAPI):
     async with async_engine.begin() as conn:
-        # conn.run_sync : db 연결 후
-        # Base.metadata.create_all : 테이블을 생성하라
         await conn.run_sync(Base.metadata.create_all)
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            await seed_categories(session)
     yield
     await async_engine.dispose()
 
@@ -52,7 +53,11 @@ app.add_middleware(
 
     CORSMiddleware,
     # allow_origins=["*"],  # 개발 중에는 일단 전체 허용
-    allow_origins=["http://192.168.0.42:3000", "http://localhost:3000", "http://192.168.0.3:3000"],
+    allow_origins=[
+        "http://192.168.0.42:3000", 
+        "http://localhost:3000", 
+        "http://192.168.0.3:3000",
+        ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -72,6 +77,7 @@ app.include_router(pw_history_router)
 # app.include_router(recommend_router)
 app.include_router(report_router)
 app.include_router(todo_router)
+app.include_router(notification_router)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8081, reload=True)

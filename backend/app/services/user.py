@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from app.db.crud.user import UserCrud
-from app.db.scheme.user import UserCreate, UserUpdate, UserLogin
+from app.db.scheme.user import UserCreate, UserUpdate, UserLogin, UserPasswordUpdate
 from app.db.models.user import User
 from app.core.jwt_handle import (
     create_access_token,
@@ -19,7 +19,7 @@ class UserService:
         if await UserCrud.get_username(db, data.username):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="이미 동일한 이름의 사용자가 존재합니다."
+                detail="이미 동일한 닉네임이 존재합니다."
             )
 
         # 비밀번호 해시화
@@ -45,6 +45,18 @@ class UserService:
                 detail="user 생성에 실패했습니다."
             )
 
+    # R 닉네임 중복 확인
+    @staticmethod
+    async def check_username_svc(db: AsyncSession, username: str, current_user_id: int):
+        user = await UserCrud.get_username(db, username)
+
+        if user and user.user_id != current_user_id:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="이미 사용 중인 닉네임입니다."
+            )
+
+        return {"message": "사용 가능한 닉네임입니다."}
 
     # R 조회 - user 단일 조회
     @staticmethod
@@ -61,6 +73,12 @@ class UserService:
     @staticmethod
     async def get_all_users_svc(db: AsyncSession) -> list[User]:
         users = await UserCrud.get_all_users(db)
+        return users
+    
+    # R 조회 - 검색
+    @staticmethod
+    async def search_users_svc(db: AsyncSession, query: str, current_user_id: int):
+        users = await UserCrud.search_users(db, query, current_user_id)
         return users
 
     # U 수정
@@ -84,6 +102,47 @@ class UserService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="user 수정에 실패했습니다."
+            )
+        
+    # U 수정 - 비밀번호    
+    @staticmethod
+    async def update_password_svc(
+        db: AsyncSession,
+        current_user: User,
+        data: UserPasswordUpdate
+    ) -> dict:
+
+        if not verify_password(data.current_pw, current_user.pw):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="현재 비밀번호가 올바르지 않습니다."
+            )
+
+        if data.new_pw != data.confirm_pw:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="새 비밀번호가 일치하지 않습니다."
+            )
+
+        if verify_password(data.new_pw, current_user.pw):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="기존 비밀번호와 동일한 비밀번호는 사용할 수 없습니다."
+            )
+
+        try:
+            current_user.pw = get_password_hash(data.new_pw)
+
+            await db.commit()
+            await db.refresh(current_user)
+
+            return {"message": "비밀번호 변경 완료"}
+
+        except Exception:
+            await db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="비밀번호 변경에 실패했습니다."
             )
 
     # D 삭제

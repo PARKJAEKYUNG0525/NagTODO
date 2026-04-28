@@ -1,10 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Calendar } from "@/components/ui/calendar";
-import { format, isSameDay, startOfDay } from "date-fns";
+import { format, isSameDay, startOfDay, isBefore } from "date-fns";
 import { ko } from "date-fns/locale";
 import NewTodoModal from "../../Components/Modal/NewTodoModal";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
+import { useAuth } from "../../hooks/useAuth";
+import api from "../../utils/api";
+import useTodo from "@/hooks/useTodo.jsx";
+import useCategory from "@/hooks/useCategory.jsx";
 
 /**
  * TodoMain 화면 (통합본)
@@ -24,60 +28,75 @@ import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
  * ※ shadcn/ui Calendar: npx shadcn-ui@latest add calendar
  * ※ date-fns: npm i date-fns
  */
+
+// 달성률에 따른 도트 색
+const RATE_COLOR = {
+    HIGH:  "#A8D5B4", // 100% — 초록
+    MID:   "#F4D58A", // 50%~99% — 노랑
+    LOW:   "#E89B9B", // 50% 미만 — 빨강
+};
+
+// 상태별 라디오 색 (카드용)
+const STATUS_COLOR = {
+    PENDING:   "#A8C8D8", // 연한 청회색 — 빈 원
+    COMPLETED: "#A8D5B4", // 초록 — 완료 점
+    FAILED:    "#E89B9B", // 빨강 — ✕
+};
+
+// 할 일 상태 (DB값: 시작전/진행중/완료, FAILED는 표시 전용)
+const STATUS = {
+    PENDING:     "시작전",
+    IN_PROGRESS: "진행중",
+    COMPLETED:   "완료",
+    FAILED:      "실패", // 표시 전용 — DB에 저장되지 않음
+};
+
 export default function Todo() {
+    const { user } = useAuth();
+    const { todoLoading, getAllTodos, createTodo } = useTodo();
+    const { ctLoading, getCategory} = useCategory();
+
     // ====== 상수/상태 ======
-    // 오늘 날짜
     const TODAY = startOfDay(new Date());
 
     const [selectedDate, setSelectedDate] = useState(TODAY);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [selectedTodoIds, setSelectedTodoIds] = useState([]);
+    const [todos, setTodos] = useState([]);
+    const [categories, setCategories] = useState([]);
 
     // 모달 상태
     const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isNewOpen, setIsNewOpen] = useState(false);
     const [detailTodo, setDetailTodo] = useState(null);
 
-    // 날짜별 할 일 임시데이터 (isSameDay로 비교)
-    const todosByDate = [
-        {
-            date: new Date(2026, 3, 21),
-            todos: [
-                {
-                    id: 1,
-                    title: "React 복습하기",
-                    memo: "useContext, customHook",
-                    category: "공부",
-                    dotColor: "#D9DFE4",
-                    dotLetter: "",
-                },
-                {
-                    id: 2,
-                    title: "FastAPI 복습하기",
-                    memo: "DB 연동 연습하기",
-                    category: "공부",
-                    dotColor: "#E89B9B",
-                    dotLetter: "V",
-                },
-            ],
-        },
-        {
-            date: new Date(2026, 3, 15),
-            todos: [
-                {
-                    id: 3,
-                    title: "아침 러닝 30분",
-                    memo: "",
-                    category: "운동",
-                    dotColor: "#E89B9B",
-                    dotLetter: "",
-                },
-            ],
-        },
-    ];
+    // db에서 todo 불러오기
+    const loadTodos = useCallback(async () => {
+        const db_todo = await getAllTodos();
+        if (db_todo) setTodos(db_todo);
+    }, [getAllTodos]);
 
-    const currentTodos =
-        todosByDate.find((entry) => isSameDay(entry.date, selectedDate))?.todos || [];
+    useEffect(() => {
+        loadTodos();
+    }, [loadTodos]);
+
+    // db에서 category 불러오기
+    const loadCategory = useCallback(async () => {
+        const db_category = await getCategory();
+        if (db_category) setCategories(db_category);
+    }, [getCategory]);
+
+    useEffect(() => {
+        loadCategory();
+    }, [loadCategory]);
+
+    const currentTodos = todos.filter((t) =>
+        isSameDay(startOfDay(new Date(t.created_at)), selectedDate)
+    );
+    const categoryMap = Object.fromEntries(
+        categories.map((c) => [c.category_id, c])
+    );
+
     const isToday = isSameDay(selectedDate, TODAY);
     const formattedSelected = format(selectedDate, "M월 d일", { locale: ko });
 
@@ -120,7 +139,7 @@ export default function Todo() {
         setSelectedTodoIds([]);
     };
     const handleSelectAll = () => {
-        setSelectedTodoIds(currentTodos.map((t) => t.id));
+        setSelectedTodoIds(currentTodos.map((t) => t.todo_id));
     };
     const handleDeleteSelected = () =>
         alert(`선택한 ${selectedTodoIds.length}개의 할 일 삭제`);
@@ -128,32 +147,78 @@ export default function Todo() {
     const handleTodoClick = (todo) => {
         if (isDeleteMode) {
             setSelectedTodoIds((prev) =>
-                prev.includes(todo.id)
-                    ? prev.filter((id) => id !== todo.id)
-                    : [...prev, todo.id]
+                prev.includes(todo.todo_id)
+                    ? prev.filter((id) => id !== todo.todo_id)
+                    : [...prev, todo.todo_id]
             );
         } else {
             setDetailTodo(todo);
         }
     };
 
-    // ====== 카테고리별 도트 표시용 날짜 (shadcn/ui Calendar modifiers) ======
-    const studyDays = [
-        new Date(2026, 3, 3),
-        new Date(2026, 3, 7),
-        new Date(2026, 3, 12),
-        new Date(2026, 3, 25),
-        new Date(2026, 3, 28),
-    ];
-    const workoutDays = [new Date(2026, 3, 9), new Date(2026, 3, 21)];
-    const dailyDays = [new Date(2026, 3, 5), new Date(2026, 3, 14)];
+    // 과거 날짜 + 미완료 → 화면에서 실패로 표시 (DB 값은 그대로)
+    const getDisplayStatus = (todo) => {
+        const todoDay = startOfDay(new Date(todo.created_at));
+        const isPast = isBefore(todoDay, TODAY);
+        if (isPast && todo.todo_status !== STATUS.COMPLETED) return STATUS.FAILED;
+        return todo.todo_status;
+    };
+
+    // 클릭 시: 완료 ↔ 시작전 토글
+    const getNextStatus = (todo_status) => {
+        return todo_status === STATUS.COMPLETED ? STATUS.PENDING : STATUS.COMPLETED;
+    };
+
+    const handleToggleStatus = async (todo) => {
+        const prevStatus = todo.todo_status;
+        const nextStatus = getNextStatus(prevStatus);
+
+        setTodos((prev) =>
+            prev.map((t) =>
+                t.todo_id === todo.todo_id ? { ...t, todo_status: nextStatus } : t
+            )
+        );
+        try {
+            await api.patch(`/todos/${todo.todo_id}`, { todo_status: nextStatus });
+        } catch (err) {
+            setTodos((prev) =>
+                prev.map((t) =>
+                    t.todo_id === todo.todo_id ? { ...t, todo_status: prevStatus } : t
+                )
+            );
+            alert("상태 변경에 실패했어요.");
+        }
+    };
+
+    // 같은 날의 todo 들끼리 묶어 달성률 계산 → 색 그룹별 날짜 배열
+    const { highDays, midDays, lowDays } = (() => {
+        const byDay = new Map(); // key: yyyy-MM-dd, value: Todo[]
+        todos.forEach((t) => {
+            const day = startOfDay(new Date(t.created_at));
+            const key = format(day, "yyyy-MM-dd");
+            if (!byDay.has(key)) byDay.set(key, { day, list: [] });
+            byDay.get(key).list.push(t);
+        });
+
+        const high = [], mid = [], low = [];
+        byDay.forEach(({ day, list }) => {
+            const total = list.length;
+            if (total === 0) return;
+            const done = list.filter((t) => t.todo_status === STATUS.COMPLETED).length;
+            const rate = done / total;
+            if (rate >= 1) high.push(day);
+            else if (rate >= 0.5) mid.push(day);
+            else low.push(day);
+        });
+        return { highDays: high, midDays: mid, lowDays: low };
+    })();
 
     return (
         <>
             {/* 상단 헤더 */}
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">
-                    {format(selectedDate, "M월", {locale: ko})}
+                    {format(selectedDate, "M월", { locale: ko })}
                 </h1>
                 <button
                     className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
@@ -174,7 +239,6 @@ export default function Todo() {
                             onClick={handleToday}
                             className="text-xs text-[#87B4C4] font-medium"
                         >
-                            오늘
                         </button>
                     </div>
                     <Calendar
@@ -184,17 +248,14 @@ export default function Todo() {
                         locale={ko}
                         showOutsideDays
                         modifiers={{
-                            study: studyDays,
-                            workout: workoutDays,
-                            daily: dailyDays,
+                            high: highDays,
+                            mid:  midDays,
+                            low:  lowDays,
                         }}
                         modifiersClassNames={{
-                            study:
-                                "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E88A8A]",
-                            workout:
-                                "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#F4D58A]",
-                            daily:
-                                "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#A8D5B4]",
+                            high: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#A8D5B4]",
+                            mid:  "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#F4D58A]",
+                            low:  "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E89B9B]",
                         }}
                         className="w-full"
                     />
@@ -247,46 +308,79 @@ export default function Todo() {
                         </div>
                     ) : (
                         currentTodos.map((todo) => {
-                            const isChecked = selectedTodoIds.includes(todo.id);
+                            const isChecked = selectedTodoIds.includes(todo.todo_id);
+                            const category = categoryMap[todo.category_id];
+                            const displayStatus = getDisplayStatus(todo);
+
+                            // 상태에 따른 라디오 색
+                            const radioBorder =
+                                displayStatus === STATUS.COMPLETED ? STATUS_COLOR.COMPLETED :
+                                    displayStatus === STATUS.FAILED    ? STATUS_COLOR.FAILED :
+                                        STATUS_COLOR.PENDING;
                             return (
-                                <button
-                                    key={todo.id}
+                                <div
+                                    key={todo.todo_id}
+                                    role="button"
+                                    tabIndex={0}
                                     onClick={() => handleTodoClick(todo)}
-                                    className={`
-                    w-full bg-white rounded-2xl p-4 shadow-sm text-left
-                    ${isDeleteMode && isChecked ? "ring-2 ring-[#A8C8D8]" : ""}
-                  `}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" || e.key === " ") {
+                                            e.preventDefault();
+                                            handleTodoClick(todo);
+                                        }
+                                    }}
+                                    className={`w-full bg-white rounded-2xl p-4 shadow-sm text-left cursor-pointer ${
+                                        isDeleteMode && isChecked ? "ring-2 ring-[#A8C8D8]" : ""
+                                    }`}
                                 >
                                     <div className="flex items-start justify-between">
                                         <div className="flex items-start gap-3 flex-1">
-                                            <div
-                                                className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center"
-                                                style={{ backgroundColor: todo.dotColor }}
+                                            {/* 라디오 토글 (3-상태) */}
+                                            <button
+                                                type="button"
+                                                aria-label={
+                                                    displayStatus === STATUS.COMPLETED
+                                                        ? "완료 해제"
+                                                        : displayStatus === STATUS.FAILED
+                                                            ? "다시 완료로 변경"
+                                                            : "완료 표시"
+                                                }
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleToggleStatus(todo);
+                                                }}
+                                                className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center border-2 transition"
+                                                style={{ borderColor: radioBorder }}
                                             >
-                                                {/* 아이콘 위치: 카테고리/완료 상태 아이콘
-                            예: 공부 bi-book, 운동 bi-activity, 완료 bi-check */}
-                                                {todo.dotLetter && (
-                                                    <span className="text-white text-xs font-bold">
-                            {todo.dotLetter}
-                          </span>
+                                                {displayStatus === STATUS.COMPLETED && (
+                                                    <span
+                                                        className="w-2.5 h-2.5 rounded-full"
+                                                        style={{ backgroundColor: STATUS_COLOR.COMPLETED }}
+                                                    />
                                                 )}
-                                            </div>
+                                                {displayStatus === STATUS.FAILED && (
+                                                    <span className="text-[#E89B9B] text-[11px] font-bold leading-none">
+                                                        ✕
+                                                    </span>
+                                                )}
+                                            </button>
+
                                             <div className="flex-1">
                                                 <p className="text-sm font-bold text-[#3D4D5C]">
                                                     {todo.title}
                                                 </p>
-                                                {todo.memo && (
+                                                {todo.detail && (
                                                     <p className="text-xs text-[#8B9BAA] mt-1">
-                                                        {todo.memo}
+                                                        {todo.detail}
                                                     </p>
                                                 )}
                                             </div>
                                         </div>
                                         <span className="text-[11px] text-[#87B4C4] bg-[#E4EEF3] px-2 py-0.5 rounded-full shrink-0">
-                      {todo.category}
-                    </span>
+                                            {category?.name ?? todo.category_id}
+                                        </span>
                                     </div>
-                                </button>
+                                </div>
                             );
                         })
                     )}
@@ -315,13 +409,32 @@ export default function Todo() {
             <NewTodoModal
                 isOpen={isNewOpen}
                 onClose={() => setIsNewOpen(false)}
-                onSubmit={(todo) => alert(`새 할 일: ${todo.title}`)}
+                onSubmit={() => {
+                    setIsNewOpen(false);
+                    loadTodos();
+                }}
+                selectedDate={selectedDate}
             />
             <TodoDetailModal
                 isOpen={!!detailTodo}
                 onClose={() => setDetailTodo(null)}
                 todo={detailTodo}
-                onSave={(updated) => alert(`"${updated.title}" 저장`)}
+                onSave={async (updated) => {
+                    try {
+                        await api.patch(`/todos/${updated.todo_id}`, {
+                            title:       updated.title,
+                            detail:      updated.detail,
+                            category_id: updated.category_id,
+                            todo_status: updated.todo_status,
+                            visibility:  updated.visibility,
+                        });
+                        setDetailTodo(null);
+                        loadTodos();
+                    } catch (err) {
+                        console.error("todo 수정 실패", JSON.stringify(err?.response?.data ?? err?.message ?? err));
+                        alert(err?.response?.data?.detail ?? "저장에 실패했어요. 다시 시도해 주세요.");
+                    }
+                }}
                 onDelete={(id) => alert(`id=${id} 삭제`)}
             />
         </>

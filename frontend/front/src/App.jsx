@@ -8,6 +8,8 @@ import {
 } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { InterferenceProvider } from "./hooks/useInterference";
+import InterferencePopup from "./Components/Modal/InterferencePopup";
 import Swal from "sweetalert2";
 import Login from "./Pages/Login";
 import Signup from "./Pages/Signup";
@@ -52,6 +54,7 @@ const RootLayout = () => {
         <div className="min-h-screen bg-gray-200 flex items-center justify-center font-sans">
             <main className="bg-[#EEF2F5] flex flex-col w-full min-h-screen sm:w-[390px] sm:min-h-0 sm:h-auto sm:aspect-[390/844] sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative">
                 <Outlet />
+                <InterferencePopup />
             </main>
         </div>
     );
@@ -61,11 +64,11 @@ const router = createBrowserRouter([
     {
         path: "/",
         element: (
-            // AuthProvider를 여기에 두어 모든 자식(ProtectedRoute 포함)이 context를 쓸 수 있게
-            // AuthProvider : 인증 상태를 앱 전체에 공유하기 위한 컴포넌트
-            <AuthProvider>
-                <RootLayout />
-            </AuthProvider>
+            <InterferenceProvider>
+                <AuthProvider>
+                    <RootLayout />
+                </AuthProvider>
+            </InterferenceProvider>
         ),
         children: [
             { index: true, element: <Login /> },
