@@ -30,6 +30,8 @@ const STATUS_COLOR = {
     "시작전": "#E88A8A",
     "진행중": "#F4D58A",
     "완료":   "#A8D5B4",
+    "대기중": "#E88A8A", // 구 DB 데이터 호환
+    "실패":   "#E88A8A", // 구 DB 데이터 호환
 };
 
 const CATEGORY_LABEL = {
