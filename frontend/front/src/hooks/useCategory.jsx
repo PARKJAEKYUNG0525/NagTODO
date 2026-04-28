@@ -1,5 +1,5 @@
 import api from "../utils/api.js";
-import { showWarningAlert } from "../utils/alertUtiles.js";
+import {showWarningAlert, showSuccessAlert} from "../utils/alertUtils.js";
 
 import React, { useCallback, useState } from 'react';
 

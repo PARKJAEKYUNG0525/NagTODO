@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import api from "../utils/api";
-import { showSuccessAlert, showWarningAlert } from "../utils/alertUtiles.js";
+ import { showSuccessAlert, showWarningAlert } from "../utils/alertUtils.js";
 
 export const useFriend = () => {
     const [friends, setFriends] = useState([]);          // 수락된 친구 목록
@@ -10,22 +10,22 @@ export const useFriend = () => {
     const [isSearching, setIsSearching] = useState(false); // 검색 전용 로딩 상태 추가
 
     // // 1. 받은 신청 목록 조회 (R)
-    // const fetchReceivedRequests = useCallback(async () => {
-    //     setIsLoading(true);
-    //     try {
-    //         // Router: @router.get("/received")
-    //         const response = await api.get("/friends/received");
-    //         if (response.status === 200) {
-    //             setReceivedRequests(response.data);
-    //             return response.data;
-    //         }
-    //     } catch (error) {
-    //         console.error(error);
-    //         setError("신청 목록을 불러오지 못했습니다.");
-    //     } finally {
-    //         setIsLoading(false);
-    //     }
-    // }, []);
+    const fetchReceivedRequests = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            // Router: @router.get("/received")
+            const response = await api.get("/friends/received");
+            if (response.status === 200) {
+                setReceivedRequests(response.data);
+                return response.data;
+            }
+        } catch (error) {
+            console.error(error);
+            setError("신청 목록을 불러오지 못했습니다.");
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
 
     // 2. 이메일 또는 닉네임으로 유저 검색 (Search)
     const searchUser = useCallback(async (query) => {
@@ -49,29 +49,29 @@ export const useFriend = () => {
         }
     }, []);
 
-    // // 3. 친구 신청 보내기 (C)
-    // const sendRequest = async (receiverId) => {
-    //     try {
-    //         setError("");
-    //         // Router: @router.post("/") -> FriendUpdate { "receiver_id": int }
-    //         const response = await api.post("/friends/", { receiver_id: receiverId });
+    // 3. 친구 신청 보내기 (C)
+    const sendRequest = async (receiverId) => {
+        try {
+            setError("");
+            // Router: @router.post("/") -> FriendUpdate { "receiver_id": int }
+            const response = await api.post("/friends/", { receiver_id: receiverId });
             
-    //         if (response.status === 201) {
-    //             showSuccessAlert("신청 완료", "성공적으로 요청을 보냈습니다.");
-    //             return true;
-    //         }
-    //     } catch (error) {
-    //         const detail = error.response?.data.detail || "신청에 실패했습니다.";
-    //         setError(detail);
-    //         showWarningAlert("요청 실패", detail);
-    //         return false;
-    //     }
-    // };
+            if (response.status === 201) {
+                showSuccessAlert({title:"신청 완료", text:"성공적으로 요청을 보냈습니다."});
+                return true;
+            }
+        } catch (error) {
+            const detail = error.response?.data.detail || "신청에 실패했습니다.";
+            setError(detail);
+            showWarningAlert("요청 실패", detail);
+            return false;
+        }
+    };
 
     // 4. 컴포넌트 마운트 시 자동 실행 (초기화)
-    // useEffect(() => {
-    //     fetchReceivedRequests();
-    // }, [fetchReceivedRequests]);
+    useEffect(() => {
+        fetchReceivedRequests();
+    }, [fetchReceivedRequests]);
 
     // 외부로 노출할 객체
     return {

@@ -1,7 +1,7 @@
 import { useState, createContext, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import { showSuccessAlert, showWarningAlert } from "../utils/alertUtiles.js";
+import { showSuccessAlert, showWarningAlert } from "../utils/alertUtils.js";
 
 const AuthContext = createContext(null);
 
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
                 setUser(response.data.user);
                 setIsAuthenticated(true);
                 await verifyJWT();
-                showSuccessAlert("환영합니다");
+                showSuccessAlert({title:"환영합니다"});
                 navigate("/main");
                 return true;
             }
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await api.post("/users/", { email, username, pw: password, birthday })
             if (response.status === 201) {
-                showSuccessAlert("(useAuth)회원가입이 완료되었습니다");
+                showSuccessAlert({title:"(useAuth)회원가입이 완료되었습니다"});
                 return true;
             }
         } catch (error) {
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
 
             if (response.status === 200) {
-                showSuccessAlert("로그아웃 되었습니다");
+                showSuccessAlert({title:"로그아웃 되었습니다"});
                 navigate("/");
             }
         }
@@ -113,10 +113,11 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
-        throw new Error("useAuth 사용하기 위해 AuthProvider로 감싸야한다");
+        throw new Error("useAuth 사용하기 위해 AuthProvider로 감싸야 합니다");
     }
     return context;
 };
