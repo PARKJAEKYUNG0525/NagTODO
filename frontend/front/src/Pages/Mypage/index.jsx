@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtiles";
+import { useAuth } from "../../hooks/useAuth";
+import useMypage from "../../hooks/useMypage";
 
 /**
  * Mypage 화면 (통합본)
@@ -17,9 +19,22 @@ import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtiles";
  * ※ 9:16 프레임 / 하단 Navbar 는 App.jsx 담당.
  */
 export default function MyPage() {
+    const { user } = useAuth();
     const [isAdmin, setIsAdmin] = useState(false);
+    const { updateProfile, updatePassword, checkUsername } = useMypage();
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
     const [view, setView] = useState("main"); // "main" | "edit-profile"
+    const [form, setForm] = useState({ 
+        username: "", 
+        email: "", 
+        currentPassword: "",  
+        password: "", 
+        confirmPassword: "", 
+        birthYear: "",
+        birthMonth: "",
+        birthDay: ""  
+        });
+
 
     const [adminMode, setAdminMode] = useState("default"); // "default" | "edit" | "delete"
     const [editingCategoryId, setEditingCategoryId] = useState(null);
@@ -46,15 +61,26 @@ export default function MyPage() {
         // TODO: API 로 strictMode 변경 저장
     }, [strictMode]);
 
+    useEffect(() => {
+        if (user) {
+            const [year, month, day] = (user.birthday || "").split("-");
+            setForm(prev => ({
+                ...prev,
+                username: user.username || "",
+                email: user.email || "",
+                birthYear: year || "",
+                birthMonth: month || "",
+                birthDay: day || "",
+            }));
+        }
+    }, [user]);
+
     const handleNotification = () => alert("알림 아이콘 클릭");
 
     const handleWithdraw = () => alert("회원탈퇴 안내");
     const handleEditProfile = () => setView("edit-profile");
     const handleCancelEditProfile = () => setView("main");
-    const handleSaveProfile = () => {
-        alert("프로필 저장");
-        setView("main");
-    };
+
     const handleChangeProfileImage = () => alert("프로필 사진 변경");
     const handleSelectStrictMode = (mode) => {
         setStrictMode(mode);
@@ -145,6 +171,66 @@ export default function MyPage() {
         </button>
     );
 
+    const handleSaveProfile = async () => {
+        const isChangingUsername = form.username.trim() !== user?.username;
+        const isChangingPassword = form.currentPassword || form.password || form.confirmPassword;
+        if (!isChangingUsername && !isChangingPassword) {
+            alert("변경된 내용이 없습니다.");
+            return;
+        }
+
+        if (isChangingUsername) {
+            if (!form.username.trim()) {
+                alert("닉네임을 입력해주세요.");
+                return;
+            }
+            const isAvailable = await checkUsername(form.username.trim());
+            if (!isAvailable) return;
+        }
+
+        if (isChangingPassword) {
+            if (!form.currentPassword) {
+                alert("현재 비밀번호를 입력해주세요.");
+                return;
+            }
+            const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+            if (!pwRegex.test(form.password)) {
+                alert("새 비밀번호는 8자 이상, 영문·숫자·특수문자를 포함해야 합니다.");
+                return;
+            }
+            if (form.password !== form.confirmPassword) {
+                alert("새 비밀번호가 일치하지 않습니다.");
+                return;
+            }
+        }
+
+        try {
+            if (isChangingUsername) {
+                const profileOk = await updateProfile({ username: form.username.trim() });
+                if (!profileOk) return;
+                alert("닉네임이 변경되었습니다.");
+            }
+
+            if (isChangingPassword) {
+                const pwOk = await updatePassword({
+                    currentPassword: form.currentPassword,
+                    newPassword: form.password,
+                    confirmPassword: form.confirmPassword,
+                });
+                if (!pwOk) {
+                    alert("현재 비밀번호가 틀립니다.");
+                    return;   
+                }
+                alert("비밀번호가 변경되었습니다.");
+            }
+
+            setView("main");
+        } catch (e) {
+            console.error(e);
+            alert("저장 중 오류가 발생했습니다.");
+        }
+    };
+
     // ====== 렌더: 비관리자 - 내 정보 수정 ======
     if (!isAdmin && view === "edit-profile") {
         return (
@@ -164,32 +250,30 @@ export default function MyPage() {
                 </div>
 
                 <div className="mt-6 flex flex-col gap-4">
-                    <Field label="닉네임" defaultValue="홍길동" />
-                    <Field label="이메일" placeholder="name@example.com" />
-                    <Field label="비밀번호" type="password" defaultValue="12345678" />
-                    <Field
-                        label="비밀번호 확인"
+                    <Field label="닉네임" value={form.username} onChange={(e) => setForm({...form, username: e.target.value})} />
+                    <Field label="이메일" value={form.email} readOnly />
+                    <Field label="현재 비밀번호" type="password" value={form.currentPassword} onChange={(e) => setForm({...form, currentPassword: e.target.value})} />
+                    <Field label="새 비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} />
+                    <Field label="새 비밀번호 확인"
                         type="password"
-                        defaultValue="12345678"
+                        value={form.confirmPassword} onChange={(e) => setForm({...form, confirmPassword: e.target.value})}
                     />
 
                     <div>
                         <label className="block text-xs text-[#8B9BAA] mb-2">생일</label>
                         <div className="flex gap-3">
-                            <button
-                                onClick={() => alert("년도 선택")}
-                                className="flex-1 bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
-                            >
-                                <span>&nbsp;</span>
+                           <div className="flex-1 bg-[#F2F4F6] rounded-xl px-4 py-3 flex items-center text-sm text-[#B5BEC7] shadow-sm cursor-not-allowed">
+                                <span>{form.birthYear || ""}</span>
                                 <span className="text-[#A8C8D8] text-xs">▼</span>
-                            </button>
-                            <button
-                                onClick={() => alert("월 선택")}
-                                className="flex-1 bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
-                            >
-                                <span>&nbsp;</span>
+                            </div>
+                            <div className="flex-1 bg-[#F2F4F6] rounded-xl px-4 py-3 flex items-center text-sm text-[#B5BEC7] shadow-sm cursor-not-allowed">
+                                <span>{form.birthMonth || ""}</span>
                                 <span className="text-[#A8C8D8] text-xs">▼</span>
-                            </button>
+                            </div>
+                             <div className="flex-1 bg-[#F2F4F6] rounded-xl px-4 py-3 flex items-center text-sm text-[#B5BEC7] shadow-sm cursor-not-allowed">
+                                <span>{form.birthDay || ""}</span>
+                                <span className="text-[#A8C8D8] text-xs">▼</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -397,11 +481,11 @@ export default function MyPage() {
                     </button>
 
                     <div className="flex flex-col items-center">
-                        <p className="text-lg font-bold text-[#3D4D5C]">admin</p>
+                        <p className="text-lg font-bold text-[#3D4D5C]">{user?.username || ""}</p>
                         <div className="mt-3 w-20 h-20 rounded-full bg-[#A8C8D8]">
                             {/* 아이콘 위치: 프로필 이미지 (bi-person-fill) */}
                         </div>
-                        <p className="mt-4 text-xs text-[#3D4D5C]">test@test.com</p>
+                        <p className="mt-4 text-xs text-[#3D4D5C]">{user?.email || ""}</p>
                         <p className="mt-1 text-xs text-[#8B9BAA]">
                             함께한 지 <span className="font-semibold">40일째</span>
                         </p>
@@ -445,16 +529,21 @@ export default function MyPage() {
 }
 
 /* ============ 서브 컴포넌트 ============ */
-function Field({ label, type = "text", defaultValue, placeholder }) {
+function Field({ label, type = "text", value, onChange, placeholder, readOnly }) {
     return (
         <div>
             <label className="block text-xs text-[#8B9BAA] mb-2">{label}</label>
             <input
                 type={type}
-                defaultValue={defaultValue}
+                value={value}
+                onChange={onChange}
                 placeholder={placeholder}
-                className="w-full px-4 py-3 rounded-xl bg-white text-sm text-[#3D4D5C] placeholder-[#B5BEC7] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A8C8D8]"
-            />
+                readOnly={readOnly}
+                className={`w-full px-4 py-3 rounded-xl text-sm shadow-sm focus:outline-none
+                        ${readOnly
+                            ? "bg-[#F2F4F6] text-[#B5BEC7] cursor-not-allowed"
+                            : "bg-white text-[#3D4D5C] placeholder-[#B5BEC7] focus:ring-2 focus:ring-[#A8C8D8]"
+                        }`}/>
         </div>
     );
 }

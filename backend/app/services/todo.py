@@ -1,14 +1,15 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
-from app.db.crud.todo import TodoCrud 
-from app.db.scheme.todo import TodoCreate, TodoUpdate
+from app.db.crud.todo import TodoCrud
+from app.db.scheme.todo import TodoCreate, TodoUpdate, TodoCreateResponse, InterferenceResult
 from app.db.models.todo import Todo
+from app.services.ai_client import get_interference, update_embedding, patch_embedding, delete_embedding
 
 class TodoService:
 
     # C 생성
     @staticmethod
-    async def create_todo_svc(db: AsyncSession, data: TodoCreate) -> Todo:
+    async def create_todo_svc(db: AsyncSession, data: TodoCreate) -> TodoCreateResponse:
         # user 존재 확인
         user = await TodoCrud.get_user(db, data.user_id)
         if not user:
@@ -29,14 +30,23 @@ class TodoService:
             todo = await TodoCrud.create_todo(db, data)
             await db.commit()
             await db.refresh(todo)
-            return todo
-
         except Exception:
             await db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="todo 생성에 실패했습니다."
             )
+
+        # AI 간섭 호출 (실패해도 todo 생성 결과는 반환)
+        ai_result = await get_interference(
+            todo_id=todo.todo_id,
+            todo_text=data.title,
+            category=data.category_id,
+            user_id=str(data.user_id),
+        )
+        interference = InterferenceResult(**ai_result) if ai_result else None
+
+        return TodoCreateResponse.model_validate({**todo.__dict__, "interference": interference})
 
     # R 조회 - todo 단일 조회
     @staticmethod
@@ -51,22 +61,15 @@ class TodoService:
 
     # R 조회 - todo 목록 조회 (user 기준)
     @staticmethod
-    async def get_user_svc(db: AsyncSession, user_id: int) -> list[Todo]:
+    async def get_all_todos_svc(db: AsyncSession, user_id: int) -> list[Todo]:
         user = await TodoCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
             )
-
-        todos = await TodoCrud.get_user(db, user_id)
-        return todos
+        return await TodoCrud.get_todos_by_user(db, user_id)
     
-    # R 조회 - history 전체 조회
-    @staticmethod
-    async def get_all_todos_svc(db: AsyncSession) -> list[Todo]:
-        todo = await TodoCrud.get_all_todos(db)
-        return todo
 
     # U 수정
     @staticmethod
@@ -94,18 +97,38 @@ class TodoService:
                     detail=f"user_id '{data.user_id}'에 해당하는 user가 없습니다."
                 )
 
+        old_title = todo.title
+
         try:
             updated = await TodoCrud.update_todo(db, todo, data)
             await db.commit()
             await db.refresh(updated)
-            return updated
-
-        except Exception:
+        except Exception as e:
             await db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="todo 수정에 실패했습니다."
+                detail=f"todo 수정에 실패했습니다: {e}"
             )
+
+        title_changed = data.title is not None and data.title != old_title
+
+        if title_changed:
+            # 제목 변경 → soft delete + 재임베딩
+            await update_embedding(
+                todo_id=todo_id,
+                user_id=str(updated.user_id),
+                category=updated.category_id,
+                text=updated.title,
+                completed=(updated.todo_status == "완료"),
+            )
+        elif data.todo_status is not None or data.category_id is not None:
+            # 상태·카테고리만 변경 → 메타데이터만 갱신
+            await patch_embedding(
+                todo_id=todo_id,
+                completed=(updated.todo_status == "완료") if data.todo_status is not None else None,
+                category=updated.category_id if data.category_id is not None else None,
+            )
+        return updated
         
     # D 삭제
     @staticmethod
@@ -120,11 +143,12 @@ class TodoService:
         try:
             await TodoCrud.delete_todo(db, todo)
             await db.commit()
-            return {"message": f"todo_id '{todo_id}' 삭제 완료"}
-
         except Exception:
             await db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="todo 삭제에 실패했습니다."
             )
+
+        await delete_embedding(todo_id=todo_id)
+        return {"message": f"todo_id '{todo_id}' 삭제 완료"}
