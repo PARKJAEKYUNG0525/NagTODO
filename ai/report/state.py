@@ -9,6 +9,7 @@ class ReportState(TypedDict, total=False):
     # 입력
     user_id: str
     month_start: str  # "YYYY-MM-DD"
+    month_end: str    # "YYYY-MM-DD" (inclusive)
 
     # 로그 로드
     monthly_logs: list[dict]

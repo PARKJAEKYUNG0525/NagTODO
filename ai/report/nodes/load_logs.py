@@ -16,11 +16,17 @@ async def load_logs(state: dict) -> dict:
     user_id: str = state["user_id"]
     month_start: str = state["month_start"]
 
+    month_end: str = state.get("month_end", "")
+
     async with httpx.AsyncClient(timeout=30) as client:
+        params: dict = {"user_id": user_id, "month_start": month_start}
+        if month_end:
+            params["month_end"] = month_end
+
         try:
             response = await client.get(
                 f"{settings.BACKEND_API_URL}/todos",
-                params={"user_id": user_id, "month_start": month_start},
+                params=params,
             )
             response.raise_for_status()
         except httpx.TimeoutException as e:
