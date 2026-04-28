@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from .pw_history import PwHistory
     from .homepage import Homepage
     from .cloth import Cloth
+    from .notification import Notification
 
 class User(Base):
     __tablename__ = "user"
@@ -34,3 +35,4 @@ class User(Base):
     pw_histories:     Mapped[List["PwHistory"]]      = relationship("PwHistory", back_populates="user", cascade="all, delete-orphan")
     homepages:        Mapped[List["Homepage"]]       = relationship("Homepage", back_populates="user", cascade="all, delete-orphan")
     cloths:           Mapped[List["Cloth"]]          = relationship("Cloth", back_populates="user", cascade="all, delete-orphan")
+    notifications:    Mapped[List["Notification"]]   = relationship("Notification", back_populates="user")
