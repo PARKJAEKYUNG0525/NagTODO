@@ -15,59 +15,51 @@ import ModalLayout from "../ModalLayout";
  */
 const FriendAddModal = ({ isOpen, onClose, onSearch, onSendRequest }) => {
   const [query, setQuery] = useState("");
-  const [searchResults, setSearchResults] = useState([]); // 결과가 여러 명일 수 있으므로 배열로 변경
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false); // 로딩 상태
   const [hasSearched, setHasSearched] = useState(false);
 
-  // 검색 핸들러: 엔터를 치거나 검색을 실행할 때
+  // 검색
   useEffect(() => {
-    const fetchResults = async () => {
-      const trimmedQuery = query.trim();
-      
-      if (trimmedQuery.length > 0) {
-        // 부모 컴포넌트의 검색 함수 호출 (검색 결과 배열을 반환한다고 가정)
-        const results = await onSearch?.(trimmedQuery); 
-        setSearchResults(results || []);
-        setHasSearched(true);
-      } else {
-        // 입력창이 비어있으면 결과 초기화
-        setSearchResults([]);
-        setHasSearched(false);
-      }
-    };
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) {
+      setSearchResults([]);
+      setHasSearched(false);
+      return;
+    }
 
-    fetchResults();
+    setIsSearching(true);
+    const handler = setTimeout(async () => {
+      const results = await onSearch?.(trimmedQuery);
+      setSearchResults(results || []);
+      setHasSearched(true);
+      setIsSearching(false);
+    }, 400);
+
+    return () => clearTimeout(handler);
   }, [query, onSearch]);
 
-  // 신청 핸들러: 검색 결과 옆 '요청' 버튼 클릭 시
+  // 신청
   const handleSearchSubmit = (e) => {
     e.preventDefault(); // 실시간 검색 중이므로 엔터 시 페이지 새로고침만 막음
   };
   
   const handleSendRequest = async (user) => {
-    if (!user || !user.user_id) return;
+    if (!user?.user_id) return;
 
     try {
-      // 1. 부모로부터 받은 요청 함수 실행
       const success = await onSendRequest?.(user.user_id);
 
       if (success) {
-        // 2. 성공 알림
         alert(`${user.username}님께 친구 요청을 보냈습니다.`);
-
-        // 3. UI 상태 초기화 (깔끔한 다음 사용을 위해)
-        setQuery("");            // 입력창 비우기
-        setSearchResults([]);     // 검색 결과 리스트 비우기
-        setHasSearched(false);   // 검색 상태 초기화
-
-        // 4. 모달 닫기
+        setQuery("");
         onClose?.();
       } else {
-        // 서버에서 실패 응답을 준 경우 (이미 친구거나 요청 중일 때 등)
         alert("요청을 보낼 수 없습니다. 이미 친구이거나 요청 대기 중인지 확인해 주세요.");
       }
-    } catch (error) {
-      console.error("친구 요청 중 에러 발생:", error);
-      alert("오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+    } 
+    catch (error) {
+      alert("오류가 발생했습니다.");
     }
   };
 
@@ -94,7 +86,7 @@ const FriendAddModal = ({ isOpen, onClose, onSearch, onSendRequest }) => {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="예: nagtodo_user 또는 user@email.com"
+            placeholder="닉네임 또는 이메일로 검색"
             className="px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8]"
           />
         </label>
