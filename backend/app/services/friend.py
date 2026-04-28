@@ -121,6 +121,14 @@ class FriendService:
                 detail="일치하는 유저를 찾을 수 없습니다."
             )
         return user
+    #     return [
+    #     {
+    #         "user_id": user.user_id,
+    #         "username": user.username,
+    #         "status_message": user.status_message
+    #     }
+    #     for user in users
+    # ]
 
     # 신청 보내기
     @staticmethod

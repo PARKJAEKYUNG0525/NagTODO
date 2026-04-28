@@ -28,26 +28,21 @@ export const useFriend = () => {
     }, []);
 
     // 2. 이메일 또는 닉네임으로 유저 검색 (Search)
-    const searchUser = useCallback(async (query) => {
-        if (!query.trim()) return [];
-        
-        setIsSearching(true);
-        try {
-            setError("");
-            const response = await api.get(`/friends/search?query=${query}`);
-            if (response.status === 200) {
-                // 결과가 단일 객체라면 [response.data], 배열이라면 response.data
-                return Array.isArray(response.data) ? response.data : [response.data];
-            }
-            return [];
-        } catch (error) {
-            // 실시간 검색 시에는 Alert를 띄우지 않고 에러만 기록
-            console.error("검색 실패:", error.response?.data.detail);
-            return [];
-        } finally {
-            setIsSearching(false);
-        }
-    }, []);
+const searchUser = useCallback(async (query) => {
+    if (!query.trim()) return [];
+
+    const response = await api.get(`/friends/search?query=${query}`);
+
+    const data = Array.isArray(response.data)
+        ? response.data
+        : response.data.data || [response.data];
+
+    return data.map(user => ({
+        user_id: user.user_id || user.id,
+        username: user.username || user.name,
+        status_message: user.status_message || user.status || ""
+    }));
+}, []);
 
     // 3. 친구 신청 보내기 (C)
     const sendRequest = async (receiverId) => {

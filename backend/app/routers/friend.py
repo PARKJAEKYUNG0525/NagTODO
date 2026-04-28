@@ -41,7 +41,7 @@ async def delete_friend(friend_id: int, db: AsyncSession = Depends(get_db)):
 
 #-----------------------------------------------------
 # 친구 찾기 (이메일 또는 닉네임 검색)
-@router.get("/search", response_model=None)
+@router.get("/search", response_model=list[FriendRead])
 async def search_friend(query: str = Query(..., description="이메일 또는 닉네임 입력"),
                         db: AsyncSession = Depends(get_db),
                         current_user: User = Depends(get_current_user)

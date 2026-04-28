@@ -24,11 +24,8 @@ import { useFriend } from "../../hooks/useFriend";
  * ※ shadcn/ui Calendar, date-fns 사용.
  */
 export default function Friend() {
-    // const { 
-    //     friends, notifications, members, friendTodosByDate, loading,
-    //     sendFriendRequest, acceptFriendRequest, deleteMember 
-    // } = useFriend();
     const [friends, setFriends] = useState([]);
+    const { searchUser, sendRequest } = useFriend();
 
     const [isAdmin, setIsAdmin] = useState(false);
     const [view, setView] = useState("list"); // "list" | "detail"
@@ -103,23 +100,6 @@ export default function Friend() {
         },
     ];
 
-    const handleSearch = () => {
-        if (!searchQuery.trim()) return;
-
-        //테스트용 (나중에 API로 교체)
-        const mockUsers = ["codehaeun", "junseo", "minji", "jihun"];
-
-        const results = mockUsers.filter((user) =>
-            user.includes(searchQuery.trim())
-        );
-
-        setSearchResults(results);
-        setIsSearchOpen(true);
-    };    
-
-
-
-
     const handleNotification = () => setIsNotiOpen(true);
     const handleAdvancedSearch = () => alert("검색 옵션 열기");
 
@@ -133,22 +113,23 @@ export default function Friend() {
     };
     const handleAddFriend = () => setIsFriendAddOpen(true);
 
-    // 모든 분기에서 공용으로 렌더할 모달들
-    const SharedModals = () => (
-        <>
-            <NotificationModal
-                isOpen={isNotiOpen}
-                onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
-                onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
-            />
-            <FriendAddModal
-                isOpen={isFriendAddOpen}
-                onClose={() => setIsFriendAddOpen(false)}
-                onSubmit={(q) => showSuccessAlert({ title: "요청 전송", text: `"${q}" 에게 친구 요청을 보냈어요.` })}
-            />
-        </>
-    );
+    // // 모든 분기에서 공용으로 렌더할 모달들
+    // const SharedModals = () => (
+    //     <>
+    //         <NotificationModal
+    //             isOpen={isNotiOpen}
+    //             onClose={() => setIsNotiOpen(false)}
+    //             notifications={notifications}
+    //             onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
+    //         />
+    //         <FriendAddModal
+    //             isOpen={isFriendAddOpen}
+    //             onClose={() => setIsFriendAddOpen(false)}
+    //             onSearch={searchUser}   
+    //             onSendRequest={sendRequest}
+    //         />
+    //     </>
+    // );
 
     const handleDeleteMember = async (member) => {
         const ok = await showWarningDialog({
@@ -319,7 +300,7 @@ export default function Friend() {
                     </div>
                 </div>
 
-                <SharedModals />
+                {/* <SharedModals /> */}
             </>
         );
     }
@@ -374,7 +355,7 @@ export default function Friend() {
                     </div>
                 </div>
 
-                <SharedModals />
+                {/* <SharedModals /> */}
             </>
         );
     }
@@ -445,7 +426,19 @@ export default function Friend() {
                 </svg>
             </button>
 
-            <SharedModals />
+            <NotificationModal
+                isOpen={isNotiOpen}
+                onClose={() => setIsNotiOpen(false)}
+                notifications={notifications}
+                onItemClick={(n) => alert(n.title)}
+            />
+
+            <FriendAddModal
+                isOpen={isFriendAddOpen}
+                onClose={() => setIsFriendAddOpen(false)}
+                onSearch={searchUser}
+                onSendRequest={sendRequest}
+            />
         </>
     );
 }

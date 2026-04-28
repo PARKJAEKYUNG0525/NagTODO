@@ -66,25 +66,29 @@ class FriendCrud:
 
 #---------------------------------------------------------
 
-    # C 생성 - 친구 신청 데이터 생성
+    # C 생성 - 친구 요청 생성
     @staticmethod
-    async def create_request(db: AsyncSession, requester_id: int, receiver_id: int) -> Friend:
-        new_friend = Friend(
+    async def create_friend_request(db: AsyncSession, requester_id: int, receiver_id: int) -> Friend:
+        friend = Friend(
             requester_id=requester_id,
             receiver_id=receiver_id,
             status="대기"
         )
-        db.add(new_friend)
-        await db.flush()
-        return new_friend
+        db.add(friend)
+        await db.flush() 
+        return friend
     
-    # R - 이메일 또는 닉네임으로 유저 검색
+    # R 조회 - 이메일 또는 닉네임으로 유저 검색
     @staticmethod
-    async def search_user(db: AsyncSession, query: str) -> User | None:
+    async def search_user(db: AsyncSession, current_user_id: int, query: str) -> User | None:
         # 이메일이 일치하거나, 닉네임이 일치하는 유저 1명 검색
         result = await db.execute(
-            select(User).where(
-                or_(User.email == query, User.username == query)
-            )
-        )
-        return result.scalar_one_or_none()
+                    select(User).where(
+                        or_(
+                            User.email.ilike(f"%{query}%"),
+                            User.username.ilike(f"%{query}%")
+                        ),
+                        User.user_id != current_user_id  # 나 자신은 제외
+                    )
+                )
+        return list(result.scalars().all())
