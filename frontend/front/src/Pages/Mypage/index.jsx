@@ -79,7 +79,7 @@ export default function MyPage() {
 
     const handleNotification = () => alert("알림 아이콘 클릭");
 
-    // const handleWithdraw = () => alert("로그아웃 안내");
+    const handleWithdraw = () => alert("회원탈퇴 안내");
     const handleEditProfile = () => {
         setForm(prev => ({
             ...prev,
@@ -546,6 +546,14 @@ export default function MyPage() {
                     <p className="text-center text-sm text-[#8B9BAA]">덜 엄격하게</p>
                     <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
                 </button>
+                <div className="flex flex-col items-center">
+                    <button
+                        onClick={handleWithdraw}
+                        className="mt-3 px-4 py-1.5 text-xs text-[#3D4D5C]"
+                    >
+                        회원 탈퇴
+                    </button>
+                </div>
             </div>
         </>
     );
