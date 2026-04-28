@@ -1,4 +1,4 @@
-// hooks/useAudio.jsx
+import api from "@/utils/api.js";
 import React, { createContext, useContext, useRef, useState } from "react";
 
 const AudioContext = createContext(null);
@@ -11,12 +11,13 @@ export function AudioProvider({ children }) {
 
     const play = (music) => {
         if (!audioRef.current) return;
-        // 같은 곡이면 이어서 재생, 다른 곡이면 src 교체
         if (currentMusic?.music_id !== music.music_id) {
-            audioRef.current.src = music.file_url;
+            // baseURL + 상대경로
+            audioRef.current.src = `${api.defaults.baseURL}${music.file_url}`;
+            // audioRef.current.src = `${import.meta.env.VITE_API_BASE_URL}${music.file_url}`;
             setCurrentMusic(music);
         }
-        audioRef.current.play();
+        audioRef.current.play().catch((err) => console.warn("재생 실패:", err));
         setIsPlaying(true);
     };
 
