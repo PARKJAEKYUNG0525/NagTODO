@@ -41,13 +41,13 @@ class NotificationService:
             )
         return notification
 
-    # R 조회 - 목록 조회 (user 기준)
+    # R 조회 - 목록 조회 (user 기준 / 특정 유저의 알림만 조회)
     @staticmethod
     async def get_all_notifications_by_user_svc(db: AsyncSession, user_id: int) -> list[Notification]:
         notifications = await NotificationCrud.get_notifications_by_user(db, user_id)
         return notifications
 
-    # R 조회 - 전체 조회
+    # R 조회 - 전체 조회 (모든 유저의 알림 전부 조회)
     @staticmethod
     async def get_all_notifications_svc(db: AsyncSession) -> list[Notification]:
         notifications = await NotificationCrud.get_all_notifications(db)

@@ -17,13 +17,13 @@ async def create_notification(data: NotificationCreate, db: AsyncSession = Depen
 async def get_notification(notification_id: int, db: AsyncSession = Depends(get_db)):
     return await notification_svc.get_notification_svc(db, notification_id)
 
-# R 전체 조회 - user 기준
+# R 전체 조회 - user 기준 (한 유저의 알림 전부 조회)
 @router.get("/user/{user_id}", response_model=list[NotificationResponse])
 async def get_notifications_by_user(user_id: int, db: AsyncSession = Depends(get_db)):
     return await notification_svc.get_all_notifications_by_user_svc(db, user_id)
 
 
-# R 전체 조회
+# R 전체 조회 (모든 유저의 알림 전부 조회)
 @router.get("/", response_model=list[NotificationResponse])
 async def get_all_notifications(db: AsyncSession = Depends(get_db)):
     return await notification_svc.get_all_notifications_svc(db)

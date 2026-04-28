@@ -26,7 +26,7 @@ class NotificationCrud:
         result = await db.execute(select(Notification).where(Notification.notification_id == notification_id))
         return result.scalar_one_or_none()
 
-    # R 조회 - user 기준 조회
+    # R 조회 - user 기준 조회 (특정 user_id가 가진 알림 목록 전부 가져옴)
     @staticmethod
     async def get_notifications_by_user(db: AsyncSession, user_id: int) -> list[Notification]:
         result = await db.execute(select(Notification).where(Notification.user_id == user_id))
