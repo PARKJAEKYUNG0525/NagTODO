@@ -8,32 +8,14 @@ import NotificationModal from "../../Components/Modal/NotificationModal";
 
 import { useFriend } from "../../hooks/useFriend";
 
-/**
- * Friend 화면 (통합본)
- * 현재 계정의 관리자 여부(isAdmin)에 따라 분기합니다.
- *
- *  [비관리자] isAdmin = false
- *   - view === "list" : 친구 목록
- *   - view === "detail" : 친구 상세 - 친구의 캘린더 + 할 일
- *
- *  [관리자] isAdmin = true
- *   - 회원 관리 화면
- *   - 각 회원 카드 우측 "삭제" → alertUtils.confirmDelete
- *
- * ※ 9:16 프레임 / 하단 Navbar 는 App.jsx 담당.
- * ※ shadcn/ui Calendar, date-fns 사용.
- */
 export default function Friend() {
-    // const { 
-    //     friends, notifications, members, friendTodosByDate, loading,
-    //     sendFriendRequest, acceptFriendRequest, deleteMember 
-    // } = useFriend();
     const [friends, setFriends] = useState([]);
 
     const [isAdmin, setIsAdmin] = useState(false);
-    const [view, setView] = useState("list"); // "list" | "detail"
+    const [view, setView] = useState("list");
     const [selectedFriend, setSelectedFriend] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
+    const { searchUser } = useFriend();
     const [friendDetailDate, setFriendDetailDate] = useState(
         startOfDay(new Date(2026, 3, 21))
     );
@@ -42,11 +24,9 @@ export default function Friend() {
     const [isFriendAddOpen, setIsFriendAddOpen] = useState(false);
     const [isNotiOpen, setIsNotiOpen] = useState(false);
 
-    //검색 모달
+    // 검색 모달
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
-
-    
 
     const notifications = [
         {
@@ -66,11 +46,9 @@ export default function Friend() {
     ];
 
     useEffect(() => {
-        // TODO: 실제 로직으로 교체 (예: useAuth)
         const checkAdmin = () => false;
         setIsAdmin(checkAdmin());
     }, []);
-
 
     const [members, setMembers] = useState([
         { id: 1, name: "회원1", status: "상태메시지" },
@@ -105,20 +83,13 @@ export default function Friend() {
 
     const handleSearch = () => {
         if (!searchQuery.trim()) return;
-
-        //테스트용 (나중에 API로 교체)
         const mockUsers = ["codehaeun", "junseo", "minji", "jihun"];
-
         const results = mockUsers.filter((user) =>
             user.includes(searchQuery.trim())
         );
-
         setSearchResults(results);
         setIsSearchOpen(true);
-    };    
-
-
-
+    };
 
     const handleNotification = () => setIsNotiOpen(true);
     const handleAdvancedSearch = () => alert("검색 옵션 열기");
@@ -132,23 +103,6 @@ export default function Friend() {
         setSelectedFriend(null);
     };
     const handleAddFriend = () => setIsFriendAddOpen(true);
-
-    // 모든 분기에서 공용으로 렌더할 모달들
-    const SharedModals = () => (
-        <>
-            <NotificationModal
-                isOpen={isNotiOpen}
-                onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
-                onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
-            />
-            <FriendAddModal
-                isOpen={isFriendAddOpen}
-                onClose={() => setIsFriendAddOpen(false)}
-                onSubmit={(q) => showSuccessAlert({ title: "요청 전송", text: `"${q}" 에게 친구 요청을 보냈어요.` })}
-            />
-        </>
-    );
 
     const handleDeleteMember = async (member) => {
         const ok = await showWarningDialog({
@@ -170,7 +124,6 @@ export default function Friend() {
             onClick={handleNotification}
             className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
         >
-            {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
             <span className="w-5 h-5 block" />
             <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
         </button>
@@ -180,7 +133,6 @@ export default function Friend() {
     const SearchBar = ({ placeholder }) => (
         <div className="flex gap-2">
             <div className="flex-1 bg-white rounded-full px-4 py-3 flex items-center gap-2 shadow-sm">
-                {/* 아이콘 위치: 돋보기 (bi-search) */}
                 <span className="text-[#8B9BAA] text-xs">🔍</span>
                 <input
                     type="text"
@@ -196,7 +148,6 @@ export default function Friend() {
                 className="w-12 h-12 rounded-2xl bg-[#A8C8D8] flex items-center justify-center shadow-sm shrink-0"
                 aria-label="상세 검색"
             >
-                {/* 아이콘 위치: 사람+돋보기 (bi-person-add / bi-search-heart) */}
                 <span className="w-5 h-5 block" />
             </button>
         </div>
@@ -230,13 +181,8 @@ export default function Friend() {
 
         return (
             <>
-                {/* 헤더: 뒤로가기 + 친구 이름 */}
                 <header className="px-6 pt-6 flex items-center justify-between">
-                    <button
-                        onClick={handleBackToList}
-                        className="flex items-center gap-2"
-                    >
-                        {/* 아이콘 위치: 뒤로가기 (bi-chevron-left) */}
+                    <button onClick={handleBackToList} className="flex items-center gap-2">
                         <h1 className="text-2xl font-bold text-[#3D4D5C]">
                             {selectedFriend.name}
                         </h1>
@@ -245,7 +191,6 @@ export default function Friend() {
                 </header>
 
                 <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
-                    {/* 캘린더 카드 (shadcn/ui Calendar) */}
                     <div className="bg-white rounded-2xl p-4 shadow-sm">
                         <Calendar
                             mode="single"
@@ -259,18 +204,14 @@ export default function Friend() {
                                 daily: dailyDays,
                             }}
                             modifiersClassNames={{
-                                study:
-                                    "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E88A8A]",
-                                workout:
-                                    "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#F4D58A]",
-                                daily:
-                                    "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#A8D5B4]",
+                                study: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E88A8A]",
+                                workout: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#F4D58A]",
+                                daily: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#A8D5B4]",
                             }}
                             className="w-full"
                         />
                     </div>
 
-                    {/* 친구의 할 일 */}
                     <div className="mt-6">
                         <h2 className="text-base font-bold text-[#3D4D5C]">
                             {selectedFriend.name}의 할 일
@@ -282,44 +223,45 @@ export default function Friend() {
 
                     <div className="mt-3 flex flex-col gap-3">
                         {todos.map((todo) => (
-                            <div
-                                key={todo.id}
-                                className="w-full bg-white rounded-2xl p-4 shadow-sm"
-                            >
+                            <div key={todo.id} className="w-full bg-white rounded-2xl p-4 shadow-sm">
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-start gap-3 flex-1">
                                         <div
                                             className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center"
                                             style={{ backgroundColor: todo.dotColor }}
                                         >
-                                            {/* 아이콘 위치: 카테고리/완료 아이콘 */}
                                             {todo.dotLetter && (
                                                 <span className="text-white text-xs font-bold">
-                          {todo.dotLetter}
-                        </span>
+                                                    {todo.dotLetter}
+                                                </span>
                                             )}
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-sm font-bold text-[#3D4D5C]">
-                                                {todo.title}
-                                            </p>
+                                            <p className="text-sm font-bold text-[#3D4D5C]">{todo.title}</p>
                                             {todo.memo && (
-                                                <p className="text-xs text-[#8B9BAA] mt-1">
-                                                    {todo.memo}
-                                                </p>
+                                                <p className="text-xs text-[#8B9BAA] mt-1">{todo.memo}</p>
                                             )}
                                         </div>
                                     </div>
                                     <span className="text-[11px] text-[#87B4C4] bg-[#E4EEF3] px-2 py-0.5 rounded-full shrink-0">
-                    {todo.category}
-                  </span>
+                                        {todo.category}
+                                    </span>
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
-
-                <SharedModals />
+                <NotificationModal
+                    isOpen={isNotiOpen}
+                    onClose={() => setIsNotiOpen(false)}
+                    notifications={notifications}
+                    onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
+                />
+                <FriendAddModal
+                    isOpen={isFriendAddOpen}
+                    onClose={() => setIsFriendAddOpen(false)}
+                    onSearch={searchUser}
+                />
             </>
         );
     }
@@ -351,16 +293,10 @@ export default function Friend() {
                                     key={member.id}
                                     className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 relative"
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0">
-                                        {/* 아이콘 위치: 프로필 이미지 (bi-person-fill) */}
-                                    </div>
+                                    <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
                                     <div className="flex-1">
-                                        <p className="text-sm font-bold text-[#3D4D5C]">
-                                            {member.name}
-                                        </p>
-                                        <p className="text-xs text-[#8B9BAA] mt-1">
-                                            {member.status}
-                                        </p>
+                                        <p className="text-sm font-bold text-[#3D4D5C]">{member.name}</p>
+                                        <p className="text-xs text-[#8B9BAA] mt-1">{member.status}</p>
                                     </div>
                                     <button
                                         onClick={() => handleDeleteMember(member)}
@@ -373,8 +309,17 @@ export default function Friend() {
                         )}
                     </div>
                 </div>
-
-                <SharedModals />
+                <NotificationModal
+                    isOpen={isNotiOpen}
+                    onClose={() => setIsNotiOpen(false)}
+                    notifications={notifications}
+                    onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
+                />
+                <FriendAddModal
+                    isOpen={isFriendAddOpen}
+                    onClose={() => setIsFriendAddOpen(false)}
+                    onSearch={searchUser}
+                />
             </>
         );
     }
@@ -406,13 +351,9 @@ export default function Friend() {
                                 onClick={() => handleFriendClick(friend)}
                                 className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left"
                             >
-                                <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0">
-                                    {/* 아이콘 위치: 프로필 이미지 (bi-person-fill) */}
-                                </div>
+                                <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
                                 <div className="flex-1">
-                                    <p className="text-sm font-bold text-[#3D4D5C]">
-                                        {friend.name}
-                                    </p>
+                                    <p className="text-sm font-bold text-[#3D4D5C]">{friend.name}</p>
                                     <p className="text-xs text-[#8B9BAA] mt-1">{friend.status}</p>
                                 </div>
                             </button>
@@ -444,8 +385,17 @@ export default function Friend() {
                     <line x1="22" y1="11" x2="16" y2="11" />
                 </svg>
             </button>
-
-            <SharedModals />
+            <NotificationModal
+                isOpen={isNotiOpen}
+                onClose={() => setIsNotiOpen(false)}
+                notifications={notifications}
+                onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
+            />
+            <FriendAddModal
+                isOpen={isFriendAddOpen}
+                onClose={() => setIsFriendAddOpen(false)}
+                onSearch={searchUser}
+            />
         </>
     );
 }
