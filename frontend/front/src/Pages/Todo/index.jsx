@@ -155,6 +155,14 @@ export default function Todo() {
         }
     };
 
+    // 과거 날짜 + 대기중 → 화면에서 실패로 표시 (DB 값은 그대로)
+    const getDisplayStatus = (todo) => {
+        const todoDay = startOfDay(new Date(todo.created_at));
+        const isPast = isBefore(todoDay, TODAY);
+        if (isPast && todo.todo_status === STATUS.PENDING) return STATUS.FAILED;
+        return todo.todo_status;
+    };
+
     const getNextStatus = (todo_status, isPast) => {
         if (todo_status === STATUS.PENDING) return STATUS.COMPLETED;
         if (todo_status === STATUS.COMPLETED)
@@ -306,11 +314,12 @@ export default function Todo() {
                         currentTodos.map((todo) => {
                             const isChecked = selectedTodoIds.includes(todo.todo_id);
                             const category = categoryMap[todo.category_id];
+                            const displayStatus = getDisplayStatus(todo);
 
                             // 상태에 따른 라디오 색
                             const radioBorder =
-                                todo.todo_status === STATUS.COMPLETED ? STATUS_COLOR.COMPLETED :
-                                    todo.todo_status === STATUS.FAILED    ? STATUS_COLOR.FAILED :
+                                displayStatus === STATUS.COMPLETED ? STATUS_COLOR.COMPLETED :
+                                    displayStatus === STATUS.FAILED    ? STATUS_COLOR.FAILED :
                                         STATUS_COLOR.PENDING;
                             return (
                                 <div
@@ -334,9 +343,9 @@ export default function Todo() {
                                             <button
                                                 type="button"
                                                 aria-label={
-                                                    todo.todo_status === STATUS.COMPLETED
+                                                    displayStatus === STATUS.COMPLETED
                                                         ? "완료 해제"
-                                                        : todo.todo_status === STATUS.FAILED
+                                                        : displayStatus === STATUS.FAILED
                                                             ? "다시 완료로 변경"
                                                             : "완료 표시"
                                                 }
@@ -347,13 +356,13 @@ export default function Todo() {
                                                 className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center border-2 transition"
                                                 style={{ borderColor: radioBorder }}
                                             >
-                                                {todo.todo_status === STATUS.COMPLETED && (
+                                                {displayStatus === STATUS.COMPLETED && (
                                                     <span
                                                         className="w-2.5 h-2.5 rounded-full"
                                                         style={{ backgroundColor: STATUS_COLOR.COMPLETED }}
                                                     />
                                                 )}
-                                                {todo.todo_status === STATUS.FAILED && (
+                                                {displayStatus === STATUS.FAILED && (
                                                     <span className="text-[#E89B9B] text-[11px] font-bold leading-none">
                                                         ✕
                                                     </span>
