@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtiles";
+import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import { useAuth } from "../../hooks/useAuth";
 
 /**

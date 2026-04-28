@@ -14,6 +14,7 @@
     "@fontsource-variable/inter": "^5.2.8",
     "@vitejs/plugin-react-swc": "^4.3.0",
     "axios": "^1.14.0",
+    "bootstrap-icons": "^1.13.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

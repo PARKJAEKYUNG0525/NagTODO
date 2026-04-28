@@ -1,7 +1,7 @@
 import { useState, createContext, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import { showSuccessAlert, showWarningAlert } from "../utils/alertUtiles.js";
+import { showSuccessAlert, showWarningAlert } from "../utils/alertUtils.js";
 
 const AuthContext = createContext(null);
 

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import ModalLayout from "../ModalLayout";
+import useCategory from "@/hooks/useCategory.jsx";
 
 /**
  * TodoDetailModal
@@ -22,10 +23,22 @@ const CATEGORIES = [
 ];
 
 const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
+  const { ctLoading, getCategory} = useCategory();
+
   const [title, setTitle] = useState("");
   const [memo, setMemo] = useState("");
-  const [category, setCategory] = useState(CATEGORIES[0].key);
+  const [category, setCategory] = useState();
   const [isPublic, setIsPublic] = useState(true);
+
+  // db에서 category 불러오기
+  const loadCategory = useCallback(async () => {
+    const db_category = await getCategory();
+    if (db_category) setCategory(db_category);
+  }, [getCategory]);
+
+  useEffect(() => {
+    loadCategory();
+  }, [loadCategory]);
 
   // 모달이 열릴 때마다 todo 값을 동기화
   useEffect(() => {

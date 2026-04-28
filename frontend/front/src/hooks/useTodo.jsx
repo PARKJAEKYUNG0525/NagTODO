@@ -1,5 +1,5 @@
 import api from "../utils/api.js";
-import {showWarningAlert, showSuccessAlert} from "../utils/alertUtiles.js";
+import {showWarningAlert, showSuccessAlert} from "../utils/alertUtils.js";
 
 import {useAuth} from "@/hooks/useAuth.jsx";
 import React, {useCallback, useState} from 'react';
@@ -33,14 +33,14 @@ export const useTodo = () => {
 
     // R 조회 - todo 전체 조회
     const getAllTodos = useCallback(async() => {
-        setTodoLoading(true);
-
         if (!user?.user_id) return;
 
-        try {
-            const response = await api.get("/user/{userid}")
+        setTodoLoading(true);
 
-            if (response.status === 200) {
+        try {
+            const response = await api.get(`/todos/user/${user.user_id}`)
+
+            if (response.status === 200 || response.status === 201) {
                 return response.data;
             }
             return [];
@@ -53,7 +53,7 @@ export const useTodo = () => {
         }
     }, [user?.user_id])
 
-    return {todoLoading, getAllTodos, createTodo};
+    return { todoLoading, getAllTodos, createTodo };
 };
 
 export default useTodo;
