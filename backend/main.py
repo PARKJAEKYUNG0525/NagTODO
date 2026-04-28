@@ -2,7 +2,8 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.db.database import Base, async_engine
+from app.db.database import Base, async_engine, AsyncSessionLocal
+from app.db.seed import seed_categories
 from fastapi.concurrency import asynccontextmanager
 
 from app.middleware.token_refresh import RefreshTokenMiddleware
@@ -22,14 +23,13 @@ from app.routers.report import router as report_router
 from app.routers.todo import router as todo_router
 load_dotenv(dotenv_path=".env")
 
-# DB연결 후 모든 테이블 생성(metadata.create_all)
-# 종료 시에 DB 연결 해제
 @asynccontextmanager
 async def lifespan(app:FastAPI):
     async with async_engine.begin() as conn:
-        # conn.run_sync : db 연결 후
-        # Base.metadata.create_all : 테이블을 생성하라
         await conn.run_sync(Base.metadata.create_all)
+    async with AsyncSessionLocal() as session:
+        async with session.begin():
+            await seed_categories(session)
     yield
     await async_engine.dispose()
 
