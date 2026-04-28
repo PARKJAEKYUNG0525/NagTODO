@@ -2,6 +2,7 @@ import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from ai.core.config import settings
 from ai.core.dependencies import get_embedding_model, get_embedding_store
@@ -25,6 +26,12 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="NagTODO AI", lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.include_router(interference_router)
 app.include_router(report_router)
 app.include_router(embeddings_router)

@@ -21,6 +21,7 @@ from app.routers.pw_history import router as pw_history_router
 # from app.routers.recommend import router as recommend_router
 from app.routers.report import router as report_router
 from app.routers.todo import router as todo_router
+from app.routers.notification import router as notification_router
 load_dotenv(dotenv_path=".env")
 
 @asynccontextmanager
@@ -76,6 +77,7 @@ app.include_router(pw_history_router)
 # app.include_router(recommend_router)
 app.include_router(report_router)
 app.include_router(todo_router)
+app.include_router(notification_router)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8081, reload=True)

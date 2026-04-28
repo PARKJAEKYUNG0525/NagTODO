@@ -45,3 +45,15 @@ class InterferenceResult(BaseModel):
 
 class TodoCreateResponse(TodoRead):
     interference: InterferenceResult | None = None
+
+
+class CategoryStat(BaseModel):
+    total: int
+    completed: int
+    rate: float
+
+
+class MonthlyStatsResponse(BaseModel):
+    user_success_rate: float
+    all_users_success_rate: float
+    category_stats: dict[str, CategoryStat]
