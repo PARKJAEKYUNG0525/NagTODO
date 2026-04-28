@@ -40,6 +40,15 @@ async def check_username(
 ):
     return await user_svc.check_username_svc(db, username, current_user.user_id)
 
+# R 닉네임 중복 확인 아래에 추가
+@router.get("/search", response_model=list[UserRead])
+async def search_users(
+    query: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return await user_svc.search_users_svc(db, query, current_user.user_id)
+
 # R 전체 조회
 @router.get("/user", response_model=list[UserRead])
 async def get_all_users(db: AsyncSession = Depends(get_db)):

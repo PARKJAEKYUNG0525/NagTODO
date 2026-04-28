@@ -10,7 +10,7 @@ const ErrorMessage = ({ error }) => {
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
-                className="w-4 h-4 text-red-500 flex-shrink-0"
+                className="w-4 h-4 text-shadow-orange-300 flex-shrink-0"
             >
                 <path
                     fillRule="evenodd"
@@ -18,7 +18,7 @@ const ErrorMessage = ({ error }) => {
                     clipRule="evenodd"
                 />
             </svg>
-            <p className="text-[12px] font-medium text-red-600 leading-tight">
+            <p className="text-[12px] font-medium text-shadow-orange-200 leading-tight">
                 {error}
             </p>
         </div>

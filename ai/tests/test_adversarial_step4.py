@@ -39,16 +39,11 @@ class TestExtractClustersSorting:
         assert sizes == [5, 4, 3]
 
 
-from ai.report.nodes.compute_stats import compute_stats
 from ai.report.nodes.quality_check import quality_check
 from ai.report.nodes.embed_failures import embed_failures
 from ai.report.nodes.summarize_clusters import summarize_clusters
 
 class TestNodeContracts:
-    def test_compute_stats_returns_only_category_stats(self):
-        result = compute_stats({"monthly_logs": []})
-        assert set(result.keys()) == {"category_stats"}
-
     def test_embed_failures_returns_only_failure_embeddings(self):
         mock_model = MagicMock()
         mock_model.encode_passage.return_value = np.array([0.1], dtype=np.float32)
@@ -87,7 +82,7 @@ class TestLlmReportRetryLogic:
         mock_client.generate = capture
         with patch("ai.report.nodes.llm_report.get_ollama_client", return_value=mock_client):
             await llm_report({
-                "pattern_analysis": "analysis",
+                "cluster_summaries": [],
                 "category_stats": {},
                 "retry_count": 0,
                 "quality_issues": ["missing numbers"],
@@ -104,7 +99,7 @@ class TestLlmReportRetryLogic:
         mock_client.generate = capture
         with patch("ai.report.nodes.llm_report.get_ollama_client", return_value=mock_client):
             await llm_report({
-                "pattern_analysis": "analysis",
+                "cluster_summaries": [],
                 "category_stats": {},
                 "retry_count": 1,
                 "quality_issues": ["missing numbers"],
@@ -117,9 +112,22 @@ class TestLlmReportRetryLogic:
         mock_client.generate = AsyncMock(return_value="report")
         with patch("ai.report.nodes.llm_report.get_ollama_client", return_value=mock_client):
             result = await llm_report({
-                "pattern_analysis": "a",
+                "cluster_summaries": [],
                 "category_stats": {},
                 "retry_count": 0,
                 "quality_issues": [],
             })
         assert set(result.keys()) == {"retrospective_report", "retry_count"}
+
+    @pytest.mark.asyncio
+    async def test_explicit_none_cluster_summaries_not_passed_as_json_null(self):
+        """state에 cluster_summaries=None이 명시된 경우 or-fallback으로 []로 처리돼야 함"""
+        captured_prompts = []
+        mock_client = AsyncMock()
+        async def capture(prompt):
+            captured_prompts.append(prompt)
+            return "report"
+        mock_client.generate = capture
+        with patch("ai.report.nodes.llm_report.get_ollama_client", return_value=mock_client):
+            await llm_report({"cluster_summaries": None, "category_stats": None})
+        assert "null" not in captured_prompts[0]

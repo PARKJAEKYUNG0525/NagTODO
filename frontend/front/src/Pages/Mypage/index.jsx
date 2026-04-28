@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtiles";
 import { useAuth } from "../../hooks/useAuth";
 import useMypage from "../../hooks/useMypage";
+import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
 
 /**
  * Mypage 화면 (통합본)
@@ -24,6 +25,7 @@ export default function MyPage() {
     const { updateProfile, updatePassword, checkUsername } = useMypage();
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
     const [view, setView] = useState("main"); // "main" | "edit-profile"
+    const [error, setError] = useState("");
     const [form, setForm] = useState({ 
         username: "", 
         email: "", 
@@ -78,7 +80,15 @@ export default function MyPage() {
     const handleNotification = () => alert("알림 아이콘 클릭");
 
     const handleWithdraw = () => alert("회원탈퇴 안내");
-    const handleEditProfile = () => setView("edit-profile");
+    const handleEditProfile = () => {
+        setForm(prev => ({
+            ...prev,
+            currentPassword: "",
+            password: "",
+            confirmPassword: "",
+        }));
+        setView("edit-profile");
+    };
     const handleCancelEditProfile = () => setView("main");
 
     const handleChangeProfileImage = () => alert("프로필 사진 변경");
@@ -117,7 +127,7 @@ export default function MyPage() {
             );
             setSelectedCategoryIds([]);
             setAdminMode("default");
-            showSuccessAlert({ title: "삭제 완료" });
+            showSuccessAlert({title: "삭제 완료"});
         }
     };
 
@@ -133,7 +143,7 @@ export default function MyPage() {
     };
     const handleConfirmEdit = () => {
         if (!editingValue.trim()) {
-            alert("카테고리 이름을 입력하세요.");
+            setError("카테고리 이름을 입력하세요.");
             return;
         }
         setCategories((prev) =>
@@ -144,7 +154,7 @@ export default function MyPage() {
         setAdminMode("default");
         setEditingCategoryId(null);
         setEditingValue("");
-        alert("카테고리 수정 완료");
+        showSuccessAlert({title:"카테고리 수정 완료"});
     };
 
     // 드래그 앤 드롭
@@ -172,16 +182,17 @@ export default function MyPage() {
     );
 
     const handleSaveProfile = async () => {
+        setError("");
         const isChangingUsername = form.username.trim() !== user?.username;
         const isChangingPassword = form.currentPassword || form.password || form.confirmPassword;
         if (!isChangingUsername && !isChangingPassword) {
-            alert("변경된 내용이 없습니다.");
+            setError("(Mypage/index)변경된 내용이 없습니다.");
             return;
         }
 
         if (isChangingUsername) {
             if (!form.username.trim()) {
-                alert("닉네임을 입력해주세요.");
+                setError("(Mypage/index)닉네임을 입력해주세요.");
                 return;
             }
             const isAvailable = await checkUsername(form.username.trim());
@@ -190,16 +201,16 @@ export default function MyPage() {
 
         if (isChangingPassword) {
             if (!form.currentPassword) {
-                alert("현재 비밀번호를 입력해주세요.");
+                setError("(Mypage/index)현재 비밀번호를 입력해주세요.");
                 return;
             }
             const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
             if (!pwRegex.test(form.password)) {
-                alert("새 비밀번호는 8자 이상, 영문·숫자·특수문자를 포함해야 합니다.");
+                setError("(Mypage/index)새 비밀번호는 8자 이상, 영문·숫자·특수문자를 포함해야 합니다.");
                 return;
             }
             if (form.password !== form.confirmPassword) {
-                alert("새 비밀번호가 일치하지 않습니다.");
+                setError("(Mypage/index)새 비밀번호가 일치하지 않습니다.");
                 return;
             }
         }
@@ -208,7 +219,7 @@ export default function MyPage() {
             if (isChangingUsername) {
                 const profileOk = await updateProfile({ username: form.username.trim() });
                 if (!profileOk) return;
-                alert("닉네임이 변경되었습니다.");
+                showSuccessAlert({title:"닉네임이 변경되었습니다."});
             }
 
             if (isChangingPassword) {
@@ -218,16 +229,24 @@ export default function MyPage() {
                     confirmPassword: form.confirmPassword,
                 });
                 if (!pwOk) {
-                    alert("현재 비밀번호가 틀립니다.");
+                    setError("(Mypage/index)비밀번호를 다시 확인해주세요.");
                     return;   
                 }
-                alert("비밀번호가 변경되었습니다.");
+                showSuccessAlert({title:"비밀번호가 변경되었습니다."});
+
             }
+
+            setForm(prev => ({
+                    ...prev,
+                    currentPassword: "",
+                    password: "",
+                    confirmPassword: "",
+            }));
 
             setView("main");
         } catch (e) {
             console.error(e);
-            alert("저장 중 오류가 발생했습니다.");
+            setError("(Mypage/index)저장 중 오류가 발생했습니다.");
         }
     };
 
@@ -250,13 +269,17 @@ export default function MyPage() {
                 </div>
 
                 <div className="mt-6 flex flex-col gap-4">
+
+                    <ErrorMessage error={error} />
+
                     <Field label="닉네임" value={form.username} onChange={(e) => setForm({...form, username: e.target.value})} />
                     <Field label="이메일" value={form.email} readOnly />
-                    <Field label="현재 비밀번호" type="password" value={form.currentPassword} onChange={(e) => setForm({...form, currentPassword: e.target.value})} />
-                    <Field label="새 비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} />
+                    <Field label="현재 비밀번호" type="password" value={form.currentPassword} onChange={(e) => setForm({...form, currentPassword: e.target.value})} placeholder={"********"}/>
+                    <Field label="새 비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} placeholder={"********"}/>
                     <Field label="새 비밀번호 확인"
                         type="password"
                         value={form.confirmPassword} onChange={(e) => setForm({...form, confirmPassword: e.target.value})}
+                        placeholder={"********"}
                     />
 
                     <div>
