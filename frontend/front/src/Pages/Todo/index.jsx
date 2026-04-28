@@ -82,7 +82,7 @@ export default function Todo() {
     // db에서 category 불러오기
     const loadCategory = useCallback(async () => {
         const db_category = await getCategory();
-        if (db_category) setCategory(db_category);
+        if (db_category) setCategories(db_category);
     }, [getCategory]);
 
     useEffect(() => {
@@ -407,7 +407,7 @@ export default function Todo() {
                 onClose={() => setIsNewOpen(false)}
                 onSubmit={() => {
                     setIsNewOpen(false);
-                    fetchTodos();
+                    loadTodos();
                 }}
                 selectedDate={selectedDate}
             />
