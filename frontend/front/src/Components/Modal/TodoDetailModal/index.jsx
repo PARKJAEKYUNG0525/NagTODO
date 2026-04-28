@@ -22,17 +22,10 @@ const CATEGORIES = [
   { key: "etc",         label: "기타" },
 ];
 
-const STATUSES = [
-  { key: "시작전", color: "#E88A8A" },
-  { key: "진행중", color: "#F4D58A" },
-  { key: "완료",   color: "#A8D5B4" },
-];
-
 const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
   const [title, setTitle] = useState("");
   const [memo, setMemo] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0].key);
-  const [status, setStatus] = useState(STATUSES[0].key);
   const [isPublic, setIsPublic] = useState(true);
 
   useEffect(() => {
@@ -40,7 +33,6 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
     setTitle(todo.title || "");
     setMemo(todo.detail || "");
     setCategory(todo.category_id || CATEGORIES[0].key);
-    setStatus(todo.todo_status || STATUSES[0].key);
     setIsPublic(todo.visibility === "친구공개");
   }, [todo]);
 
@@ -57,7 +49,6 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
       title: title.trim(),
       detail: memo.trim(),
       category_id: category,
-      todo_status: status,
       visibility: isPublic ? "친구공개" : "비공개",
     });
     onClose?.();
@@ -90,32 +81,6 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
             className="px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8] resize-none"
           />
         </label>
-
-        {/* 진행상태 */}
-        <div className="flex flex-col gap-2">
-          <span className="text-xs text-[#8B9BAA]">진행상태</span>
-          <div className="flex gap-2">
-            {STATUSES.map((s) => {
-              const active = status === s.key;
-              return (
-                <button
-                  key={s.key}
-                  type="button"
-                  onClick={() => setStatus(s.key)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-medium transition ${
-                    active ? "bg-[#3D4D5C] text-white" : "bg-[#F5F8FA] text-[#8B9BAA]"
-                  }`}
-                >
-                  <span
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: s.color }}
-                  />
-                  {s.key}
-                </button>
-              );
-            })}
-          </div>
-        </div>
 
         {/* 카테고리 */}
         <div className="flex flex-col gap-2">
