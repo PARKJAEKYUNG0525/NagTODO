@@ -321,7 +321,22 @@ export default function Todo() {
                 isOpen={!!detailTodo}
                 onClose={() => setDetailTodo(null)}
                 todo={detailTodo}
-                onSave={(updated) => alert(`"${updated.title}" 저장`)}
+                onSave={async (updated) => {
+                    try {
+                        await api.patch(`/todos/${updated.todo_id}`, {
+                            title:       updated.title,
+                            detail:      updated.detail,
+                            category_id: updated.category_id,
+                            todo_status: updated.todo_status,
+                            visibility:  updated.visibility,
+                        });
+                        setDetailTodo(null);
+                        fetchTodos();
+                    } catch (err) {
+                        console.error("todo 수정 실패", JSON.stringify(err?.response?.data ?? err?.message ?? err));
+                        alert(err?.response?.data?.detail ?? "저장에 실패했어요. 다시 시도해 주세요.");
+                    }
+                }}
                 onDelete={(id) => alert(`id=${id} 삭제`)}
             />
         </>

@@ -103,11 +103,11 @@ class TodoService:
             await db.refresh(updated)
             return updated
 
-        except Exception:
+        except Exception as e:
             await db.rollback()
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="todo 수정에 실패했습니다."
+                detail=f"todo 수정에 실패했습니다: {e}"
             )
         
     # D 삭제
