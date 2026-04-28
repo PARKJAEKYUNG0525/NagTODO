@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Calendar } from "@/components/ui/calendar";
-import { format, isSameDay, startOfDay } from "date-fns";
+import { format, isSameDay, startOfDay, isBefore } from "date-fns";
 import { ko } from "date-fns/locale";
 import NewTodoModal from "../../Components/Modal/NewTodoModal";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
 import { useAuth } from "../../hooks/useAuth";
 import api from "../../utils/api";
+import useTodo from "@/hooks/useTodo.jsx";
+import useCategory from "@/hooks/useCategory.jsx";
 
 /**
  * TodoMain 화면 (통합본)
@@ -26,25 +28,32 @@ import api from "../../utils/api";
  * ※ shadcn/ui Calendar: npx shadcn-ui@latest add calendar
  * ※ date-fns: npm i date-fns
  */
-const STATUS_COLOR = {
-    "시작전": "#E88A8A",
-    "진행중": "#F4D58A",
-    "완료":   "#A8D5B4",
-    "대기중": "#E88A8A", // 구 DB 데이터 호환
-    "실패":   "#E88A8A", // 구 DB 데이터 호환
+
+// 달성률에 따른 도트 색
+const RATE_COLOR = {
+    HIGH:  "#A8D5B4", // 100% — 초록
+    MID:   "#F4D58A", // 50%~99% — 노랑
+    LOW:   "#E89B9B", // 50% 미만 — 빨강
 };
 
-const CATEGORY_LABEL = {
-    study:       "공부",
-    workout:     "운동",
-    daily:       "일상",
-    appointment: "약속",
-    work:        "업무",
-    etc:         "기타",
+// 상태별 라디오 색 (카드용)
+const STATUS_COLOR = {
+    PENDING:   "#A8C8D8", // 연한 청회색 — 빈 원
+    COMPLETED: "#A8D5B4", // 초록 — 완료 점
+    FAILED:    "#E89B9B", // 빨강 — ✕
+};
+
+// 할 일 상태
+const STATUS = {
+    PENDING: "대기중",
+    COMPLETED: "완료",
+    FAILED: "실패",
 };
 
 export default function Todo() {
     const { user } = useAuth();
+    const { todoLoading, getAllTodos, createTodo } = useTodo();
+    const { ctLoading, getCategory} = useCategory();
 
     // ====== 상수/상태 ======
     const TODAY = startOfDay(new Date());
@@ -53,29 +62,40 @@ export default function Todo() {
     const [isDeleteMode, setIsDeleteMode] = useState(false);
     const [selectedTodoIds, setSelectedTodoIds] = useState([]);
     const [todos, setTodos] = useState([]);
+    const [categories, setCategories] = useState([]);
 
     // 모달 상태
     const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isNewOpen, setIsNewOpen] = useState(false);
     const [detailTodo, setDetailTodo] = useState(null);
 
-    const fetchTodos = useCallback(async () => {
-        if (!user?.user_id) return;
-        try {
-            const res = await api.get(`/todos/user/${user.user_id}`);
-            setTodos(res.data);
-        } catch {
-            // 조용히 실패 (목록 비움 유지)
-        }
-    }, [user?.user_id]);
+    // db에서 todo 불러오기
+    const loadTodos = useCallback(async () => {
+        const db_todo = await getAllTodos();
+        if (db_todo) setTodos(db_todo);
+    }, [getAllTodos]);
 
     useEffect(() => {
-        fetchTodos();
-    }, [fetchTodos]);
+        loadTodos();
+    }, [loadTodos]);
+
+    // db에서 category 불러오기
+    const loadCategory = useCallback(async () => {
+        const db_category = await getCategory();
+        if (db_category) setCategories(db_category);
+    }, [getCategory]);
+
+    useEffect(() => {
+        loadCategory();
+    }, [loadCategory]);
 
     const currentTodos = todos.filter((t) =>
         isSameDay(startOfDay(new Date(t.created_at)), selectedDate)
     );
+    const categoryMap = Object.fromEntries(
+        categories.map((c) => [c.category_id, c])
+    );
+
     const isToday = isSameDay(selectedDate, TODAY);
     const formattedSelected = format(selectedDate, "M월 d일", { locale: ko });
 
@@ -135,27 +155,66 @@ export default function Todo() {
         }
     };
 
-    // ====== 캘린더 dot: 날짜별 완료 비율에 따라 연→진 붉은색 5단계 ======
-    const todosByDate = todos.reduce((acc, t) => {
-        const key = format(startOfDay(new Date(t.created_at)), "yyyy-MM-dd");
-        (acc[key] = acc[key] || []).push(t);
-        return acc;
-    }, {});
+    const getNextStatus = (todo_status, isPast) => {
+        if (todo_status === STATUS.PENDING) return STATUS.COMPLETED;
+        if (todo_status === STATUS.COMPLETED)
+            return isPast ? STATUS.FAILED : STATUS.PENDING;   // 과거만 실패, 오늘/미래는 대기중
+        if (todo_status === STATUS.FAILED) return STATUS.COMPLETED;
+        return todo_status;
+    };
 
-    // calDot[0]=완료0%, [1]=1~33%, [2]=34~66%, [3]=67~99%, [4]=100%
-    const calDot = [[], [], [], [], []];
-    Object.entries(todosByDate).forEach(([dateStr, dayTodos]) => {
-        const ratio = dayTodos.filter((t) => t.todo_status === "완료").length / dayTodos.length;
-        const level = ratio === 0 ? 0 : ratio < 0.34 ? 1 : ratio < 0.67 ? 2 : ratio < 1 ? 3 : 4;
-        calDot[level].push(startOfDay(new Date(dateStr)));
-    });
+    const handleToggleStatus = async (todo) => {
+        const todoDay = startOfDay(new Date(todo.created_at));
+        const isPast = isBefore(todoDay, TODAY);            // ← 오늘/미래 false, 과거 true
+        const prevStatus = todo.todo_status;
+        const nextStatus = getNextStatus(prevStatus, isPast);
+
+        setTodos((prev) =>
+            prev.map((t) =>
+                t.todo_id === todo.todo_id ? { ...t, todo_status: nextStatus } : t
+            )
+        );
+        try {
+            await api.patch(`/todos/${todo.todo_id}`, { todo_status: nextStatus });
+        } catch (err) {
+            setTodos((prev) =>
+                prev.map((t) =>
+                    t.todo_id === todo.todo_id ? { ...t, todo_status: prevStatus } : t
+                )
+            );
+            alert("상태 변경에 실패했어요.");
+        }
+    };
+
+    // 같은 날의 todo 들끼리 묶어 달성률 계산 → 색 그룹별 날짜 배열
+    const { highDays, midDays, lowDays } = (() => {
+        const byDay = new Map(); // key: yyyy-MM-dd, value: Todo[]
+        todos.forEach((t) => {
+            const day = startOfDay(new Date(t.created_at));
+            const key = format(day, "yyyy-MM-dd");
+            if (!byDay.has(key)) byDay.set(key, { day, list: [] });
+            byDay.get(key).list.push(t);
+        });
+
+        const high = [], mid = [], low = [];
+        byDay.forEach(({ day, list }) => {
+            const total = list.length;
+            if (total === 0) return;
+            const done = list.filter((t) => t.todo_status === STATUS.COMPLETED).length;
+            const rate = done / total;
+            if (rate >= 1) high.push(day);
+            else if (rate >= 0.5) mid.push(day);
+            else low.push(day);
+        });
+        return { highDays: high, midDays: mid, lowDays: low };
+    })();
 
     return (
         <>
             {/* 상단 헤더 */}
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">
-                    {format(selectedDate, "M월", {locale: ko})}
+                    {format(selectedDate, "M월", { locale: ko })}
                 </h1>
                 <button
                     className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
@@ -176,7 +235,6 @@ export default function Todo() {
                             onClick={handleToday}
                             className="text-xs text-[#87B4C4] font-medium"
                         >
-                            오늘
                         </button>
                     </div>
                     <Calendar
@@ -186,18 +244,14 @@ export default function Todo() {
                         locale={ko}
                         showOutsideDays
                         modifiers={{
-                            dot0: calDot[0],
-                            dot1: calDot[1],
-                            dot2: calDot[2],
-                            dot3: calDot[3],
-                            dot4: calDot[4],
+                            high: highDays,
+                            mid:  midDays,
+                            low:  lowDays,
                         }}
                         modifiersClassNames={{
-                            dot0: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#FFCCCC]",
-                            dot1: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#FF9999]",
-                            dot2: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#FF6666]",
-                            dot3: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E03333]",
-                            dot4: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#B00000]",
+                            high: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#A8D5B4]",
+                            mid:  "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#F4D58A]",
+                            low:  "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E89B9B]",
                         }}
                         className="w-full"
                     />
@@ -251,22 +305,61 @@ export default function Todo() {
                     ) : (
                         currentTodos.map((todo) => {
                             const isChecked = selectedTodoIds.includes(todo.todo_id);
-                            const dotColor = STATUS_COLOR[todo.todo_status] ?? "#D9DFE4";
+                            const category = categoryMap[todo.category_id];
+
+                            // 상태에 따른 라디오 색
+                            const radioBorder =
+                                todo.todo_status === STATUS.COMPLETED ? STATUS_COLOR.COMPLETED :
+                                    todo.todo_status === STATUS.FAILED    ? STATUS_COLOR.FAILED :
+                                        STATUS_COLOR.PENDING;
                             return (
-                                <button
+                                <div
                                     key={todo.todo_id}
+                                    role="button"
+                                    tabIndex={0}
                                     onClick={() => handleTodoClick(todo)}
-                                    className={`
-                    w-full bg-white rounded-2xl p-4 shadow-sm text-left
-                    ${isDeleteMode && isChecked ? "ring-2 ring-[#A8C8D8]" : ""}
-                  `}
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter" || e.key === " ") {
+                                            e.preventDefault();
+                                            handleTodoClick(todo);
+                                        }
+                                    }}
+                                    className={`w-full bg-white rounded-2xl p-4 shadow-sm text-left cursor-pointer ${
+                                        isDeleteMode && isChecked ? "ring-2 ring-[#A8C8D8]" : ""
+                                    }`}
                                 >
                                     <div className="flex items-start justify-between">
                                         <div className="flex items-start gap-3 flex-1">
-                                            <div
-                                                className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center"
-                                                style={{ backgroundColor: dotColor }}
-                                            />
+                                            {/* 라디오 토글 (3-상태) */}
+                                            <button
+                                                type="button"
+                                                aria-label={
+                                                    todo.todo_status === STATUS.COMPLETED
+                                                        ? "완료 해제"
+                                                        : todo.todo_status === STATUS.FAILED
+                                                            ? "다시 완료로 변경"
+                                                            : "완료 표시"
+                                                }
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleToggleStatus(todo);
+                                                }}
+                                                className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center border-2 transition"
+                                                style={{ borderColor: radioBorder }}
+                                            >
+                                                {todo.todo_status === STATUS.COMPLETED && (
+                                                    <span
+                                                        className="w-2.5 h-2.5 rounded-full"
+                                                        style={{ backgroundColor: STATUS_COLOR.COMPLETED }}
+                                                    />
+                                                )}
+                                                {todo.todo_status === STATUS.FAILED && (
+                                                    <span className="text-[#E89B9B] text-[11px] font-bold leading-none">
+                                                        ✕
+                                                    </span>
+                                                )}
+                                            </button>
+
                                             <div className="flex-1">
                                                 <p className="text-sm font-bold text-[#3D4D5C]">
                                                     {todo.title}
@@ -279,10 +372,10 @@ export default function Todo() {
                                             </div>
                                         </div>
                                         <span className="text-[11px] text-[#87B4C4] bg-[#E4EEF3] px-2 py-0.5 rounded-full shrink-0">
-                      {CATEGORY_LABEL[todo.category_id] ?? todo.category_id}
-                    </span>
+                                            {category?.name ?? todo.category_id}
+                                        </span>
                                     </div>
-                                </button>
+                                </div>
                             );
                         })
                     )}
@@ -313,7 +406,7 @@ export default function Todo() {
                 onClose={() => setIsNewOpen(false)}
                 onSubmit={() => {
                     setIsNewOpen(false);
-                    fetchTodos();
+                    loadTodos();
                 }}
                 selectedDate={selectedDate}
             />
@@ -331,7 +424,7 @@ export default function Todo() {
                             visibility:  updated.visibility,
                         });
                         setDetailTodo(null);
-                        fetchTodos();
+                        loadTodos();
                     } catch (err) {
                         console.error("todo 수정 실패", JSON.stringify(err?.response?.data ?? err?.message ?? err));
                         alert(err?.response?.data?.detail ?? "저장에 실패했어요. 다시 시도해 주세요.");
