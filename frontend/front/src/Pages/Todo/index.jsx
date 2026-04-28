@@ -236,7 +236,6 @@ export default function Todo() {
                             onClick={handleToday}
                             className="text-xs text-[#87B4C4] font-medium"
                         >
-                            오늘
                         </button>
                     </div>
                     <Calendar
