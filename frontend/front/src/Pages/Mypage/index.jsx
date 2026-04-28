@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import { useAuth } from "../../hooks/useAuth";
+import useMypage from "../../hooks/useMypage";
 
 /**
  * Mypage 화면 (통합본)
@@ -20,10 +21,19 @@ import { useAuth } from "../../hooks/useAuth";
 export default function MyPage() {
     const { user } = useAuth();
     const [isAdmin, setIsAdmin] = useState(false);
+    const { updateProfile, updatePassword, checkUsername } = useMypage();
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
     const [view, setView] = useState("main"); // "main" | "edit-profile"
-    const [form, setForm] = useState({ username: "", email: "", password: "", confirmPassword: "", birthYear: "",
-    birthMonth: ""});
+    const [form, setForm] = useState({ 
+        username: "", 
+        email: "", 
+        currentPassword: "",  
+        password: "", 
+        confirmPassword: "", 
+        birthYear: "",
+        birthMonth: "",
+        birthDay: ""  
+        });
 
 
     const [adminMode, setAdminMode] = useState("default"); // "default" | "edit" | "delete"
@@ -40,15 +50,6 @@ export default function MyPage() {
     ]);
     const [draggedIdx, setDraggedIdx] = useState(null);
 
-
-    useEffect(() => {
-        if (user) {
-            console.log("birthday 값:", user.birthday);
-            const [year, month] = (user.birthday || "").split("-");
-            console.log("year:", year, "month:", month);
-        }
-    }, [user]);
-
     useEffect(() => {
         const checkAdmin = () => false;
         setIsAdmin(checkAdmin());
@@ -62,13 +63,14 @@ export default function MyPage() {
 
     useEffect(() => {
         if (user) {
-            const [year, month] = (user.birthday || "").split("-");
+            const [year, month, day] = (user.birthday || "").split("-");
             setForm(prev => ({
                 ...prev,
                 username: user.username || "",
                 email: user.email || "",
                 birthYear: year || "",
                 birthMonth: month || "",
+                birthDay: day || "",
             }));
         }
     }, [user]);
@@ -78,10 +80,7 @@ export default function MyPage() {
     const handleWithdraw = () => alert("회원탈퇴 안내");
     const handleEditProfile = () => setView("edit-profile");
     const handleCancelEditProfile = () => setView("main");
-    const handleSaveProfile = () => {
-        alert("프로필 저장");
-        setView("main");
-    };
+
     const handleChangeProfileImage = () => alert("프로필 사진 변경");
     const handleSelectStrictMode = (mode) => {
         setStrictMode(mode);
@@ -172,7 +171,65 @@ export default function MyPage() {
         </button>
     );
 
-    
+    const handleSaveProfile = async () => {
+        const isChangingUsername = form.username.trim() !== user?.username;
+        const isChangingPassword = form.currentPassword || form.password || form.confirmPassword;
+        if (!isChangingUsername && !isChangingPassword) {
+            alert("변경된 내용이 없습니다.");
+            return;
+        }
+
+        if (isChangingUsername) {
+            if (!form.username.trim()) {
+                alert("닉네임을 입력해주세요.");
+                return;
+            }
+            const isAvailable = await checkUsername(form.username.trim());
+            if (!isAvailable) return;
+        }
+
+        if (isChangingPassword) {
+            if (!form.currentPassword) {
+                alert("현재 비밀번호를 입력해주세요.");
+                return;
+            }
+            const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+            if (!pwRegex.test(form.password)) {
+                alert("새 비밀번호는 8자 이상, 영문·숫자·특수문자를 포함해야 합니다.");
+                return;
+            }
+            if (form.password !== form.confirmPassword) {
+                alert("새 비밀번호가 일치하지 않습니다.");
+                return;
+            }
+        }
+
+        try {
+            if (isChangingUsername) {
+                const profileOk = await updateProfile({ username: form.username.trim() });
+                if (!profileOk) return;
+                alert("닉네임이 변경되었습니다.");
+            }
+
+            if (isChangingPassword) {
+                const pwOk = await updatePassword({
+                    currentPassword: form.currentPassword,
+                    newPassword: form.password,
+                    confirmPassword: form.confirmPassword,
+                });
+                if (!pwOk) {
+                    alert("현재 비밀번호가 틀립니다.");
+                    return;   
+                }
+                alert("비밀번호가 변경되었습니다.");
+            }
+
+            setView("main");
+        } catch (e) {
+            console.error(e);
+            alert("저장 중 오류가 발생했습니다.");
+        }
+    };
 
     // ====== 렌더: 비관리자 - 내 정보 수정 ======
     if (!isAdmin && view === "edit-profile") {
@@ -195,9 +252,9 @@ export default function MyPage() {
                 <div className="mt-6 flex flex-col gap-4">
                     <Field label="닉네임" value={form.username} onChange={(e) => setForm({...form, username: e.target.value})} />
                     <Field label="이메일" value={form.email} readOnly />
-                    <Field label="비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} />
-                    <Field
-                        label="비밀번호 확인"
+                    <Field label="현재 비밀번호" type="password" value={form.currentPassword} onChange={(e) => setForm({...form, currentPassword: e.target.value})} />
+                    <Field label="새 비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} />
+                    <Field label="새 비밀번호 확인"
                         type="password"
                         value={form.confirmPassword} onChange={(e) => setForm({...form, confirmPassword: e.target.value})}
                     />
@@ -205,20 +262,18 @@ export default function MyPage() {
                     <div>
                         <label className="block text-xs text-[#8B9BAA] mb-2">생일</label>
                         <div className="flex gap-3">
-                            <button
-                                onClick={() => alert("년도 선택")}
-                                className="flex-1 bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
-                            >
+                           <div className="flex-1 bg-[#F2F4F6] rounded-xl px-4 py-3 flex items-center text-sm text-[#B5BEC7] shadow-sm cursor-not-allowed">
                                 <span>{form.birthYear || ""}</span>
                                 <span className="text-[#A8C8D8] text-xs">▼</span>
-                            </button>
-                            <button
-                                onClick={() => alert("월 선택")}
-                                className="flex-1 bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
-                            >
+                            </div>
+                            <div className="flex-1 bg-[#F2F4F6] rounded-xl px-4 py-3 flex items-center text-sm text-[#B5BEC7] shadow-sm cursor-not-allowed">
                                 <span>{form.birthMonth || ""}</span>
                                 <span className="text-[#A8C8D8] text-xs">▼</span>
-                            </button>
+                            </div>
+                             <div className="flex-1 bg-[#F2F4F6] rounded-xl px-4 py-3 flex items-center text-sm text-[#B5BEC7] shadow-sm cursor-not-allowed">
+                                <span>{form.birthDay || ""}</span>
+                                <span className="text-[#A8C8D8] text-xs">▼</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -484,8 +539,11 @@ function Field({ label, type = "text", value, onChange, placeholder, readOnly })
                 onChange={onChange}
                 placeholder={placeholder}
                 readOnly={readOnly}
-                className="w-full px-4 py-3 rounded-xl bg-white text-sm text-[#3D4D5C] placeholder-[#B5BEC7] shadow-sm focus:outline-none focus:ring-2 focus:ring-[#A8C8D8]"
-            />
+                className={`w-full px-4 py-3 rounded-xl text-sm shadow-sm focus:outline-none
+                        ${readOnly
+                            ? "bg-[#F2F4F6] text-[#B5BEC7] cursor-not-allowed"
+                            : "bg-white text-[#3D4D5C] placeholder-[#B5BEC7] focus:ring-2 focus:ring-[#A8C8D8]"
+                        }`}/>
         </div>
     );
 }
