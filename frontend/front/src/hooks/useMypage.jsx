@@ -3,13 +3,13 @@ import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import { showSuccessAlert } from "../utils/alertUtiles.js";
 import { useAuth } from "./useAuth";
-import useMypage from './useMypage';
 
 const useMypage = () => {
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { setUser, logout } = useAuth();
     const navigate = useNavigate();
+    
 
     // 프로필 조회
     const getProfile = async () => {
@@ -24,13 +24,30 @@ const useMypage = () => {
         }
     };
 
-    // 프로필 수정
-    const updateProfile = async ({ username, birthday }) => {
+    const checkUsername = async (username) => {
         try {
-            const response = await api.patch("/users/me", { username, birthday });
+            const response = await api.get(`/users/check-username?username=${username}`);
+            if (response.status === 200) {
+                return true; // 사용 가능
+            }
+        } catch (error) {
+            console.log(error);
+            if (error.response?.status === 409) {
+                setError("이미 사용 중인 닉네임입니다.");
+            } else {
+                setError(error.response?.data.detail || "닉네임 확인에 실패했습니다.");
+            }
+            return false; // 사용 불가
+        }
+    };
+
+    // 프로필 수정
+    const updateProfile = async ({ username }) => {
+        try {
+            const response = await api.patch("/users/me", { username } );
             if (response.status === 200) {
                 setUser(response.data);
-                showSuccessAlert("프로필이 수정되었습니다");
+                // showSuccessAlert("프로필이 수정되었습니다");
                 return true;
             }
         } catch (error) {
@@ -84,6 +101,7 @@ const useMypage = () => {
         updateProfile,
         updatePassword,
         deleteAccount,
+        checkUsername,
     };
 };
 
