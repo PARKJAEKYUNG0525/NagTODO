@@ -159,6 +159,15 @@ class EmbeddingStore:
             return results
 
 
+    def patch_meta(self, todo_id: str, fields: dict) -> None:
+        """벡터 재계산·soft delete 없이 메타데이터 필드만 갱신."""
+        with self._lock:
+            for row in self._metadata:
+                if row["todo_id"] == todo_id and not row["is_deleted"]:
+                    row.update(fields)
+                    return
+            raise ValueError(f"todo_id '{todo_id}' 존재하지 않음")
+
     ########## 인덱스 유지보수 ##########
 
     # 모든 데이터 삭제 후 빈 인덱스로 초기화

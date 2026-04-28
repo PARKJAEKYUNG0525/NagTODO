@@ -17,14 +17,17 @@ import api from "../../../utils/api";
  *   - selectedDate  : Date          — 캘린더에서 선택한 날짜 (기본값: 오늘)
  */
 const CATEGORIES = [
-    { key: "study", label: "공부", color: "#E88A8A" },
-    { key: "workout", label: "운동", color: "#F4D58A" },
-    { key: "daily", label: "일상", color: "#A8D5B4" },
+    { key: "study",       label: "공부" },
+    { key: "workout",     label: "운동" },
+    { key: "daily",       label: "일상" },
+    { key: "appointment", label: "약속" },
+    { key: "work",        label: "업무" },
+    { key: "etc",         label: "기타" },
 ];
 
 const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) => {
     const { user } = useAuth();
-    const { showLoading, showFeedback } = useInterference();
+    const { showFeedback } = useInterference();
 
     const [title, setTitle] = useState("");
     const [memo, setMemo] = useState("");
@@ -32,39 +35,38 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) 
     const [isPublic, setIsPublic] = useState(true);
     const [submitting, setSubmitting] = useState(false);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        if (!title.trim()) return;
+        if (!title.trim() || submitting) return;
 
-        // 모달 즉시 닫고 로딩 팝업 표시
         const snapshot = { title: title.trim(), memo: memo.trim(), category, isPublic };
+
+        // 모달 즉시 닫고 사용자가 다른 작업 가능하도록 함
         setTitle("");
         setMemo("");
         setCategory(CATEGORIES[0].key);
         setIsPublic(true);
         onClose?.();
-        showLoading();
         setSubmitting(true);
 
-        try {
-            const res = await api.post("/todos/", {
-                title: snapshot.title,
-                detail: snapshot.memo,
-                category_id: snapshot.category,
-                visibility: snapshot.isPublic ? "친구공개" : "비공개",
-                user_id: user.user_id,
-                created_at: format(selectedDate, "yyyy-MM-dd'T'HH:mm:ss"),
-            });
-
-            const feedback = res.data.interference?.feedback ?? "할 수 있어! 이번엔 꼭 해내길 바라!";
+        // AI 잔소리 생성은 백그라운드에서 처리 — 완료되면 팝업으로 알림
+        api.post("/todos/", {
+            title: snapshot.title,
+            detail: snapshot.memo,
+            category_id: snapshot.category,
+            visibility: snapshot.isPublic ? "친구공개" : "비공개",
+            user_id: user.user_id,
+            created_at: format(selectedDate, "yyyy-MM-dd'T'HH:mm:ss"),
+        }).then((res) => {
+            const feedback = res.data.interference?.feedback ?? "잘 좀 하렴";
             showFeedback(feedback);
             onSubmit?.(snapshot);
-        } catch (err) {
+        }).catch((err) => {
             const detail = err.response?.data?.detail;
-            showFeedback(detail ?? "todo 저장에 실패했어요. 다시 시도해 주세요.");
-        } finally {
+            showFeedback(detail ?? "todo 저장 실패. 다시 시도 ㄱ");
+        }).finally(() => {
             setSubmitting(false);
-        }
+        });
     };
 
     return (
@@ -105,16 +107,12 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) 
                                     key={cat.key}
                                     type="button"
                                     onClick={() => setCategory(cat.key)}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-medium transition ${
+                                    className={`px-3 py-2 rounded-full text-xs font-medium transition ${
                                         active
                                             ? "bg-[#3D4D5C] text-white"
                                             : "bg-[#F5F8FA] text-[#8B9BAA]"
                                     }`}
                                 >
-                                    <span
-                                        className="w-2 h-2 rounded-full"
-                                        style={{ backgroundColor: cat.color }}
-                                    />
                                     {cat.label}
                                 </button>
                             );

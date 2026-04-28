@@ -43,11 +43,12 @@ const STATUS_COLOR = {
     FAILED:    "#E89B9B", // 빨강 — ✕
 };
 
-// 할 일 상태
+// 할 일 상태 (DB값: 시작전/진행중/완료, FAILED는 표시 전용)
 const STATUS = {
-    PENDING: "대기중",
-    COMPLETED: "완료",
-    FAILED: "실패",
+    PENDING:     "시작전",
+    IN_PROGRESS: "진행중",
+    COMPLETED:   "완료",
+    FAILED:      "실패", // 표시 전용 — DB에 저장되지 않음
 };
 
 export default function Todo() {
@@ -155,19 +156,22 @@ export default function Todo() {
         }
     };
 
-    const getNextStatus = (todo_status, isPast) => {
-        if (todo_status === STATUS.PENDING) return STATUS.COMPLETED;
-        if (todo_status === STATUS.COMPLETED)
-            return isPast ? STATUS.FAILED : STATUS.PENDING;   // 과거만 실패, 오늘/미래는 대기중
-        if (todo_status === STATUS.FAILED) return STATUS.COMPLETED;
-        return todo_status;
+    // 과거 날짜 + 미완료 → 화면에서 실패로 표시 (DB 값은 그대로)
+    const getDisplayStatus = (todo) => {
+        const todoDay = startOfDay(new Date(todo.created_at));
+        const isPast = isBefore(todoDay, TODAY);
+        if (isPast && todo.todo_status !== STATUS.COMPLETED) return STATUS.FAILED;
+        return todo.todo_status;
+    };
+
+    // 클릭 시: 완료 ↔ 시작전 토글
+    const getNextStatus = (todo_status) => {
+        return todo_status === STATUS.COMPLETED ? STATUS.PENDING : STATUS.COMPLETED;
     };
 
     const handleToggleStatus = async (todo) => {
-        const todoDay = startOfDay(new Date(todo.created_at));
-        const isPast = isBefore(todoDay, TODAY);            // ← 오늘/미래 false, 과거 true
         const prevStatus = todo.todo_status;
-        const nextStatus = getNextStatus(prevStatus, isPast);
+        const nextStatus = getNextStatus(prevStatus);
 
         setTodos((prev) =>
             prev.map((t) =>
@@ -186,8 +190,7 @@ export default function Todo() {
         }
     };
 
-
-// 같은 날의 todo 들끼리 묶어 달성률 계산 → 색 그룹별 날짜 배열
+    // 같은 날의 todo 들끼리 묶어 달성률 계산 → 색 그룹별 날짜 배열
     const { highDays, midDays, lowDays } = (() => {
         const byDay = new Map(); // key: yyyy-MM-dd, value: Todo[]
         todos.forEach((t) => {
@@ -307,11 +310,12 @@ export default function Todo() {
                         currentTodos.map((todo) => {
                             const isChecked = selectedTodoIds.includes(todo.todo_id);
                             const category = categoryMap[todo.category_id];
+                            const displayStatus = getDisplayStatus(todo);
 
                             // 상태에 따른 라디오 색
                             const radioBorder =
-                                todo.todo_status === STATUS.COMPLETED ? STATUS_COLOR.COMPLETED :
-                                    todo.todo_status === STATUS.FAILED    ? STATUS_COLOR.FAILED :
+                                displayStatus === STATUS.COMPLETED ? STATUS_COLOR.COMPLETED :
+                                    displayStatus === STATUS.FAILED    ? STATUS_COLOR.FAILED :
                                         STATUS_COLOR.PENDING;
                             return (
                                 <div
@@ -335,9 +339,9 @@ export default function Todo() {
                                             <button
                                                 type="button"
                                                 aria-label={
-                                                    todo.todo_status === STATUS.COMPLETED
+                                                    displayStatus === STATUS.COMPLETED
                                                         ? "완료 해제"
-                                                        : todo.todo_status === STATUS.FAILED
+                                                        : displayStatus === STATUS.FAILED
                                                             ? "다시 완료로 변경"
                                                             : "완료 표시"
                                                 }
@@ -348,16 +352,16 @@ export default function Todo() {
                                                 className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center border-2 transition"
                                                 style={{ borderColor: radioBorder }}
                                             >
-                                                {todo.todo_status === STATUS.COMPLETED && (
+                                                {displayStatus === STATUS.COMPLETED && (
                                                     <span
                                                         className="w-2.5 h-2.5 rounded-full"
                                                         style={{ backgroundColor: STATUS_COLOR.COMPLETED }}
                                                     />
                                                 )}
-                                                {todo.todo_status === STATUS.FAILED && (
+                                                {displayStatus === STATUS.FAILED && (
                                                     <span className="text-[#E89B9B] text-[11px] font-bold leading-none">
-                                ✕
-                            </span>
+                                                        ✕
+                                                    </span>
                                                 )}
                                             </button>
 
@@ -373,8 +377,8 @@ export default function Todo() {
                                             </div>
                                         </div>
                                         <span className="text-[11px] text-[#87B4C4] bg-[#E4EEF3] px-2 py-0.5 rounded-full shrink-0">
-                    {category?.name ?? todo.category_id}
-                </span>
+                                            {category?.name ?? todo.category_id}
+                                        </span>
                                     </div>
                                 </div>
                             );
@@ -415,7 +419,22 @@ export default function Todo() {
                 isOpen={!!detailTodo}
                 onClose={() => setDetailTodo(null)}
                 todo={detailTodo}
-                onSave={(updated) => alert(`"${updated.title}" 저장`)}
+                onSave={async (updated) => {
+                    try {
+                        await api.patch(`/todos/${updated.todo_id}`, {
+                            title:       updated.title,
+                            detail:      updated.detail,
+                            category_id: updated.category_id,
+                            todo_status: updated.todo_status,
+                            visibility:  updated.visibility,
+                        });
+                        setDetailTodo(null);
+                        loadTodos();
+                    } catch (err) {
+                        console.error("todo 수정 실패", JSON.stringify(err?.response?.data ?? err?.message ?? err));
+                        alert(err?.response?.data?.detail ?? "저장에 실패했어요. 다시 시도해 주세요.");
+                    }
+                }}
                 onDelete={(id) => alert(`id=${id} 삭제`)}
             />
         </>

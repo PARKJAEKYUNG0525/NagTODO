@@ -1,8 +1,15 @@
 import api from "../utils/api.js";
+<<<<<<< HEAD
 import {showWarningAlert, showSuccessAlert} from "../utils/alertUtils.js";
 
 import {useAuth} from "@/hooks/useAuth.jsx";
 import React, {useCallback, useState} from 'react';
+=======
+import { showWarningAlert, showSuccessAlert } from "../utils/alertUtiles.js";
+
+import { useAuth } from "@/hooks/useAuth.jsx";
+import React, { useCallback, useState } from 'react';
+>>>>>>> 85cd134ffdf55ba4a575c91ffc79de9699d6e247
 
 export const useTodo = () => {
 
@@ -17,12 +24,20 @@ export const useTodo = () => {
             const response = await api.post("/todos", newTodo);
 
             if (response.status === 200 || response.status === 201) {
+<<<<<<< HEAD
                 showSuccessAlert("게시글이 생성되었습니다.");
+=======
+                showSuccessAlert({ title: "게시글이 생성되었습니다." });
+>>>>>>> 85cd134ffdf55ba4a575c91ffc79de9699d6e247
                 return response.data;
             }
         }
         catch (error) {
+<<<<<<< HEAD
             showWarningAlert("게시글을 생성할 수 없습니다.", error.message);
+=======
+            showWarningAlert({ title: "게시글을 생성할 수 없습니다.", text: error.message });
+>>>>>>> 85cd134ffdf55ba4a575c91ffc79de9699d6e247
             return null;
         }
         finally {
@@ -56,4 +71,8 @@ export const useTodo = () => {
     return { todoLoading, getAllTodos, createTodo };
 };
 
+<<<<<<< HEAD
 export default useTodo;
+=======
+export default useTodo;
+>>>>>>> 85cd134ffdf55ba4a575c91ffc79de9699d6e247
