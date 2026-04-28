@@ -38,7 +38,8 @@ const ModalLayout = ({ isOpen, onClose, title, children }) => {
       />
 
       {/* 카드 */}
-      <div className="relative bg-white rounded-[24px] shadow-2xl max-w-md w-full overflow-hidden">
+      <div className="relative bg-white rounded-[24px] shadow-2xl max-w-md w-full overflow-hidden"
+      onClick={(e) => e.stopPropagation()}>
         {/* 헤더 */}
         <div className="flex justify-between items-center px-6 pt-6 pb-3">
           <h2 className="text-[20px] font-bold text-[#3D4D5C]">{title}</h2>

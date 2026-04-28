@@ -31,6 +31,11 @@ class ImgService:
                 detail="img 생성에 실패했습니다."
             )
 
+    # R 조회 - 목록 조회 (homepage 기준)
+    @staticmethod
+    async def get_all_imgs_svc(db: AsyncSession) -> list[Img]:
+        return await ImgCrud.get_all_imgs(db)
+
     # R 조회 - 단일 조회
     @staticmethod
     async def get_img_svc(db: AsyncSession, img_id: str) -> Img:
@@ -42,10 +47,17 @@ class ImgService:
             )
         return img
 
-    # R 조회 - 목록 조회 (homepage 기준)
-    @staticmethod
-    async def get_all_imgs_by_homepage_svc(db: AsyncSession, homepage_id: str) -> list[Img]:
-        return await ImgCrud.get_all_imgs_by_homepage(db, homepage_id)
+    # R 조회 - 단일 조회 (homepage 기준)
+    # @staticmethod
+    # async def get_img_by_homepage_svc(db: AsyncSession, homepage_id: str) -> Img:
+    #     img = await ImgCrud.get_img_by_homepage(db, homepage_id)
+    #     if not img:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_404_NOT_FOUND,
+    #             detail=f"해당 홈페이지 '{homepage_id}'에 적용된 배경이 없습니다."
+    #         )
+    #
+    #     return img
 
     # U 수정
     @staticmethod

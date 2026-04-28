@@ -1,5 +1,5 @@
 import {useCallback, useState} from "react";
-import {showErrorAlert, showSuccessAlert} from "../utils/alertUtiles.js";
+import {showErrorAlert, showSuccessAlert} from "../utils/alertUtils.js";
 import api from "../utils/api.js";
 
 export const useBoard = () => {

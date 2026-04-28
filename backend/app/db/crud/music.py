@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.db.models.music import Music
-from app.db.models.homepage import Homepage
+# from app.db.models.homepage import Homepage
 from app.db.scheme.music import MusicCreate, MusicUpdate
 
 
@@ -16,10 +16,16 @@ class MusicCrud:
         return music
 
     # R 조회 - homepage 존재 확인
+    # @staticmethod
+    # async def get_homepage(db: AsyncSession, homepage_id: str) -> Homepage | None:
+    #     result = await db.execute(select(Homepage).where(Homepage.homepage_id == homepage_id))
+    #     return result.scalar_one_or_none()
+
+    # R 조회 - 전체 조회
     @staticmethod
-    async def get_homepage(db: AsyncSession, homepage_id: str) -> Homepage | None:
-        result = await db.execute(select(Homepage).where(Homepage.homepage_id == homepage_id))
-        return result.scalar_one_or_none()
+    async def get_all_musics(db: AsyncSession) -> list[Music]:
+        result = await db.execute(select(Music))
+        return list(result.scalars().all())
 
     # R 조회 - 단일 조회
     @staticmethod
@@ -27,11 +33,11 @@ class MusicCrud:
         result = await db.execute(select(Music).where(Music.music_id == music_id))
         return result.scalar_one_or_none()
 
-    # R 조회 - 목록 조회 (homepage 기준)
-    @staticmethod
-    async def get_all_musics_by_homepage(db: AsyncSession, homepage_id: str) -> list[Music]:
-        result = await db.execute(select(Music).where(Music.homepage_id == homepage_id))
-        return list(result.scalars().all())
+    # R 조회 - homepage 기준 조회
+    # @staticmethod
+    # async def get_music_by_homepage(db: AsyncSession, homepage_id: str) -> list[Music]:
+    #     result = await db.execute(select(Music).where(Music.homepage_id == homepage_id))
+    #     return list(result.scalars().all())
 
     # U 수정
     @staticmethod
