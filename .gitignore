@@ -16,3 +16,4 @@ frontend/front/node_modules/
 .vscode/
 .claude/
 .mcp.json
+ai/data/

@@ -16,7 +16,7 @@ class Todo(Base):
 
     todo_id:     Mapped[str]      = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     title:       Mapped[str]      = mapped_column(String(255), nullable=False)
-    todo_status: Mapped[str]      = mapped_column(Enum("대기중", "완료", "실패"), nullable=False, default="대기중")
+    todo_status: Mapped[str]      = mapped_column(Enum("시작전", "진행중", "완료"), nullable=False, default="시작전")
     detail:      Mapped[str]      = mapped_column(Text, nullable=False)
     visibility:  Mapped[str]      = mapped_column(Enum("친구공개", "비공개"), nullable=False, default="친구공개")
     created_at:  Mapped[datetime] = mapped_column(TIMESTAMP, default=lambda: datetime.now(), nullable=False)
