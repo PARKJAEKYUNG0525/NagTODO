@@ -43,11 +43,12 @@ const STATUS_COLOR = {
     FAILED:    "#E89B9B", // 빨강 — ✕
 };
 
-// 할 일 상태
+// 할 일 상태 (DB값: 시작전/진행중/완료, FAILED는 표시 전용)
 const STATUS = {
-    PENDING: "대기중",
-    COMPLETED: "완료",
-    FAILED: "실패",
+    PENDING:     "시작전",
+    IN_PROGRESS: "진행중",
+    COMPLETED:   "완료",
+    FAILED:      "실패", // 표시 전용 — DB에 저장되지 않음
 };
 
 export default function Todo() {
@@ -155,27 +156,22 @@ export default function Todo() {
         }
     };
 
-    // 과거 날짜 + 대기중 → 화면에서 실패로 표시 (DB 값은 그대로)
+    // 과거 날짜 + 미완료 → 화면에서 실패로 표시 (DB 값은 그대로)
     const getDisplayStatus = (todo) => {
         const todoDay = startOfDay(new Date(todo.created_at));
         const isPast = isBefore(todoDay, TODAY);
-        if (isPast && todo.todo_status === STATUS.PENDING) return STATUS.FAILED;
+        if (isPast && todo.todo_status !== STATUS.COMPLETED) return STATUS.FAILED;
         return todo.todo_status;
     };
 
-    const getNextStatus = (todo_status, isPast) => {
-        if (todo_status === STATUS.PENDING) return STATUS.COMPLETED;
-        if (todo_status === STATUS.COMPLETED)
-            return isPast ? STATUS.FAILED : STATUS.PENDING;   // 과거만 실패, 오늘/미래는 대기중
-        if (todo_status === STATUS.FAILED) return STATUS.COMPLETED;
-        return todo_status;
+    // 클릭 시: 완료 ↔ 시작전 토글
+    const getNextStatus = (todo_status) => {
+        return todo_status === STATUS.COMPLETED ? STATUS.PENDING : STATUS.COMPLETED;
     };
 
     const handleToggleStatus = async (todo) => {
-        const todoDay = startOfDay(new Date(todo.created_at));
-        const isPast = isBefore(todoDay, TODAY);            // ← 오늘/미래 false, 과거 true
         const prevStatus = todo.todo_status;
-        const nextStatus = getNextStatus(prevStatus, isPast);
+        const nextStatus = getNextStatus(prevStatus);
 
         setTodos((prev) =>
             prev.map((t) =>
