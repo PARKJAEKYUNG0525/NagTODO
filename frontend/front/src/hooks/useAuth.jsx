@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }) => {
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
-        throw new Error("useAuth 사용하기 위해 AuthProvider로 감싸야한다");
+        throw new Error("useAuth 사용하기 위해 AuthProvider로 감싸야 합니다");
     }
     return context;
 };

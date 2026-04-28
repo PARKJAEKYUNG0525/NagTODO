@@ -1,25 +1,30 @@
-from pydantic import BaseModel, Field
-from datetime import datetime, timezone
-from typing import Annotated, Optional
+from pydantic import BaseModel
+
 
 class ClothBase(BaseModel):
     cloth_id: str
-    user_id: int
     title: str
+    file_url : str
+    user_id: int
+
 
 class ClothCreate(ClothBase):
     pass 
 
+
 class ClothUpdate(BaseModel):
     cloth_id: str | None = None
-    user_id: int | None = None
     title: str | None = None
+    file_url: str | None = None
+    user_id: int | None = None
+
 
 class ClothInDB(ClothBase):
     pass 
 
     class Config:
         from_attributes = True
+
 
 class ClothRead(ClothInDB):
     pass

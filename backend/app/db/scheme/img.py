@@ -2,25 +2,29 @@ from pydantic import BaseModel
 
 
 class ImgBase(BaseModel):
+    img_id: str
     title: str
-    homepage_id: str
+    file_url: str
+    # homepage_id: str
 
 
 class ImgCreate(ImgBase):
-    img_id: str
+    pass
 
 
 class ImgUpdate(BaseModel):
+    img_id: str | None = None
     title: str | None = None
-    homepage_id: str | None = None
+    file_url: str | None = None
+    # homepage_id: str | None = None
 
 
 class ImgInDB(ImgBase):
-    img_id: str
+    pass
 
     class Config:
         from_attributes = True
 
 
-class ImgResponse(ImgInDB):
+class ImgRead(ImgInDB):
     pass

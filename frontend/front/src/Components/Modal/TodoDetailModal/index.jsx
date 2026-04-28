@@ -31,7 +31,6 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
   const [category, setCategory] = useState();
   const [isPublic, setIsPublic] = useState(true);
 
-<<<<<<< HEAD
   // db에서 category 불러오기
   const loadCategory = useCallback(async () => {
     const db_category = await getCategory();
@@ -43,8 +42,6 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
   }, [loadCategory]);
 
   // 모달이 열릴 때마다 todo 값을 동기화
-=======
->>>>>>> 85cd134ffdf55ba4a575c91ffc79de9699d6e247
   useEffect(() => {
     if (!todo) return;
     setTitle(todo.title || "");
