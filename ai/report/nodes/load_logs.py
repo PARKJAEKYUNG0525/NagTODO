@@ -29,7 +29,7 @@ async def load_logs(state: dict) -> dict:
     async with httpx.AsyncClient(timeout=30) as client:
         try:
             todos_resp = await client.get(
-                f"{settings.BACKEND_API_URL}/todos",
+                f"{settings.BACKEND_API_URL}/history/monthly-logs",
                 params=params,
             )
             todos_resp.raise_for_status()
@@ -43,7 +43,7 @@ async def load_logs(state: dict) -> dict:
         except Exception as e:
             raise ValueError(f"백엔드 API 응답 JSON 파싱 실패: {todos_resp.text[:200]}") from e
 
-        # 카테고리 통계는 백엔드에서 계산 — LLM 프롬프트 컨텍스트로 사용
+        # 카테고리 통계는 백엔드에서 계산 (history 기반) — LLM 프롬프트 컨텍스트로 사용
         stats_params: dict = {"user_id": user_id, "month_start": month_start}
         if month_end:
             stats_params["month_end"] = month_end

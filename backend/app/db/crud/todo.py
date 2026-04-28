@@ -6,6 +6,7 @@ from sqlalchemy.future import select
 from app.db.models.todo import Todo
 from app.db.models.user import User
 from app.db.models.category import Category
+from app.db.models.history import History
 from app.db.scheme.todo import TodoCreate, TodoUpdate
 
 class TodoCrud:
@@ -48,7 +49,7 @@ class TodoCrud:
         result = await db.execute(select(Todo))
         return list(result.scalars().all())
 
-    # R 조회 - 유저 카테고리별 월간 달성률
+    # R 조회 - 유저 카테고리별 월간 달성률 (history.archived_at 기준)
     @staticmethod
     async def get_user_category_stats(
         db: AsyncSession, user_id: int, month_start: str, month_end: str
@@ -60,10 +61,15 @@ class TodoCrud:
             select(
                 Category.name,
                 func.count().label("total"),
-                func.sum(case((Todo.todo_status == "완료", 1), else_=0)).label("completed"),
+                func.sum(case((History.todo_status == "완료", 1), else_=0)).label("completed"),
             )
+            .join(Todo, History.todo_id == Todo.todo_id)
             .join(Category, Todo.category_id == Category.category_id)
-            .where(Todo.user_id == user_id, Todo.created_at >= start_dt, Todo.created_at <= end_dt)
+            .where(
+                History.user_id == user_id,
+                History.archived_at >= start_dt,
+                History.archived_at <= end_dt,
+            )
             .group_by(Category.name)
         )
         result = await db.execute(stmt)
@@ -76,7 +82,7 @@ class TodoCrud:
             for row in result.all()
         }
 
-    # R 조회 - 전체 사용자 월간 성공률
+    # R 조회 - 전체 사용자 월간 성공률 (history.archived_at 기준)
     @staticmethod
     async def get_all_users_success_rate(
         db: AsyncSession, month_start: str, month_end: str
@@ -86,8 +92,8 @@ class TodoCrud:
 
         stmt = select(
             func.count().label("total"),
-            func.sum(case((Todo.todo_status == "완료", 1), else_=0)).label("completed"),
-        ).where(Todo.created_at >= start_dt, Todo.created_at <= end_dt)
+            func.sum(case((History.todo_status == "완료", 1), else_=0)).label("completed"),
+        ).where(History.archived_at >= start_dt, History.archived_at <= end_dt)
 
         result = await db.execute(stmt)
         row = result.one()

@@ -78,7 +78,7 @@ _LOGS_NO_FAILURES = [
 # ── 출력 헬퍼 ─────────────────────────────────────────────────────────────────
 
 def _base_url() -> str:
-    return sys.argv[1].rstrip("/") if len(sys.argv) > 1 else "http://localhost:8000"
+    return sys.argv[1].rstrip("/") if len(sys.argv) > 1 else "http://localhost:8081"
 
 
 def _run_demo(client: httpx.AsyncClient, user_id: str, logs: list[dict]) -> dict:

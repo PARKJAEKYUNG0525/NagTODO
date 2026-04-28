@@ -15,8 +15,10 @@ router = APIRouter()
 
 class MonthlyReportRequest(BaseModel):
     user_id: str
-    year: Optional[int] = None   # 캘린더 월 모드: 연도 (예: 2026)
-    month: Optional[int] = None  # 캘린더 월 모드: 월 (1–12)
+    year: Optional[int] = None        # 캘린더 월 모드: 연도 (예: 2026)
+    month: Optional[int] = None       # 캘린더 월 모드: 월 (1–12)
+    month_start: Optional[str] = None  # 커스텀 범위 모드: "YYYY-MM-DD"
+    month_end: Optional[str] = None    # 커스텀 범위 모드: "YYYY-MM-DD"
 
     @field_validator("user_id")
     @classmethod
@@ -26,13 +28,15 @@ class MonthlyReportRequest(BaseModel):
         return v
 
     @model_validator(mode="after")
-    def year_month_both_or_neither(self) -> "MonthlyReportRequest":
+    def validate_inputs(self) -> "MonthlyReportRequest":
         if (self.year is None) != (self.month is None):
             raise ValueError("year와 month는 함께 입력하거나 둘 다 생략해야 합니다")
         if self.month is not None and not (1 <= self.month <= 12):
             raise ValueError("month는 1–12 사이여야 합니다")
         if self.year is not None and self.year < 2000:
             raise ValueError("year는 2000 이상이어야 합니다")
+        if (self.month_start is None) != (self.month_end is None):
+            raise ValueError("month_start와 month_end는 함께 입력하거나 둘 다 생략해야 합니다")
         return self
 
 
@@ -55,6 +59,8 @@ def _calendar_window(year: int, month: int) -> tuple[str, str]:
 async def monthly_report(req: MonthlyReportRequest):
     if req.year is not None:
         month_start, month_end = _calendar_window(req.year, req.month)
+    elif req.month_start is not None:
+        month_start, month_end = req.month_start, req.month_end
     else:
         month_start, month_end = _rolling_window()
 

@@ -1,7 +1,10 @@
+from datetime import datetime
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.db.models.history import History
 from app.db.models.todo import Todo
+from app.db.models.category import Category
 from app.db.scheme.history import HistoryCreate, HistoryUpdate
 
 class HistoryCrud:
@@ -46,6 +49,38 @@ class HistoryCrud:
             setattr(history, key, value)
         await db.flush()
         return history
+
+    # R 조회 - AI 서버 리포트용 월간 로그 (text, completed, category 형식)
+    @staticmethod
+    async def get_monthly_logs(
+        db: AsyncSession, user_id: int, month_start: str, month_end: str
+    ) -> list[dict]:
+        start_dt = datetime.strptime(month_start, "%Y-%m-%d")
+        end_dt = datetime.strptime(month_end, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
+
+        stmt = (
+            select(
+                History.title.label("text"),
+                History.todo_status,
+                Category.name.label("category"),
+            )
+            .join(Todo, History.todo_id == Todo.todo_id)
+            .join(Category, Todo.category_id == Category.category_id)
+            .where(
+                History.user_id == user_id,
+                History.archived_at >= start_dt,
+                History.archived_at <= end_dt,
+            )
+        )
+        result = await db.execute(stmt)
+        return [
+            {
+                "text": row.text,
+                "completed": row.todo_status == "완료",
+                "category": row.category,
+            }
+            for row in result.all()
+        ]
 
     # D 삭제
     @staticmethod
