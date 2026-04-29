@@ -10,6 +10,8 @@ import api from "../../utils/api";
 import useTodo from "@/hooks/useTodo.jsx";
 import useCategory from "@/hooks/useCategory.jsx";
 
+import { BsFillBellFill } from "react-icons/bs";
+
 /**
  * TodoMain 화면 (통합본)
  * 상태에 따라 세 가지 뷰를 하나의 파일에서 렌더합니다.
@@ -221,11 +223,12 @@ export default function Todo() {
                     {format(selectedDate, "M월", { locale: ko })}
                 </h1>
                 <button
-                    className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
                     onClick={() => setIsNotiOpen(true)}
+                    className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
                 >
                     {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-                    <span className="w-5 h-5 block" />
+                    <BsFillBellFill className="text-white" size={20} />
+                    {/* 알림 도트 */}
                     <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
                 </button>
             </header>

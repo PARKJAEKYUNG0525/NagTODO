@@ -8,6 +8,8 @@ import NotificationModal from "../../Components/Modal/NotificationModal";
 
 import { useFriend } from "../../hooks/useFriend";
 
+import { BsFillBellFill } from "react-icons/bs";
+
 export default function Friend() {
     const [friends, setFriends] = useState([]);
     const [view, setView] = useState("list");
@@ -52,10 +54,12 @@ export default function Friend() {
     // 공용 UI: 상단 벨 버튼
     const NotificationBell = () => (
         <button
-            onClick={handleNotification}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+            onClick={() => setIsNotiOpen(true)}
+            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
         >
-            <span className="w-5 h-5 block" />
+            {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
+            <BsFillBellFill className="text-white" size={20} />
+            {/* 알림 도트 */}
             <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
         </button>
     );
