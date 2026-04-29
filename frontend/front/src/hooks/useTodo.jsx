@@ -53,7 +53,21 @@ export const useTodo = () => {
         }
     }, [user?.user_id])
 
-    return { todoLoading, getAllTodos, createTodo };
+    // D 삭제 - todo 단건 삭제
+    const deleteTodo = useCallback(async (todoId) => {
+        setTodoLoading(true);
+        try {
+            await api.delete(`/todos/${todoId}`);
+            return true;
+        } catch (error) {
+            showWarningAlert({ title: "할 일을 삭제할 수 없습니다.", text: error.message });
+            return false;
+        } finally {
+            setTodoLoading(false);
+        }
+    }, []);
+
+    return { todoLoading, getAllTodos, createTodo, deleteTodo };
 };
 
 export default useTodo;

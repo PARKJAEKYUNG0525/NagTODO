@@ -53,7 +53,7 @@ const STATUS = {
 
 export default function Todo() {
     const { user } = useAuth();
-    const { todoLoading, getAllTodos, createTodo } = useTodo();
+    const { todoLoading, getAllTodos, createTodo, deleteTodo } = useTodo();
     const { ctLoading, getCategory} = useCategory();
 
     // ====== 상수/상태 ======
@@ -100,23 +100,6 @@ export default function Todo() {
     const isToday = isSameDay(selectedDate, TODAY);
     const formattedSelected = format(selectedDate, "M월 d일", { locale: ko });
 
-    const notifications = [
-        {
-            id: 1,
-            title: "오늘의 할 일 알림",
-            body: "'React 복습하기' 가 아직 미완료 상태예요.",
-            time: "5분 전",
-            read: false,
-        },
-        {
-            id: 2,
-            title: "연속 3일째 목표 달성!",
-            body: "운동 카테고리를 3일 연속으로 완료했어요. 대단해요 👏",
-            time: "2시간 전",
-            read: true,
-        },
-    ];
-
     // ====== 핸들러 ======
     const handleToday = () => {
         setSelectedDate(TODAY);
@@ -141,8 +124,13 @@ export default function Todo() {
     const handleSelectAll = () => {
         setSelectedTodoIds(currentTodos.map((t) => t.todo_id));
     };
-    const handleDeleteSelected = () =>
-        alert(`선택한 ${selectedTodoIds.length}개의 할 일 삭제`);
+    const handleDeleteSelected = async () => {
+        if (selectedTodoIds.length === 0) return;
+        await Promise.all(selectedTodoIds.map((id) => deleteTodo(id)));
+        setSelectedTodoIds([]);
+        setIsDeleteMode(false);
+        loadTodos();
+    };
 
     const handleTodoClick = (todo) => {
         if (isDeleteMode) {
@@ -403,8 +391,7 @@ export default function Todo() {
             <NotificationModal
                 isOpen={isNotiOpen}
                 onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
-                onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
+                notifications={[]}
             />
             <NewTodoModal
                 isOpen={isNewOpen}
@@ -435,7 +422,11 @@ export default function Todo() {
                         alert(err?.response?.data?.detail ?? "저장에 실패했어요. 다시 시도해 주세요.");
                     }
                 }}
-                onDelete={(id) => alert(`id=${id} 삭제`)}
+                onDelete={async (id) => {
+                    await deleteTodo(id);
+                    setDetailTodo(null);
+                    loadTodos();
+                }}
             />
         </>
     );
