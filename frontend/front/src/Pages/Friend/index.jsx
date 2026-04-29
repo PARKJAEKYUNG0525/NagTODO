@@ -37,29 +37,6 @@ export default function Friend() {
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
 
-    const [notifications, setNotifications] = useState([]);
-
-    // 알림 조회
-    const fetchNotifications = useCallback(async () => {
-        if (!currentUser?.user_id) return;
-        try {
-            const res = await api.get(`/notifications/user/${currentUser.user_id}`);
-            setNotifications((res.data || []).filter(n => !n.is_read));
-        } catch (e) {
-            console.error("알림 조회 실패:", e);
-        }
-    }, [currentUser]);
-
-    useEffect(() => {
-        fetchNotifications();
-    }, [fetchNotifications]);
-
-    // 관리자 체크 (현재는 항상 false)
-    useEffect(() => {
-        const checkAdmin = () => false;
-        setIsAdmin(checkAdmin());
-    }, []);
-
 
     const handleNotification = () => setIsNotiOpen(true);                       // 알림 모달 열기
 
