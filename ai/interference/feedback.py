@@ -1,6 +1,6 @@
-from ai.llm.ollama_client import OllamaClient
-
 '''성공률 통계를 기반으로 LLM 잔소리 피드백 또는 템플릿 문자열 생성'''
+
+from ai.llm.ollama_client import OllamaClient
 
 # LLM 호출 임계값
 _LLM_CALL_THRESHOLD = 30.0
@@ -74,7 +74,7 @@ async def generate_feedback(
         prompt = _build_prompt(todo_text, stats)
         return await ollama.generate(prompt)
 
-    if personal_rate is not None and personal_rate >= _LLM_CALL_THRESHOLD:
+    elif personal_rate is not None and personal_rate >= _LLM_CALL_THRESHOLD:
         return _MSG_GOOD_PERSONAL
 
     # personal_rate is None (개인 데이터 없음)

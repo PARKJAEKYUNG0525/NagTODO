@@ -172,7 +172,7 @@ def test_router_empty_store_200():
     client = TestClient(_make_app())
     resp = client.post(
         "/ai/interference",
-        json={"todo_text": "운동하기", "category": "health", "user_id": "u1"},
+        json={"todo_id": "test-todo-id", "todo_text": "운동하기", "category": "health", "user_id": "u1"},
     )
     assert resp.status_code == 200
     body = resp.json()
@@ -189,7 +189,7 @@ def test_router_response_schema():
     client = TestClient(_make_app())
     resp = client.post(
         "/ai/interference",
-        json={"todo_text": "독서하기", "category": "learning", "user_id": "u2"},
+        json={"todo_id": "test-todo-id-2", "todo_text": "독서하기", "category": "learning", "user_id": "u2"},
     )
     body = resp.json()
     assert isinstance(body["similar_failures"], list)

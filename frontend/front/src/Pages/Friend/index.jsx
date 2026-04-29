@@ -12,6 +12,8 @@ import { useNotification } from "../../hooks/useNotification";
 
 import api from "../../utils/api"; 
 
+import { BsFillBellFill } from "react-icons/bs";
+
 export default function Friend() {
     // const [friends, setFriends] = useState([]);
     const [isAdmin, setIsAdmin] = useState(false);                              // 관리자 여부 상태
@@ -28,10 +30,26 @@ export default function Friend() {
     );                                                                           // 친구 상세 날짜
 
     // 모달 상태
-    const [isFriendAddOpen, setIsFriendAddOpen] = useState(false);              // 친구 추가 모달
-    const [isNotiOpen, setIsNotiOpen] = useState(false);                        // 알림 모달
+    const [isFriendAddOpen, setIsFriendAddOpen] = useState(false);
+    const [isNotiOpen, setIsNotiOpen] = useState(false);
 
-    // 컴포넌트 로드시 알림 불러오기
+    // 검색 모달
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchResults, setSearchResults] = useState([]);
+
+    const [notifications, setNotifications] = useState([]);
+
+    // 알림 조회
+    const fetchNotifications = useCallback(async () => {
+        if (!currentUser?.user_id) return;
+        try {
+            const res = await api.get(`/notifications/user/${currentUser.user_id}`);
+            setNotifications((res.data || []).filter(n => !n.is_read));
+        } catch (e) {
+            console.error("알림 조회 실패:", e);
+        }
+    }, [currentUser]);
+
     useEffect(() => {
         fetchNotifications();
     }, [fetchNotifications]);
@@ -53,7 +71,7 @@ export default function Friend() {
         setView("list");
         setSelectedFriend(null);
     };
-    const handleAddFriend = () => setIsFriendAddOpen(true);                     // 친구 추가 모달 열기
+    const handleAddFriend = () => setIsFriendAddOpen(true);
 
     // 친구 요청 보내기
     const handleFriendRequest = async (friend) => { 
@@ -89,13 +107,29 @@ export default function Friend() {
         }
     };
 
+    const handleDeleteMember = async (member) => {
+        const ok = await showWarningDialog({
+            title: "회원을 삭제할까요?",
+            text: "삭제된 회원은 복구할 수 없어요.",
+        });
+        if (ok) {
+            setMembers((prev) => prev.filter((m) => m.id !== member.id));
+            showSuccessAlert({
+                title: "삭제 완료",
+                text: `${member.name} 님을 삭제했어요.`,
+            });
+        }
+    };
+
     // 공용 UI: 상단 벨 버튼
     const NotificationBell = () => (
         <button
-            onClick={handleNotification}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+            onClick={() => setIsNotiOpen(true)}
+            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
         >
-            <span className="w-5 h-5 block" />
+            {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
+            <BsFillBellFill className="text-white" size={20} />
+            {/* 알림 도트 */}
             <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
         </button>
     );
@@ -373,6 +407,7 @@ return (
                     <line x1="22" y1="11" x2="16" y2="11" />
                 </svg>
             </button>
+
             <NotificationModal
                 isOpen={isNotiOpen}
                 onClose={() => setIsNotiOpen(false)}
