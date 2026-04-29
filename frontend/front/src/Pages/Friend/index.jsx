@@ -311,7 +311,7 @@ export default function Friend() {
         return (friendName || "").includes(searchQuery.trim());
     });
     
-return (
+    return (
     <>
         <header className="px-6 pt-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-[#3D4D5C]">친구</h1>
@@ -326,7 +326,7 @@ return (
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="회원 검색"
+                        placeholder="친구 검색"
                         className="flex-1 text-sm text-[#3D4D5C] placeholder-[#B5BEC7] focus:outline-none"
                     />
                 </div>
@@ -352,7 +352,9 @@ return (
                                 <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
                                 <div className="flex-1">
                                     <p className="text-sm font-bold text-[#3D4D5C]">{friendName}</p>
-                                    <p className="text-xs text-[#8B9BAA] mt-1">{friend.status === "수락" ? "친구" : friend.status}</p>
+                                    <p className="text-xs text-[#8B9BAA] mt-1 line-clamp-1">
+                                        {friend.status_message || "상태 메시지가 없습니다."}
+                                    </p>
                                 </div>
                             </button>
                         );

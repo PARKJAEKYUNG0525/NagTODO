@@ -534,16 +534,16 @@ export default function MyPage() {
 
     // ====== 렌더: 비관리자 - 마이페이지 메인 ======
     return (
-        <>
-            <header className="px-6 pt-6 flex items-center justify-between">
+        
+        <div className="h-screen flex flex-col bg-[#F8F9FA] overflow-hidden font-sans">
+            <header className="px-6 pt-6 pb-4 flex items-center justify-between shrink-0">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">마이페이지</h1>
-                    <NotificationBell />
+                <NotificationBell />
             </header>
 
-            <div className="flex-1 px-6 pb-8 flex flex-col">
+            <div className="flex-1 px-6 pb-8 flex flex-col min-h-0">
                 
-                {/* 프로필 카드 */}
-                <div className="bg-white rounded-2xl p-5 shadow-sm relative shrink-0">
+                <div className="bg-white rounded-2xl p-5 shadow-sm relative shrink-0 mt-2">
                     <button onClick={logout} className="absolute top-4 right-5 text-[10px] text-[#8B9BAA]">
                         로그아웃
                     </button>
@@ -566,7 +566,7 @@ export default function MyPage() {
                 </div>
 
                 {/* 상태메세지 */}
-                <div className="mt-5 shrink-0">
+                <div className="mt-6 shrink-0">
                     <div className="flex justify-between items-end mb-2 px-1">
                         <h2 className="text-[13px] font-bold text-[#3D4D5C]">상태메세지</h2>
                         <span className="text-[10px] text-[#8B9BAA]">{statusMessage?.length || 0}/50</span>
@@ -590,11 +590,9 @@ export default function MyPage() {
 
                 {/* 모드 변경 */}
                 <div className="mt-6 flex-1 flex flex-col min-h-0">
-
                     <h2 className="text-base font-bold text-[#3D4D5C] mb-3 px-1">모드 변경</h2>
                     
                     <div className="flex-1 flex flex-col gap-4 mb-4">
-                        {/* 엄격하게 버튼 */}
                         <button
                             onClick={() => handleSelectStrictMode("strict")}
                             className={`flex-1 flex flex-col items-center justify-center rounded-2xl shadow-sm border-2 transition-all ${
@@ -604,11 +602,9 @@ export default function MyPage() {
                             <p className={`text-sm font-medium mb-3 ${strictMode === "strict" ? "text-[#3D4D5C]" : "text-[#8B9BAA]"}`}>
                                 엄격하게
                             </p>
-
                             <div className={`w-3/4 h-12 rounded-xl transition-colors ${strictMode === "strict" ? "bg-[#E9ECEF]" : "bg-[#F1F3F5]"}`} />
                         </button>
 
-                        {/* 덜 엄격하게 버튼 */}
                         <button
                             onClick={() => handleSelectStrictMode("less")}
                             className={`flex-1 flex flex-col items-center justify-center rounded-2xl shadow-sm border-2 transition-all ${
@@ -636,7 +632,7 @@ export default function MyPage() {
                 onClose={() => setIsNotiOpen(false)}
                 notifications={notifications}
             />
-        </>
+        </div>
     );
 }
 
