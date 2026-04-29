@@ -182,3 +182,11 @@ class UserService:
         await db.commit()
         await db.refresh(updated_user)
         return updated_user, access_token, refresh_token
+    
+    # 로그아웃
+    @staticmethod
+    async def logout_svc(db: AsyncSession, user_id: int):
+        updated_user = await UserCrud.update_refresh_token_by_id(db, user_id, None)
+        await db.commit()
+        await db.refresh(updated_user)
+        return updated_user
