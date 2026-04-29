@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.models import Category, Music
+from app.db.models import Category, Img, Music
 
 _DEFAULT_CATEGORIES = [
     ("study",       "공부"),
@@ -9,6 +9,15 @@ _DEFAULT_CATEGORIES = [
     ("appointment", "약속"),
     ("work",        "업무"),
     ("etc",         "기타"),
+]
+
+_DEFAULT_IMGS = [
+    {"img_id": "green",           "title": "초록색",  "file_url": "/static/image/green.JPG"},
+    {"img_id": "purple",          "title": "보라색",  "file_url": "/static/image/purple.JPG"},
+    {"img_id": "hill",            "title": "언덕",    "file_url": "/static/image/hill.JPG"},
+    {"img_id": "mountain",        "title": "산",     "file_url": "/static/image/mountain.JPG"},
+    {"img_id": "plains",          "title": "평원",    "file_url": "/static/image/plains.JPG"},
+    {"img_id": "mountain_night",  "title": "겨울 산",  "file_url": "/static/image/mountain_night.JPG"},
 ]
 
 _DEFAULT_MUSICS = [
@@ -46,7 +55,16 @@ async def seed_categories(session: AsyncSession) -> None:
         if category_id not in existing_ids:
             session.add(Category(category_id=category_id, name=name))
 
-async def seed_music(session: AsyncSession):
+async def seed_imgs(session: AsyncSession):
+    result = await session.execute(select(Img))
+    existing = {i.img_id for i in result.scalars().all()}
+
+    for i in _DEFAULT_IMGS:
+        if i["img_id"] in existing:
+            continue
+        session.add(Img(**i))
+
+async def seed_musics(session: AsyncSession):
     result = await session.execute(select(Music))
     existing = {m.music_id for m in result.scalars().all()}
 

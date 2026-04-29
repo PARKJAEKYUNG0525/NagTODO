@@ -30,6 +30,24 @@ Base=declarative_base()
 #     finally:
 #         if session:
 #             await session.close()
+# async def get_db():
+#     async with AsyncSessionLocal() as session:
+#         yield session
+
+# app/db/database.py
+
 async def get_db():
-    async with AsyncSessionLocal() as session:
+    session = AsyncSessionLocal()
+    try:
         yield session
+    except Exception:
+        try:
+            await session.rollback()
+        except Exception:
+            pass   # rollback 자체가 실패해도 무시 (cancellation race)
+        raise
+    finally:
+        try:
+            await session.close()
+        except Exception:
+            pass   # close 실패도 조용히
