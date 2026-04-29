@@ -15,16 +15,16 @@ import api from "../../utils/api";
 import { BsFillBellFill } from "react-icons/bs";
 
 export default function Friend() {
+    // 알림 hooks
+    const { searchUser, sendRequest, friends, fetchFriends } = useFriend();     // 친구 관련 로직 hooks
+    const { user: currentUser } = useAuth();                                    // 로그인 유저 정보 hooks
+    const { notifications, fetchNotifications } = useNotification(); 
+    
     // const [friends, setFriends] = useState([]);
     const [isAdmin, setIsAdmin] = useState(false);                              // 관리자 여부 상태
     const [view, setView] = useState("list");                                   // 현재 화면 (list / detail)
     const [selectedFriend, setSelectedFriend] = useState(null);                 // 선택된 친구
     const [searchQuery, setSearchQuery] = useState("");                         // 검색어 상태
-
-    const { searchUser, sendRequest, friends, fetchFriends } = useFriend();     // 친구 관련 로직 hooks
-    const { user: currentUser } = useAuth();                                    // 로그인 유저 정보 hooks
-    const { notifications, fetchNotifications } = useNotification();            // 알림 hooks
-
     const [friendDetailDate, setFriendDetailDate] = useState(
         startOfDay(new Date(2026, 3, 21))
     );                                                                           // 친구 상세 날짜
@@ -36,7 +36,6 @@ export default function Friend() {
     // 검색 모달
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
-
 
     const handleNotification = () => setIsNotiOpen(true);                       // 알림 모달 열기
 
@@ -101,13 +100,14 @@ export default function Friend() {
     // 공용 UI: 상단 벨 버튼
     const NotificationBell = () => (
         <button
-            onClick={() => setIsNotiOpen(true)}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
+            onClick={handleNotification}
+            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
         >
-            {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-            <BsFillBellFill className="text-white" size={20} />
-            {/* 알림 도트 */}
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+            <BsFillBellFill className="w-5 h-5 text-white" />
+
+            {notifications.length > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+            )}
         </button>
     );
 

@@ -1,29 +1,16 @@
 import React, { useState, useEffect } from "react";
+import NotificationModal from "../../Components/Modal/NotificationModal";
 import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import { useAuth } from "../../hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 import useMypage from "../../hooks/useMypage";
 import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
 
 import { BsFillBellFill } from "react-icons/bs";
 
-
-/**
- * Mypage 화면 (통합본)
- * isAdmin 여부에 따라 완전히 다른 UX.
- *
- * ───── 비관리자 ─────
- *  [1] 기본: 프로필 카드 + 모드 변경 (엄격하게 / 덜 엄격하게)
- *  [2] 내 정보 수정
- *
- * ───── 관리자 ─────
- *  [A] 카테고리 설정
- *  [B] 카테고리 수정 (인라인)
- *  [C] 카테고리 삭제 (체크 모드 + alertUtils.showWarningDialog)
- *
- * ※ 9:16 프레임 / 하단 Navbar 는 App.jsx 담당.
- */
 export default function MyPage() {
     const { user, setUser, logout } = useAuth();
+    const { notifications } = useNotification();
     const [isAdmin, setIsAdmin] = useState(false);
     const { updateProfile, updatePassword, checkUsername } = useMypage();
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
@@ -55,6 +42,8 @@ export default function MyPage() {
     ]);
     const [draggedIdx, setDraggedIdx] = useState(null);
     const [isNotiOpen, setIsNotiOpen] = useState(false);
+
+    const handleNotification = () => setIsNotiOpen(true);
 
     useEffect(() => {
         const checkAdmin = () => false;
@@ -323,6 +312,18 @@ export default function MyPage() {
         );
     }
 
+    const NotificationBell = () => (
+        <button
+            onClick={handleNotification}
+            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+        >
+            <BsFillBellFill className="w-5 h-5 text-white" />
+            {notifications.length > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+            )}
+        </button>
+    );
+
     // ====== 렌더: 관리자 - 카테고리 설정/수정/삭제 ======
     if (isAdmin) {
         return (
@@ -486,6 +487,11 @@ export default function MyPage() {
                         })}
                     </div>
                 </div>
+                <NotificationModal
+                    isOpen={isNotiOpen}
+                    onClose={() => setIsNotiOpen(false)}
+                    notifications={notifications}
+                />
             </>
         );
     }
@@ -495,15 +501,7 @@ export default function MyPage() {
         <>
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">마이페이지</h1>
-                    <button
-                        onClick={() => setIsNotiOpen(true)}
-                        className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
-                    >
-                        {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-                        <BsFillBellFill className="text-white" size={20} />
-                        {/* 알림 도트 */}
-                        <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-                    </button>
+                    <NotificationBell />
             </header>
 
             <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
@@ -567,6 +565,11 @@ export default function MyPage() {
                     </button>
                 </div>
             </div>
+            <NotificationModal
+                isOpen={isNotiOpen}
+                onClose={() => setIsNotiOpen(false)}
+                notifications={notifications}
+            />
         </>
     );
 }

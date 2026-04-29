@@ -5,9 +5,12 @@ import { ko } from "date-fns/locale";
 import NewTodoModal from "../../Components/Modal/NewTodoModal";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
-import { useAuth } from "../../hooks/useAuth";
 import useTodo from "@/hooks/useTodo.jsx";
 import useCategory from "@/hooks/useCategory.jsx";
+
+import { useAuth } from "../../hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
+
 
 import { BsFillBellFill } from "react-icons/bs";
 
@@ -56,6 +59,7 @@ export default function Todo() {
     const { user } = useAuth();
     const { todoLoading, getAllTodos, createTodo, updateTodo, deleteTodo } = useTodo();
     const { ctLoading, getCategory} = useCategory();
+    const { notifications } = useNotification(); 
 
     // ====== 상수/상태 ======
     const TODAY = startOfDay(new Date());
@@ -70,6 +74,8 @@ export default function Todo() {
     const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isNewOpen, setIsNewOpen] = useState(false);
     const [detailTodo, setDetailTodo] = useState(null);
+
+    const handleNotification = () => setIsNotiOpen(true);    
 
     // db에서 todo 불러오기
     const loadTodos = useCallback(async () => {
@@ -202,22 +208,25 @@ export default function Todo() {
         return { highDays: high, midDays: mid, lowDays: low };
     })();
 
+    // 공용 UI: 상단 벨 버튼
+    const NotificationBell = () => (
+        <button
+            onClick={handleNotification}
+            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+        >
+            <BsFillBellFill className="w-5 h-5 text-white" />
+
+            {notifications.length > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+            )}
+        </button>
+    );
+
     return (
         <>
             {/* 상단 헤더 */}
-            <header className="px-6 pt-6 flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-[#3D4D5C]">
-                    {format(selectedDate, "M월", { locale: ko })}
-                </h1>
-                <button
-                    onClick={() => setIsNotiOpen(true)}
-                    className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
-                >
-                    {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-                    <BsFillBellFill className="text-white" size={20} />
-                    {/* 알림 도트 */}
-                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-                </button>
+            <header className="px-6 pt-6 flex justify-end">
+                <NotificationBell />
             </header>
 
             {/* 스크롤 영역 */}
@@ -393,7 +402,7 @@ export default function Todo() {
             <NotificationModal
                 isOpen={isNotiOpen}
                 onClose={() => setIsNotiOpen(false)}
-                notifications={[]}
+                notifications={notifications}
             />
             <NewTodoModal
                 isOpen={isNewOpen}
