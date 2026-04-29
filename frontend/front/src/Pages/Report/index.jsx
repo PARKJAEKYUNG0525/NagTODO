@@ -449,9 +449,7 @@ function ReportContent({ stats, clusters, reportText }) {
 }
 
 function DonutChart({ categoryEntries, overallRate }) {
-    const total = categoryEntries.reduce((sum, [, data]) => sum + data.total, 0);
-
-    if (total === 0) {
+    if (categoryEntries.length === 0) {
         return (
             <div className="relative w-24 h-24 shrink-0 rounded-full bg-[#E4EEF3] flex items-center justify-center">
                 <div className="w-[60%] h-[60%] rounded-full bg-white flex flex-col items-center justify-center">
@@ -462,10 +460,11 @@ function DonutChart({ categoryEntries, overallRate }) {
         );
     }
 
+    const segDeg = 360 / categoryEntries.length;
     let cumDeg = -90;
-    const segments = categoryEntries.map(([name, data], idx) => {
+    const segments = categoryEntries.map(([name], idx) => {
         const start = cumDeg;
-        cumDeg += (data.total / total) * 360;
+        cumDeg += segDeg;
         return `${getCategoryColor(idx)} ${start}deg ${cumDeg}deg`;
     });
 
