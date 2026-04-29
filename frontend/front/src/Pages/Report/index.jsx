@@ -407,17 +407,7 @@ function ReportContent({ stats, aiReport, categoryEntries }) {
             <div className="mt-4 bg-white rounded-2xl p-4 shadow-sm">
                 <h3 className="text-sm font-bold text-[#3D4D5C]">카테고리별 달성률</h3>
                 <div className="mt-4 flex items-center gap-4">
-                    <div className="relative w-24 h-24 shrink-0">
-                        <div className="absolute inset-0 rounded-full border-[10px] border-[#E4EEF3]" />
-                        <div
-                            className="absolute inset-0 rounded-full border-[10px] border-transparent"
-                            style={{ borderTopColor: "#A8C8D8", borderRightColor: "#A8C8D8", transform: "rotate(-45deg)" }}
-                        />
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-base font-bold text-[#3D4D5C]">{stats.user_success_rate}%</span>
-                            <span className="text-[9px] text-[#8B9BAA]">전체</span>
-                        </div>
-                    </div>
+                    <DonutChart categoryEntries={categoryEntries} overallRate={stats.user_success_rate} />
                     <div className="flex-1 flex flex-col gap-2 text-xs">
                         {categoryEntries.length === 0 ? (
                             <p className="text-[#8B9BAA]">카테고리 데이터 없음</p>
@@ -476,17 +466,7 @@ function SavedReportContent({ detail }) {
                     <div className="mt-4 bg-white rounded-2xl p-4 shadow-sm">
                         <h3 className="text-sm font-bold text-[#3D4D5C]">카테고리별 달성률</h3>
                         <div className="mt-4 flex items-center gap-4">
-                            <div className="relative w-24 h-24 shrink-0">
-                                <div className="absolute inset-0 rounded-full border-[10px] border-[#E4EEF3]" />
-                                <div
-                                    className="absolute inset-0 rounded-full border-[10px] border-transparent"
-                                    style={{ borderTopColor: "#A8C8D8", borderRightColor: "#A8C8D8", transform: "rotate(-45deg)" }}
-                                />
-                                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-base font-bold text-[#3D4D5C]">{stats.user_success_rate}%</span>
-                                    <span className="text-[9px] text-[#8B9BAA]">전체</span>
-                                </div>
-                            </div>
+                            <DonutChart categoryEntries={categoryEntries} overallRate={stats.user_success_rate} />
                             <div className="flex-1 flex flex-col gap-2 text-xs">
                                 {categoryEntries.length === 0 ? (
                                     <p className="text-[#8B9BAA]">카테고리 데이터 없음</p>
@@ -517,6 +497,40 @@ function SavedReportContent({ detail }) {
                 </div>
             </div>
         </>
+    );
+}
+
+function DonutChart({ categoryEntries, overallRate }) {
+    const total = categoryEntries.reduce((sum, [, data]) => sum + data.total, 0);
+
+    if (total === 0) {
+        return (
+            <div className="relative w-24 h-24 shrink-0 rounded-full bg-[#E4EEF3] flex items-center justify-center">
+                <div className="w-[60%] h-[60%] rounded-full bg-white flex flex-col items-center justify-center">
+                    <span className="text-base font-bold text-[#3D4D5C]">{overallRate}%</span>
+                    <span className="text-[9px] text-[#8B9BAA]">전체</span>
+                </div>
+            </div>
+        );
+    }
+
+    let cumDeg = -90;
+    const segments = categoryEntries.map(([name, data], idx) => {
+        const start = cumDeg;
+        cumDeg += (data.total / total) * 360;
+        return `${getCategoryColor(idx)} ${start}deg ${cumDeg}deg`;
+    });
+
+    return (
+        <div
+            className="relative w-24 h-24 shrink-0 rounded-full"
+            style={{ background: `conic-gradient(${segments.join(", ")})` }}
+        >
+            <div className="absolute inset-[10px] rounded-full bg-white flex flex-col items-center justify-center">
+                <span className="text-base font-bold text-[#3D4D5C]">{overallRate}%</span>
+                <span className="text-[9px] text-[#8B9BAA]">전체</span>
+            </div>
+        </div>
     );
 }
 
