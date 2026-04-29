@@ -23,7 +23,7 @@ import { BsFillBellFill } from "react-icons/bs";
  * ※ 9:16 프레임 / 하단 Navbar 는 App.jsx 담당.
  */
 export default function MyPage() {
-    const { user, setUser, logout } = useAuth();
+    const { user, setUser, logout, deleteUser } = useAuth();
     const [isAdmin, setIsAdmin] = useState(false);
     const { updateProfile, updatePassword, checkUsername } = useMypage();
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
@@ -83,7 +83,7 @@ export default function MyPage() {
 
     // const handleNotification = () => alert("알림 아이콘 클릭");
 
-    const handleWithdraw = () => alert("회원탈퇴 안내");
+    // const handleWithdraw = () => alert("회원탈퇴 안내");
     const handleEditProfile = () => {
         setForm(prev => ({
             ...prev,
@@ -278,12 +278,12 @@ export default function MyPage() {
 
                     <Field label="닉네임" value={form.username} onChange={(e) => setForm({...form, username: e.target.value})} />
                     <Field label="이메일" value={form.email} readOnly />
-                    <Field label="현재 비밀번호" type="password" value={form.currentPassword} onChange={(e) => setForm({...form, currentPassword: e.target.value})} placeholder={"********"}/>
-                    <Field label="새 비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} placeholder={"********"}/>
+                    <Field label="현재 비밀번호" type="password" value={form.currentPassword} onChange={(e) => setForm({...form, currentPassword: e.target.value})} placeholder={"••••••••"}/>
+                    <Field label="새 비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} placeholder={"••••••••"}/>
                     <Field label="새 비밀번호 확인"
                         type="password"
                         value={form.confirmPassword} onChange={(e) => setForm({...form, confirmPassword: e.target.value})}
-                        placeholder={"********"}
+                        placeholder={"••••••••"}
                     />
 
                     <div>
@@ -560,7 +560,8 @@ export default function MyPage() {
                 </button>
                 <div className="flex flex-col items-center">
                     <button
-                        onClick={handleWithdraw}
+                        // onClick={deleteAccount}
+                        onClick={deleteUser}
                         className="mt-3 px-4 py-1.5 text-xs text-[#3D4D5C]"
                     >
                         회원 탈퇴
