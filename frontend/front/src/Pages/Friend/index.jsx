@@ -103,39 +103,7 @@ export default function Friend() {
         }
     };
 
-    // 친구 요청 보내기
-    const handleFriendRequest = async (friend) => { 
-        const success = await sendRequest(friend.user_id, friend.username);
-        if (success) {
-            setIsFriendAddOpen(false);
-        }
-    };
 
-    // 친구 요청 수락
-    const handleAcceptFriend = async (notification) => {
-        try {
-            const friendId = notification.content.split(":")[1];
-            await api.patch(`/friends/${friendId}`, { status: "수락" });
-            await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
-            fetchNotifications();
-            fetchFriends(); // ← 친구 목록 갱신
-            showSuccessAlert({ title: "친구 추가!", text: "친구가 되었어요!" });
-        } catch (e) {
-            console.error("수락 실패:", e);
-        }
-    };
-
-    // 친구 요청 거절
-    const handleRejectFriend = async (notification) => {
-        try {
-            const friendId = notification.content.split(":")[1];
-            await api.patch(`/friends/${friendId}`, { status: "거절" });
-            await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
-            fetchNotifications();
-        } catch (e) {
-            console.error("거절 실패:", e);
-        }
-    };
 
 
 
