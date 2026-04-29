@@ -146,9 +146,6 @@ export default function MonthlyReport() {
         }
     };
 
-    const stats = reportData?.stats;
-    const aiReport = reportData?.aiReport;
-    const categoryEntries = stats ? Object.entries(stats.category_stats) : [];
 
     return (
         <>
@@ -366,15 +363,19 @@ export default function MonthlyReport() {
                         {/* 신규 생성 결과 */}
                         {!isLoading && reportData && !error && reportMode !== "history" && (
                             <ReportContent
-                                stats={stats}
-                                aiReport={aiReport}
-                                categoryEntries={categoryEntries}
+                                stats={reportData.stats}
+                                clusters={reportData.aiReport.cluster_summaries}
+                                reportText={reportData.aiReport.report}
                             />
                         )}
 
                         {/* 발행 이력 모드 - 저장된 리포트 표시 */}
                         {reportMode === "history" && selectedReport && selectedReportDetail && (
-                            <SavedReportContent detail={selectedReportDetail} />
+                            <ReportContent
+                                stats={selectedReportDetail.stats}
+                                clusters={selectedReportDetail.cluster_summaries}
+                                reportText={selectedReportDetail.report}
+                            />
                         )}
                         {reportMode === "history" && selectedReport && !selectedReportDetail && (
                             <div className="mt-4 bg-[#FDECEA] rounded-xl px-4 py-3">
@@ -388,62 +389,7 @@ export default function MonthlyReport() {
     );
 }
 
-function ReportContent({ stats, aiReport, categoryEntries }) {
-    return (
-        <>
-            {/* 달성률 카드 */}
-            <div className="mt-3 grid grid-cols-2 gap-3">
-                <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <p className="text-[11px] text-[#8B9BAA]">내 달성률</p>
-                    <p className="mt-2 text-3xl font-bold text-[#A8C8D8]">{stats.user_success_rate}%</p>
-                </div>
-                <div className="bg-white rounded-2xl p-4 shadow-sm">
-                    <p className="text-[11px] text-[#8B9BAA]">전체 사용자 달성률</p>
-                    <p className="mt-2 text-3xl font-bold text-[#A8C8D8]">{stats.all_users_success_rate}%</p>
-                </div>
-            </div>
-
-            {/* 카테고리별 달성률 */}
-            <div className="mt-4 bg-white rounded-2xl p-4 shadow-sm">
-                <h3 className="text-sm font-bold text-[#3D4D5C]">카테고리별 달성률</h3>
-                <div className="mt-4 flex items-center gap-4">
-                    <DonutChart categoryEntries={categoryEntries} overallRate={stats.user_success_rate} />
-                    <div className="flex-1 flex flex-col gap-2 text-xs">
-                        {categoryEntries.length === 0 ? (
-                            <p className="text-[#8B9BAA]">카테고리 데이터 없음</p>
-                        ) : (
-                            categoryEntries.map(([name, data], idx) => (
-                                <div key={name} className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getCategoryColor(idx) }} />
-                                        <span className="text-[#3D4D5C]">{name}</span>
-                                    </div>
-                                    <span className="text-[#8B9BAA]">{data.rate}%</span>
-                                </div>
-                            ))
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            {/* AI 분석 (클러스터) */}
-            <h3 className="mt-6 text-sm font-bold text-[#3D4D5C]">AI 분석</h3>
-            <ClusterGrid clusters={aiReport.cluster_summaries} />
-
-            {/* 분석 리포트 */}
-            <div className="mt-4 bg-[#DEE4EA] rounded-xl px-4 py-3">
-                <p className="text-xs font-bold text-[#3D4D5C]">분석 리포트</p>
-                <div className="mt-2">
-                    <ReportMarkdown content={aiReport.report || "리포트를 생성하지 못했습니다."} />
-                </div>
-            </div>
-        </>
-    );
-}
-
-function SavedReportContent({ detail }) {
-    const clusters = detail.cluster_summaries || [];
-    const stats = detail.stats;
+function ReportContent({ stats, clusters, reportText }) {
     const categoryEntries = stats ? Object.entries(stats.category_stats || {}) : [];
 
     return (
@@ -487,13 +433,15 @@ function SavedReportContent({ detail }) {
                 </>
             )}
 
+            {/* AI 분석 (클러스터) */}
             <h3 className="mt-6 text-sm font-bold text-[#3D4D5C]">AI 분석</h3>
             <ClusterGrid clusters={clusters} />
 
+            {/* 분석 리포트 */}
             <div className="mt-4 bg-[#DEE4EA] rounded-xl px-4 py-3">
                 <p className="text-xs font-bold text-[#3D4D5C]">분석 리포트</p>
                 <div className="mt-2">
-                    <ReportMarkdown content={detail.report || "리포트 내용이 없습니다."} />
+                    <ReportMarkdown content={reportText || "리포트 내용이 없습니다."} />
                 </div>
             </div>
         </>
