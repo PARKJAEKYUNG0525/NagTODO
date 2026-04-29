@@ -27,4 +27,3 @@ class Todo(Base):
     user:              Mapped["User"]                  = relationship("User", back_populates="todos")
     category:          Mapped["Category"]              = relationship("Category", back_populates="todos")
     friend_todo_views: Mapped[List["FriendTodoView"]]  = relationship("FriendTodoView", back_populates="todo", cascade="all, delete-orphan")
-    histories:         Mapped[List["History"]]         = relationship("History", back_populates="todo", cascade="all, delete-orphan")
