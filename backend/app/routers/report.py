@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
 from app.db.database import get_db
 from app.db.scheme.report import ReportCreate, ReportUpdate, ReportRead
 from app.services.report import ReportService as report_svc
@@ -16,10 +17,14 @@ async def create_report(data: ReportCreate, db: AsyncSession = Depends(get_db)):
 async def get_report(report_id: str, db: AsyncSession = Depends(get_db)):
     return await report_svc.get_report_svc(db, report_id)
 
-# R 전체 조회
+# R 조회 (user_id 필터 or 전체)
 @router.get("/", response_model=list[ReportRead])
-async def get_all_reports(db: AsyncSession = Depends(get_db)):
-    # 나중에 AI가 한 달 단위 필터링을 넣기 좋게 기본 전체 조회를 연결해둡니다.
+async def get_reports(
+    user_id: Optional[int] = Query(None),
+    db: AsyncSession = Depends(get_db),
+):
+    if user_id is not None:
+        return await report_svc.get_reports_by_user_svc(db, user_id)
     return await report_svc.get_all_reports_svc(db)
 
 # U 수정
