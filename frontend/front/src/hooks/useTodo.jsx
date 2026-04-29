@@ -1,5 +1,5 @@
 import api from "../utils/api.js";
-import { showWarningAlert, showSuccessAlert } from "../utils/alertUtiles.js";
+import {showWarningAlert, showSuccessAlert} from "../utils/alertUtils.js";
 
 import { useAuth } from "@/hooks/useAuth.jsx";
 import React, { useCallback, useState } from 'react';

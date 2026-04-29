@@ -10,7 +10,8 @@ class Cloth(Base):
     __tablename__ = "cloth"
 
     cloth_id: Mapped[str] = mapped_column(String(100), primary_key=True)
-    user_id:  Mapped[int] = mapped_column(Integer, ForeignKey("user.user_id"), nullable=False)
     title:    Mapped[str] = mapped_column(String(255), nullable=False)
+    file_url: Mapped[str] = mapped_column(String(255), nullable=False)
+    user_id:  Mapped[int] = mapped_column(Integer, ForeignKey("user.user_id"), nullable=False)
 
     user: Mapped["User"] = relationship("User", back_populates="cloths")

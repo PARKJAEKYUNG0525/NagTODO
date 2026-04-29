@@ -2,6 +2,7 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.db.database import Base, async_engine, AsyncSessionLocal
 from app.db.seed import seed_categories
 from fastapi.concurrency import asynccontextmanager
@@ -14,13 +15,14 @@ from app.routers.cloth import router as cloth_router
 from app.routers.friend_todo_view import router as friend_todo_view_router
 from app.routers.friend import router as friend_router
 from app.routers.history import router as history_router
-from app.routers.homepage import router as homepage_router
+# from app.routers.homepage import router as homepage_router
 from app.routers.img import router as img_router
 from app.routers.music import router as music_router
 from app.routers.pw_history import router as pw_history_router
 # from app.routers.recommend import router as recommend_router
 from app.routers.report import router as report_router
 from app.routers.todo import router as todo_router
+
 from app.routers.notification import router as notification_router
 load_dotenv(dotenv_path=".env")
 
@@ -54,8 +56,8 @@ app.add_middleware(
     CORSMiddleware,
     # allow_origins=["*"],  # 개발 중에는 일단 전체 허용
     allow_origins=[
-        "http://192.168.0.42:3000", 
-        "http://localhost:3000", 
+        "http://192.168.0.42:3000",
+        "http://localhost:3000",
         "http://192.168.0.3:3000",
         ],
     allow_credentials=True,
@@ -63,13 +65,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 app.include_router(user_router)
 app.include_router(category_router)
 app.include_router(cloth_router)
 app.include_router(friend_todo_view_router)
 app.include_router(friend_router)
 app.include_router(history_router)
-app.include_router(homepage_router)
+# app.include_router(homepage_router)
 app.include_router(img_router)
 
 app.include_router(music_router)

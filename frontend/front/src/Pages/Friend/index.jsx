@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { format, isSameDay, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
-import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtiles.js";
+import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import FriendAddModal from "../../Components/Modal/FriendAddModal";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 

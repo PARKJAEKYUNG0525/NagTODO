@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import ModalLayout from "../ModalLayout";
 
-const FriendAddModal = ({ isOpen, onClose, onSearch }) => {
+const FriendAddModal = ({ isOpen, onClose, onSearch, onRequest }) => {
   const [query, setQuery] = useState("");                 // 검색창에 입력된 텍스트
   const [searchResults, setSearchResults] = useState([]); // API에서 받아온 검색 결과 목록
   const [hasSearched, setHasSearched] = useState(false);  // 검색을 한 번이라도 했는지 여부 (결과 없음 vs 아직 검색 안 함 구분용)
@@ -104,7 +104,7 @@ const FriendAddModal = ({ isOpen, onClose, onSearch }) => {
               searchResults.map((user) => (
                 <div
                   key={user.user_id}
-                  className="flex items-center p-4 rounded-2xl bg-white border border-[#E1E8ED]"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-white border border-[#E1E8ED]"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-[#A8C8D8] opacity-50"></div>
@@ -117,6 +117,12 @@ const FriendAddModal = ({ isOpen, onClose, onSearch }) => {
                       </span>
                     </div>
                   </div>
+                  <button
+                    onClick={() => onRequest?.(user)}
+                    className="px-4 py-1.5 rounded-xl bg-[#A8C8D8] text-white text-xs font-bold hover:bg-[#8BB5C8] active:scale-95 transition-all"
+                  >
+                    요청
+                  </button>
                 </div>
               ))
             ) : (

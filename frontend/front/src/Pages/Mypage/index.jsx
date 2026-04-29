@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtiles";
+import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import { useAuth } from "../../hooks/useAuth";
 import useMypage from "../../hooks/useMypage";
 import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
@@ -20,7 +20,7 @@ import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
  * ※ 9:16 프레임 / 하단 Navbar 는 App.jsx 담당.
  */
 export default function MyPage() {
-    const { user } = useAuth();
+    const { user, setUser, logout } = useAuth();
     const [isAdmin, setIsAdmin] = useState(false);
     const { updateProfile, updatePassword, checkUsername } = useMypage();
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
@@ -497,10 +497,10 @@ export default function MyPage() {
             <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
                 <div className="bg-white rounded-2xl p-6 shadow-sm relative">
                     <button
-                        onClick={handleWithdraw}
+                        onClick={logout}
                         className="absolute top-4 right-5 text-[11px] text-[#8B9BAA]"
                     >
-                        회원탈퇴
+                        로그아웃
                     </button>
 
                     <div className="flex flex-col items-center">
@@ -546,6 +546,14 @@ export default function MyPage() {
                     <p className="text-center text-sm text-[#8B9BAA]">덜 엄격하게</p>
                     <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
                 </button>
+                <div className="flex flex-col items-center">
+                    <button
+                        onClick={handleWithdraw}
+                        className="mt-3 px-4 py-1.5 text-xs text-[#3D4D5C]"
+                    >
+                        회원 탈퇴
+                    </button>
+                </div>
             </div>
         </>
     );

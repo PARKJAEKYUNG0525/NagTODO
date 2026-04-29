@@ -1,7 +1,7 @@
 from app.db.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
-from sqlalchemy import String, TIMESTAMP, Enum, func, Date, Integer
+from sqlalchemy import String, TIMESTAMP, Enum, func, Date, Integer, ForeignKey, Boolean, text
 from typing import Optional, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -10,8 +10,10 @@ if TYPE_CHECKING:
     from .friend_todo_view import FriendTodoView
     from .recommend import Recommend
     from .pw_history import PwHistory
-    from .homepage import Homepage
+    # from .homepage import Homepage
     from .cloth import Cloth
+    from .img import Img
+    from .music import Music
     from .notification import Notification
 
 class User(Base):
@@ -25,7 +27,23 @@ class User(Base):
     created_at:      Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, server_default=func.now(), nullable=True)
     updated_at:      Mapped[Optional[datetime]] = mapped_column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=True)
     birthday:        Mapped[Date]               = mapped_column(Date, nullable=False)
+    state:           Mapped[bool]               = mapped_column(Boolean, nullable=False, server_default=text('1')) # 1은 회원, 0은 탈퇴
     refresh_token:   Mapped[Optional[str]]      = mapped_column(String(255), nullable=True)
+
+    # 마지막에 선택한 음악/이미지 (FK)
+    music_id: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        ForeignKey("music.music_id"),
+        nullable=True
+    )
+    img_id: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        ForeignKey("img.img_id"),
+        nullable=True
+    )
+
+    music:            Mapped[Optional["Music"]]      = relationship("Music")
+    img:              Mapped[Optional["Img"]]        = relationship("Img")
 
     todos:            Mapped[List["Todo"]]           = relationship("Todo", back_populates="user", cascade="all, delete-orphan")
     friends_sent:     Mapped[List["Friend"]]         = relationship("Friend", foreign_keys="Friend.requester_id", back_populates="requester", cascade="all, delete-orphan")
@@ -33,6 +51,5 @@ class User(Base):
     friend_todo_views:Mapped[List["FriendTodoView"]] = relationship("FriendTodoView", back_populates="user", cascade="all, delete-orphan")
     recommends:       Mapped[List["Recommend"]]      = relationship("Recommend", back_populates="user", cascade="all, delete-orphan")
     pw_histories:     Mapped[List["PwHistory"]]      = relationship("PwHistory", back_populates="user", cascade="all, delete-orphan")
-    homepages:        Mapped[List["Homepage"]]       = relationship("Homepage", back_populates="user", cascade="all, delete-orphan")
     cloths:           Mapped[List["Cloth"]]          = relationship("Cloth", back_populates="user", cascade="all, delete-orphan")
     notifications:    Mapped[List["Notification"]]   = relationship("Notification", back_populates="user")
