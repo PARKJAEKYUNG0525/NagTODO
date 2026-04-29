@@ -60,6 +60,10 @@ export default function MonthlyReport() {
     const [selectedYear, setSelectedYear] = useState(TODAY.getFullYear());
     const [selectedMonth, setSelectedMonth] = useState(TODAY.getMonth() + 1);
 
+    // 월 단위 드롭다운
+    const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
+    const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
+
     // 발행 이력 모드
     const [selectedReport, setSelectedReport] = useState(null);
     const [selectedReportDetail, setSelectedReportDetail] = useState(null);
@@ -93,6 +97,8 @@ export default function MonthlyReport() {
         setSelectedReport(null);
         setSelectedReportDetail(null);
         setIsReportDropdownOpen(false);
+        setIsYearDropdownOpen(false);
+        setIsMonthDropdownOpen(false);
     };
 
     const handlePastReportSelect = (report) => {
@@ -186,25 +192,57 @@ export default function MonthlyReport() {
                             분석할 <span className="text-[#E89B9B] font-semibold">년/월</span>을 선택하세요
                         </p>
                         <div className="mt-3 flex gap-3">
+                            {/* 연도 커스텀 드롭다운 */}
                             <div className="flex-1 relative">
-                                <select
-                                    value={selectedYear}
-                                    onChange={(e) => { setSelectedYear(Number(e.target.value)); setAnalyzed(false); }}
-                                    className="w-full bg-white rounded-xl px-4 py-3 text-sm text-[#3D4D5C] shadow-sm appearance-none cursor-pointer"
+                                <button
+                                    type="button"
+                                    onClick={() => { setIsYearDropdownOpen((v) => !v); setIsMonthDropdownOpen(false); }}
+                                    className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
                                 >
-                                    {YEARS.map((y) => <option key={y} value={y}>{y}년</option>)}
-                                </select>
-                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8B9BAA] text-xs pointer-events-none">▼</span>
+                                    <span>{selectedYear}년</span>
+                                    <span className="text-[#8B9BAA] text-xs">▼</span>
+                                </button>
+                                {isYearDropdownOpen && (
+                                    <ul className="absolute z-20 left-0 right-0 mt-1 bg-white rounded-xl shadow-lg overflow-hidden">
+                                        {YEARS.map((y) => (
+                                            <li key={y}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setSelectedYear(y); setAnalyzed(false); setIsYearDropdownOpen(false); }}
+                                                    className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] text-[#3D4D5C] ${selectedYear === y ? "bg-[#EEF2F5] font-semibold" : ""}`}
+                                                >
+                                                    {y}년
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </div>
+                            {/* 월 커스텀 드롭다운 */}
                             <div className="flex-1 relative">
-                                <select
-                                    value={selectedMonth}
-                                    onChange={(e) => { setSelectedMonth(Number(e.target.value)); setAnalyzed(false); }}
-                                    className="w-full bg-white rounded-xl px-4 py-3 text-sm text-[#3D4D5C] shadow-sm appearance-none cursor-pointer"
+                                <button
+                                    type="button"
+                                    onClick={() => { setIsMonthDropdownOpen((v) => !v); setIsYearDropdownOpen(false); }}
+                                    className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
                                 >
-                                    {MONTHS.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
-                                </select>
-                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8B9BAA] text-xs pointer-events-none">▼</span>
+                                    <span>{selectedMonth}월</span>
+                                    <span className="text-[#8B9BAA] text-xs">▼</span>
+                                </button>
+                                {isMonthDropdownOpen && (
+                                    <ul className="absolute z-20 left-0 right-0 mt-1 bg-white rounded-xl shadow-lg overflow-hidden max-h-48 overflow-y-auto">
+                                        {MONTHS.map((m, i) => (
+                                            <li key={i + 1}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setSelectedMonth(i + 1); setAnalyzed(false); setIsMonthDropdownOpen(false); }}
+                                                    className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] text-[#3D4D5C] ${selectedMonth === i + 1 ? "bg-[#EEF2F5] font-semibold" : ""}`}
+                                                >
+                                                    {m}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </div>
                         </div>
                         <div className="mt-4 bg-[#DEE4EA] rounded-xl px-4 py-3 flex items-start gap-2">
