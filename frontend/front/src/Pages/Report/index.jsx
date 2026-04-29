@@ -3,10 +3,12 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, subMonths, subDays, startOfDay, getDaysInMonth } from "date-fns";
 import { ko } from "date-fns/locale";
 import ReactMarkdown from "react-markdown";
+import NotificationModal from "../../Components/Modal/NotificationModal";
 import remarkGfm from "remark-gfm";
 import { useAuth } from "@/hooks/useAuth";
 import { useReport } from "@/hooks/useReport";
 import { BsFillBellFill } from "react-icons/bs";
+import { useNotification } from "@/hooks/useNotification";
 
 const CATEGORY_COLORS = ["#E89B9B", "#F4D58A", "#A8D5B4", "#A8C8D8", "#C5A8D8", "#D8A8C5", "#D4B896"];
 const YEARS = [2024, 2025, 2026];
@@ -47,9 +49,11 @@ export default function MonthlyReport() {
     const TODAY = startOfDay(new Date());
     const { user } = useAuth();
     const { isLoading, error, reportData, savedReports, fetchReport, fetchSavedReports } = useReport();
+    const { notifications } = useNotification();
 
     const [reportMode, setReportMode] = useState("monthly");
     const [analyzed, setAnalyzed] = useState(false);
+    const [isNotiOpen, setIsNotiOpen] = useState(false);
 
     // 30일 모드
     const [selectedDate, setSelectedDate] = useState(TODAY);
@@ -69,6 +73,8 @@ export default function MonthlyReport() {
     const [selectedReport, setSelectedReport] = useState(null);
     const [selectedReportDetail, setSelectedReportDetail] = useState(null);
     const [isReportDropdownOpen, setIsReportDropdownOpen] = useState(false);
+
+    const handleNotification = () => setIsNotiOpen(true);
 
     // 발행 이력 탭 진입 시 저장된 리포트 로드
     useEffect(() => {
@@ -147,20 +153,26 @@ export default function MonthlyReport() {
         }
     };
 
+    // 공용 UI: 상단 벨 버튼
+    const NotificationBell = () => (
+        <button
+            onClick={handleNotification}
+            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+        >
+            <BsFillBellFill className="w-5 h-5 text-white" />
+
+            {notifications.length > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+            )}
+        </button>
+    );
 
     return (
         <>
+            {/* 상단 헤더 (알림 벨) */}
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">월간 리포트</h1>
-                    <button
-                        onClick={() => setIsNotiOpen(true)}
-                        className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
-                    >
-                        {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-                        <BsFillBellFill className="text-white" size={20} />
-                        {/* 알림 도트 */}
-                        <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-                    </button>
+                <NotificationBell />
             </header>
 
             <div className="flex-1 overflow-y-auto px-6 pt-6 pb-4">
@@ -391,6 +403,11 @@ export default function MonthlyReport() {
                     </>
                 )}
             </div>
+            <NotificationModal
+                isOpen={isNotiOpen}
+                onClose={() => setIsNotiOpen(false)}
+                notifications={notifications}
+            />
         </>
     );
 }

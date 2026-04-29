@@ -8,65 +8,45 @@ import NotificationModal from "../../Components/Modal/NotificationModal";
 
 import { useFriend } from "../../hooks/useFriend";
 import { useAuth } from "../../hooks/useAuth"; 
+import { useNotification } from "../../hooks/useNotification";
+
 import api from "../../utils/api"; 
 
 import { BsFillBellFill } from "react-icons/bs";
 
 export default function Friend() {
+    // 알림 hooks
+    const { searchUser, sendRequest, friends, fetchFriends } = useFriend();     // 친구 관련 로직 hooks
+    const { user: currentUser } = useAuth();                                    // 로그인 유저 정보 hooks
+    const { notifications, fetchNotifications } = useNotification(); 
+    
     // const [friends, setFriends] = useState([]);
-    const [isAdmin, setIsAdmin] = useState(false);
-    const [view, setView] = useState("list");
-    const [selectedFriend, setSelectedFriend] = useState(null);
-    const [searchQuery, setSearchQuery] = useState("");
-    const { searchUser, sendRequest, friends, fetchFriends } = useFriend();
-    const { user: currentUser } = useAuth();
+    const [isAdmin, setIsAdmin] = useState(false);                              // 관리자 여부 상태
+    const [view, setView] = useState("list");                                   // 현재 화면 (list / detail)
+    const [selectedFriend, setSelectedFriend] = useState(null);                 // 선택된 친구
+    const [searchQuery, setSearchQuery] = useState("");                         // 검색어 상태
     const [friendDetailDate, setFriendDetailDate] = useState(
         startOfDay(new Date(2026, 3, 21))
-    );
+    );                                                                           // 친구 상세 날짜
 
     // 모달 상태
     const [isFriendAddOpen, setIsFriendAddOpen] = useState(false);
     const [isNotiOpen, setIsNotiOpen] = useState(false);
 
+    // 검색 모달
+    const [isSearchOpen, setIsSearchOpen] = useState(false);
+    const [searchResults, setSearchResults] = useState([]);
 
+    const handleNotification = () => setIsNotiOpen(true);                       // 알림 모달 열기
 
-    const [notifications, setNotifications] = useState([]);
-
-    // 알림 조회
-    const fetchNotifications = useCallback(async () => {
-        if (!currentUser?.user_id) return;
-        try {
-            const res = await api.get(`/notifications/user/${currentUser.user_id}`);
-            setNotifications((res.data || []).filter(n => !n.is_read));
-        } catch (e) {
-            console.error("알림 조회 실패:", e);
-        }
-    }, [currentUser]);
-
-    useEffect(() => {
-        fetchNotifications();
-    }, [fetchNotifications]);
-
-
-    useEffect(() => {
-        const checkAdmin = () => false;
-        setIsAdmin(checkAdmin());
-    }, []);
-
-
-    const handleSearch = () => {
-        if (!searchQuery.trim()) return;
-        const mockUsers = ["codehaeun", "junseo", "minji", "jihun"];
-        const results = mockUsers.filter((user) =>
-            user.includes(searchQuery.trim())
-        );
-        setSearchResults(results);
-        setIsSearchOpen(true);
+    const handleFriendClick = (friend) => {
+        setSelectedFriend(friend);
+        setView("detail");
     };
-
-    const handleNotification = () => setIsNotiOpen(true);
-    const handleAdvancedSearch = () => alert("검색 옵션 열기");
-
+    const handleBackToList = () => {
+        setView("list");
+        setSelectedFriend(null);
+    };
     const handleAddFriend = () => setIsFriendAddOpen(true);
 
     // 친구 요청 보내기
@@ -103,46 +83,48 @@ export default function Friend() {
         }
     };
 
-
-
-
+    const handleDeleteMember = async (member) => {
+        const ok = await showWarningDialog({
+            title: "회원을 삭제할까요?",
+            text: "삭제된 회원은 복구할 수 없어요.",
+        });
+        if (ok) {
+            setMembers((prev) => prev.filter((m) => m.id !== member.id));
+            showSuccessAlert({
+                title: "삭제 완료",
+                text: `${member.name} 님을 삭제했어요.`,
+            });
+        }
+    };
 
     // 공용 UI: 상단 벨 버튼
     const NotificationBell = () => (
         <button
-            onClick={() => setIsNotiOpen(true)}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
+            onClick={handleNotification}
+            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
         >
-            {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-            <BsFillBellFill className="text-white" size={20} />
-            {/* 알림 도트 */}
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+            <BsFillBellFill className="w-5 h-5 text-white" />
+
+            {notifications.length > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+            )}
         </button>
     );
 
     // 공용 UI: 검색 바
-    const SearchBar = ({ placeholder }) => (
-        <div className="flex gap-2">
-            <div className="flex-1 bg-white rounded-full px-4 py-3 flex items-center gap-2 shadow-sm">
-                <span className="text-[#8B9BAA] text-xs">🔍</span>
-                <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                    placeholder={placeholder}
-                    className="flex-1 text-sm text-[#3D4D5C] placeholder-[#B5BEC7] focus:outline-none"
-                />
-            </div>
-            <button
-                onClick={handleAdvancedSearch}
-                className="w-12 h-12 rounded-2xl bg-[#A8C8D8] flex items-center justify-center shadow-sm shrink-0"
-                aria-label="상세 검색"
-            >
-                <span className="w-5 h-5 block" />
-            </button>
+    <div className="flex gap-2">
+        <div className="flex-1 bg-white rounded-full px-4 py-3 flex items-center gap-2 shadow-sm">
+            <span className="text-[#8B9BAA] text-xs">🔍</span>
+            <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="친구검색"
+                className="flex-1 text-sm text-[#3D4D5C] placeholder-[#B5BEC7] focus:outline-none"
+            />
         </div>
-    );
+    </div>
+
 
     // ====== 렌더: 친구 상세 (비관리자) ======
     if (!isAdmin && view === "detail" && selectedFriend) {
@@ -150,17 +132,6 @@ export default function Friend() {
             friendTodosByDate.find((entry) =>
                 isSameDay(entry.date, friendDetailDate)
             )?.todos || [];
-
-        const studyDays = [
-            new Date(2026, 3, 3),
-            new Date(2026, 3, 7),
-            new Date(2026, 3, 12),
-            new Date(2026, 3, 25),
-            new Date(2026, 3, 28),
-        ];
-        const workoutDays = [new Date(2026, 3, 9)];
-        const dailyDays = [new Date(2026, 3, 5), new Date(2026, 3, 14)];
-
         const formattedFriendDate = format(friendDetailDate, "M월 d일", {
             locale: ko,
         });
@@ -260,7 +231,7 @@ export default function Friend() {
         );
     }
 
-    // ====== 렌더: 관리자 - 회원 관리 ======
+    // 관리자 - 회원 검색 
     if (isAdmin) {
         const filtered = members.filter((m) =>
             m.name.includes(searchQuery.trim())
@@ -274,7 +245,18 @@ export default function Friend() {
                 </header>
 
                 <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
-                    <SearchBar placeholder="회원 검색" />
+                    <div className="flex gap-2">
+                        <div className="flex-1 bg-white rounded-full px-4 py-3 flex items-center gap-2 shadow-sm">
+                            <span className="text-[#8B9BAA] text-xs">🔍</span>
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="회원 검색"
+                                className="flex-1 text-sm text-[#3D4D5C] placeholder-[#B5BEC7] focus:outline-none"
+                            />
+                        </div>
+                    </div>
 
                     <div className="mt-4 flex flex-col gap-3">
                         {filtered.length === 0 ? (
@@ -290,7 +272,7 @@ export default function Friend() {
                                     <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
                                     <div className="flex-1">
                                         <p className="text-sm font-bold text-[#3D4D5C]">{member.name}</p>
-                                        <p className="text-xs text-[#8B9BAA] mt-1">{member.status}</p>
+                                        <p className="text-xs text-[#8B9BAA] mt-1">{member.status === "수락" ? "친구" : member.status}</p>
                                     </div>
                                     <button
                                         onClick={() => handleDeleteMember(member)}
@@ -321,7 +303,7 @@ export default function Friend() {
         );
     }
 
-    // ====== 렌더: 비관리자 - 친구 목록 (기본) ======
+    // 사용자 친구(친구되어있는 사람만) 검색 
     const filteredFriends = friends.filter((f) => {
         const friendName = f.requester_id === currentUser?.user_id
             ? f.receiver_username
@@ -337,7 +319,18 @@ return (
         </header>
 
         <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
-            <SearchBar placeholder="친구 검색" />
+            <div className="flex gap-2">
+                <div className="flex-1 bg-white rounded-full px-4 py-3 flex items-center gap-2 shadow-sm">
+                    <span className="text-[#8B9BAA] text-xs">🔍</span>
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="회원 검색"
+                        className="flex-1 text-sm text-[#3D4D5C] placeholder-[#B5BEC7] focus:outline-none"
+                    />
+                </div>
+            </div>
 
             <div className="mt-4 flex flex-col gap-3">
                 {filteredFriends.length === 0 ? (
@@ -359,7 +352,7 @@ return (
                                 <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
                                 <div className="flex-1">
                                     <p className="text-sm font-bold text-[#3D4D5C]">{friendName}</p>
-                                    <p className="text-xs text-[#8B9BAA] mt-1">{friend.status}</p>
+                                    <p className="text-xs text-[#8B9BAA] mt-1">{friend.status === "수락" ? "친구" : friend.status}</p>
                                 </div>
                             </button>
                         );

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import {showWarningAlert} from "../../utils/alertUtils.js";
 
 export default function Login({ onSignupClick }) {
     const navigate = useNavigate();
@@ -19,7 +20,7 @@ export default function Login({ onSignupClick }) {
                 navigate("/main");
             }
             else {
-                alert('아이디/비밀번호가 틀립니다.');
+                showWarningAlert({title:'아이디/비밀번호가 틀립니다.'});
             }
             setIsLoading(false);
         };
@@ -58,7 +59,7 @@ export default function Login({ onSignupClick }) {
                         <label className="text-xs font-medium text-[#4A5568]">이메일</label>
                         <input
                             type="email"
-                            placeholder="admin@admin.com"
+                            placeholder="user@user.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA]"
@@ -69,7 +70,7 @@ export default function Login({ onSignupClick }) {
                         <label className="text-xs font-medium text-[#4A5568]">비밀번호</label>
                         <input
                             type="password"
-                            placeholder="••••••"
+                            placeholder="••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA]"
