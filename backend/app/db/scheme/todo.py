@@ -7,7 +7,6 @@ class TodoBase(BaseModel):
     todo_status: str = "시작전"
     detail: str
     visibility: str = "친구공개"
-    category_id: str
 
 class TodoCreate(TodoBase):
     user_id: int

@@ -5,6 +5,15 @@ import {useMusic} from "@/hooks/useMusic.jsx";
 import api from "@/utils/api.js";
 import useImg from "@/hooks/useImg.jsx";
 
+import {
+  BsFillImageFill,
+  BsFillSquareFill,
+  BsChevronDown,
+  BsFillBellFill,
+  BsPlayFill,
+  BsPauseFill
+} from "react-icons/bs";
+
 /**
  * Home 화면
  * - 상단 우측 알림 벨 → NotificationModal
@@ -84,7 +93,7 @@ export default function Home() {
                     className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
                 >
                     {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-                    <span className="w-5 h-5 block" />
+                    <BsFillBellFill className="text-white" size={20} />
                     {/* 알림 도트 */}
                     <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
                 </button>
@@ -109,28 +118,43 @@ export default function Home() {
                     {/* 재생/정지 버튼 — 자기만의 onClick */}
                     <button
                         onClick={handlePlayToggle}
-                        className="w-8 h-8 rounded-xl bg-[#A8C8D8] flex items-center justify-center shrink-0"
-                        aria-label="재생/정지"
+                        className="w-8 h-8 rounded-full bg-[#A8C8D8] flex items-center justify-center shrink-0 mr-3 transition-colors duration-200 hover:bg-[#97b7c7]"
+                        aria-label={isPlaying ? "정지" : "재생"}
                     >
-                        <span className="w-4 h-4 block" />
+                        {/* play가 true면 네모(정지), false면 세모(재생) */}
+                        {isPlaying ? (
+                            <BsFillSquareFill className="text-white" size={10} />
+                        ) : (
+                            <BsPlayFill className="text-white ml-0.5" size={20} />
+                        )}
                     </button>
 
                     {/* 재생 버튼을 제외한 나머지 영역 — 클릭 시 드롭다운 토글 */}
                     <button
                         type="button"
                         onClick={() => setIsMusicListOpen((v) => !v)}
-                        className="flex-1 text-left text-sm font-semibold text-[#3D4D5C] truncate"
+                        className="flex-1 flex items-center justify-between overflow-hidden"
                         aria-haspopup="listbox"
                         aria-expanded={isMusicListOpen}
                     >
-                        {currentMusic?.title ?? "음악 선택"}
+                        <span className="text-sm font-semibold text-[#3D4D5C] truncate pr-2">
+                            {currentMusic?.title ?? "음악 선택"}
+                        </span>
+
+                        <BsChevronDown
+                            size={18}
+                            className={`shrink-0 transition-transform duration-300 ${
+                                isMusicListOpen ? "rotate-180" : "rotate-0"
+                            } text-[#3D4D5C]`} // 색상을 텍스트와 같은 남색으로 변경
+                            strokeWidth={1} // 조금 더 뚜렷하게 보이도록 설정 (선택 사항)
+                        />
                     </button>
 
                     {/* 드롭다운 리스트 — absolute로 컨테이너 아래에 띄움 */}
                     {isMusicListOpen && (
                         <ul
                             role="listbox"
-                            className="absolute left-0 right-0 bottom-full mb-2 bg-white rounded-2xl shadow-lg z-10 max-h-60 overflow-y-auto py-2"
+                            className="absolute left-0 right-0 bottom-full mt-2 bg-white rounded-2xl shadow-lg z-10 max-h-60 overflow-y-auto py-2"
                         >
                             {musics.length === 0 ? (
                                 <li className="px-4 py-2 text-sm text-[#8B9BAA]">
@@ -170,7 +194,7 @@ export default function Home() {
                     className="w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
                     aria-label="배경 이미지 변경"
                 >
-                    <span className="w-5 h-5 block" />
+                    <BsFillImageFill className="text-white" size={20} />
                 </button>
             </section>
 

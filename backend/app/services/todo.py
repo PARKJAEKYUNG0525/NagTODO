@@ -1,30 +1,43 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from app.db.crud.todo import TodoCrud
+from app.db.crud.user import UserCrud
+from app.db.crud.category import CategoryCrud
 from app.db.scheme.todo import TodoCreate, TodoUpdate, TodoCreateResponse, InterferenceResult, MonthlyStatsResponse
 from app.db.models.todo import Todo
 from app.services.ai_client import get_interference, update_embedding, patch_embedding, delete_embedding
+
+
+async def _require_user(db: AsyncSession, user_id: int):
+    """user_id에 해당하는 User가 없으면 404를 발생시킨다."""
+    user = await UserCrud.get_user(db, user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
+        )
+    return user
+
+
+async def _require_category(db: AsyncSession, category_id: str):
+    """category_id에 해당하는 Category가 없으면 404를 발생시킨다."""
+    category = await CategoryCrud.get_category(db, category_id)
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"category_id '{category_id}'에 해당하는 category가 없습니다."
+        )
+    return category
+
 
 class TodoService:
 
     # C 생성
     @staticmethod
     async def create_todo_svc(db: AsyncSession, data: TodoCreate) -> TodoCreateResponse:
-        # user 존재 확인
-        user = await TodoCrud.get_user(db, data.user_id)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user_id '{data.user_id}'에 해당하는 user가 없습니다."
-            )
-
-        # category 존재 확인
-        category = await TodoCrud.get_category(db, data.category_id)
-        if not category:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"category_id '{data.category_id}'에 해당하는 category가 없습니다."
-            )
+        # user 및 category 존재 확인
+        await _require_user(db, data.user_id)
+        await _require_category(db, data.category_id)
 
         try:
             todo = await TodoCrud.create_todo(db, data)
@@ -62,12 +75,7 @@ class TodoService:
     # R 조회 - todo 목록 조회 (user 기준)
     @staticmethod
     async def get_all_todos_svc(db: AsyncSession, user_id: int) -> list[Todo]:
-        user = await TodoCrud.get_user(db, user_id)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
-            )
+        await _require_user(db, user_id)
         return await TodoCrud.get_todos_by_user(db, user_id)
     
 
@@ -82,20 +90,10 @@ class TodoService:
             )
 
         if data.category_id:
-            category = await TodoCrud.get_category(db, data.category_id)
-            if not category:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"category_id '{data.category_id}'에 해당하는 category가 없습니다."
-                )
-            
+            await _require_category(db, data.category_id)
+
         if data.user_id:
-            user = await TodoCrud.get_user(db, data.user_id)
-            if not user:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"user_id '{data.user_id}'에 해당하는 user가 없습니다."
-                )
+            await _require_user(db, data.user_id)
 
         old_title = todo.title
 
@@ -135,12 +133,7 @@ class TodoService:
     async def get_monthly_stats_svc(
         db: AsyncSession, user_id: int, month_start: str, month_end: str
     ) -> MonthlyStatsResponse:
-        user = await TodoCrud.get_user(db, user_id)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user_id '{user_id}'에 해당하는 user가 없습니다.",
-            )
+        await _require_user(db, user_id)
 
         category_stats = await TodoCrud.get_user_category_stats(db, user_id, month_start, month_end)
         all_users_success_rate = await TodoCrud.get_all_users_success_rate(db, month_start, month_end)

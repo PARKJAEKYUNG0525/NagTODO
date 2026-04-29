@@ -6,6 +6,9 @@ import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
 import api from "@/utils/api.js";
 import useImg from "@/hooks/useImg.jsx";
 
+import { BsFillBellFill } from "react-icons/bs";
+
+
 /**
  * Mypage 화면 (통합본)
  * isAdmin 여부에 따라 완전히 다른 UX.
@@ -52,6 +55,7 @@ export default function MyPage() {
         { id: 6, name: "기타" },
     ]);
     const [draggedIdx, setDraggedIdx] = useState(null);
+    const [isNotiOpen, setIsNotiOpen] = useState(false);
 
     const { currentBg, getUserBg } = useImg();
 
@@ -82,7 +86,7 @@ export default function MyPage() {
         }
     }, [user]);
 
-    const handleNotification = () => alert("알림 아이콘 클릭");
+    // const handleNotification = () => alert("알림 아이콘 클릭");
 
     const handleWithdraw = () => alert("회원탈퇴 안내");
     const handleEditProfile = () => {
@@ -175,16 +179,16 @@ export default function MyPage() {
     };
     const handleDragEnd = () => setDraggedIdx(null);
 
-    const NotificationBell = () => (
-        <button
-            onClick={handleNotification}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
-        >
-            {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-            <span className="w-5 h-5 block" />
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-        </button>
-    );
+    // const NotificationBell = () => (
+    //     <button
+    //         onClick={handleNotification}
+    //         className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+    //     >
+    //         {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
+    //         <span className="w-5 h-5 block" />
+    //         <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+    //     </button>
+    // );
 
     const handleSaveProfile = async () => {
         setError("");
@@ -502,7 +506,15 @@ export default function MyPage() {
         >
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">마이페이지</h1>
-                <NotificationBell />
+                    <button
+                        onClick={() => setIsNotiOpen(true)}
+                        className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
+                    >
+                        {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
+                        <BsFillBellFill className="text-white" size={20} />
+                        {/* 알림 도트 */}
+                        <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+                    </button>
             </header>
 
             <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">

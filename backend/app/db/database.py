@@ -20,22 +20,6 @@ sync_engine=create_engine(settings.sync_db_url, pool_pre_ping=True)
 Base=declarative_base()
 
 # 비동기 세션 생성
-# async def get_db():
-#     session=None
-#     try:
-#         session=AsyncSessionLocal()
-#         yield session
-#     except:
-#         pass
-#     finally:
-#         if session:
-#             await session.close()
-# async def get_db():
-#     async with AsyncSessionLocal() as session:
-#         yield session
-
-# app/db/database.py
-
 async def get_db():
     session = AsyncSessionLocal()
     try:
