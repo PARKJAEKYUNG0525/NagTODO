@@ -93,6 +93,23 @@ const useMypage = () => {
         }
     };
 
+    // 상태메세지
+    const updateStatusMessage = async (status_message) => {
+        try {
+            // 백엔드 엔드포인트와 필드명(status_message)은 실제 API 명세에 맞춰 확인 필요!
+            const response = await api.patch("/users/me", { status_message });
+            if (response.status === 200) {
+                setUser(response.data); // 전역 유저 정보 업데이트
+                return true;
+            }
+        } catch (error) {
+            console.log(error);
+            setError(error.response?.data.detail || "상태 메시지 수정에 실패했습니다.");
+            return false;
+        }
+    };
+
+
     return {
         error,
         setError,
@@ -102,6 +119,7 @@ const useMypage = () => {
         updatePassword,
         deleteAccount,
         checkUsername,
+        updateStatusMessage
     };
 };
 

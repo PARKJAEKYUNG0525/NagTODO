@@ -25,7 +25,7 @@ import { BsFillBellFill } from "react-icons/bs";
 export default function MyPage() {
     const { user, setUser, logout } = useAuth();
     const [isAdmin, setIsAdmin] = useState(false);
-    const { updateProfile, updatePassword, checkUsername } = useMypage();
+    const { updateProfile, updatePassword, checkUsername, updateStatusMessage } = useMypage();
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
     const [view, setView] = useState("main"); // "main" | "edit-profile"
     const [error, setError] = useState("");
@@ -55,6 +55,7 @@ export default function MyPage() {
     ]);
     const [draggedIdx, setDraggedIdx] = useState(null);
     const [isNotiOpen, setIsNotiOpen] = useState(false);
+    const [statusMessage, setStatusMessage] = useState("");
 
     useEffect(() => {
         const checkAdmin = () => false;
@@ -79,6 +80,12 @@ export default function MyPage() {
                 birthDay: day || "",
             }));
         }
+    }, [user]);
+
+    useEffect(() => {
+    if (user?.status_message) {
+        setStatusMessage(user.status_message);
+    }
     }, [user]);
 
     // const handleNotification = () => alert("알림 아이콘 클릭");
@@ -253,6 +260,35 @@ export default function MyPage() {
             setError("(Mypage/index)저장 중 오류가 발생했습니다.");
         }
     };
+
+    const handleSaveStatusMessage = async () => {
+        if (statusMessage.length > 50) {
+            alert("50자 이하로 입력하세요");
+            return;
+        }
+
+        try {
+            const success = await updateStatusMessage(statusMessage);
+
+            if (success) {
+                showSuccessAlert({ title: "상태메세지가 저장되었습니다." });
+            } else {
+                showWarningDialog({ 
+                    title: "저장 실패", 
+                    text: error || "다시 시도해주세요." 
+                });
+            }
+
+        } catch (e) {
+            console.error("상태메시지 저장 중 에러 발생:", e);
+            showWarningDialog({ 
+                title: "시스템 오류", 
+                text: "서버와 통신하는 중 문제가 발생했습니다." 
+            });
+        }
+    };
+
+
 
     // ====== 렌더: 비관리자 - 내 정보 수정 ======
     if (!isAdmin && view === "edit-profile") {
@@ -492,82 +528,113 @@ export default function MyPage() {
 
     // ====== 렌더: 비관리자 - 마이페이지 메인 ======
     return (
-        <>
-            <header className="px-6 pt-6 flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-[#3D4D5C]">마이페이지</h1>
-                    <button
-                        onClick={() => setIsNotiOpen(true)}
-                        className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
-                    >
-                        {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-                        <BsFillBellFill className="text-white" size={20} />
-                        {/* 알림 도트 */}
-                        <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-                    </button>
+    <>
+        <div className="h-screen flex flex-col bg-[#F8F9FA] overflow-hidden font-sans">
+            
+            {/* 헤더 */}
+            <header className="px-6 pt-6 pb-2 flex items-center justify-between shrink-0">
+                <h1 className="text-lg font-bold text-[#3D4D5C]">마이페이지</h1>
+                <button
+                    onClick={() => setIsNotiOpen(true)}
+                    className="relative w-9 h-9 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
+                >
+                    <BsFillBellFill className="text-white" size={16} />
+                    <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+                </button>
             </header>
 
-            <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
-                <div className="bg-white rounded-2xl p-6 shadow-sm relative">
-                    <button
-                        onClick={logout}
-                        className="absolute top-4 right-5 text-[11px] text-[#8B9BAA]"
-                    >
+            <div className="flex-1 px-6 pb-8 flex flex-col">
+                
+                {/* 프로필 카드 */}
+                <div className="bg-white rounded-2xl p-5 shadow-sm relative shrink-0">
+                    <button onClick={logout} className="absolute top-4 right-5 text-[10px] text-[#8B9BAA]">
                         로그아웃
                     </button>
-
                     <div className="flex flex-col items-center">
-                        <p className="text-lg font-bold text-[#3D4D5C]">{user?.username || ""}</p>
-                        <div className="mt-3 w-20 h-20 rounded-full bg-[#A8C8D8]">
-                            {/* 아이콘 위치: 프로필 이미지 (bi-person-fill) */}
-                        </div>
-                        <p className="mt-4 text-xs text-[#3D4D5C]">{user?.email || ""}</p>
-                        <p className="mt-1 text-xs text-[#8B9BAA]">
-                            함께한 지 <span className="font-semibold">40일째</span>
+                        <p className="text-base font-bold text-[#3D4D5C]">{user?.username}</p>
+                        <div className="mt-2 w-14 h-14 rounded-full bg-[#A8C8D8] shadow-inner" />
+                        <p className="mt-2 text-[11px] text-[#3D4D5C]">{user?.email}</p>
+                        
+                        <p className="mt-1 text-[10px] text-[#8B9BAA]">
+                            함께한 지 <span className="font-semibold text-[#A8C8D8]">40일째</span>
                         </p>
+
                         <button
                             onClick={handleEditProfile}
-                            className="mt-3 px-4 py-1.5 rounded-full bg-[#EEF2F5] text-xs font-semibold text-[#3D4D5C]"
+                            className="mt-4 w-full max-w-[140px] py-2.5 rounded-xl bg-[#EEF2F5] text-[12px] font-bold text-[#3D4D5C] active:bg-[#E2E8ED] transition-colors"
                         >
                             내 정보 수정
                         </button>
                     </div>
                 </div>
 
-                <h2 className="mt-6 text-base font-bold text-[#3D4D5C]">모드 변경</h2>
+                {/* 상태메세지 */}
+                <div className="mt-5 shrink-0">
+                    <div className="flex justify-between items-end mb-2 px-1">
+                        <h2 className="text-[13px] font-bold text-[#3D4D5C]">상태메세지</h2>
+                        <span className="text-[10px] text-[#8B9BAA]">{statusMessage?.length || 0}/50</span>
+                    </div>
+                    <div className="bg-white rounded-xl p-3 shadow-sm flex gap-2 items-center border border-transparent focus-within:border-[#A8C8D8]">
+                        <input
+                            type="text"
+                            value={statusMessage}
+                            onChange={(e) => setStatusMessage(e.target.value)}
+                            placeholder="상태를 입력하세요"
+                            className="flex-1 px-3 py-2 text-xs bg-[#F1F3F5] rounded-lg text-[#3D4D5C] outline-none placeholder:text-[#ADB5BD]"
+                        />
+                        <button
+                            onClick={handleSaveStatusMessage}
+                            className="px-4 py-2 rounded-lg bg-[#A8C8D8] text-white text-[12px] font-bold shrink-0"
+                        >
+                            저장
+                        </button>
+                    </div>
+                </div>
 
-                <button
-                    onClick={() => handleSelectStrictMode("strict")}
-                    className={`
-            mt-3 w-full bg-white rounded-2xl p-5 shadow-sm block text-left
-            ${strictMode === "strict" ? "ring-2 ring-[#A8C8D8]" : ""}
-          `}
-                >
-                    <p className="text-center text-sm font-bold text-[#3D4D5C]">
-                        엄격하게
-                    </p>
-                    <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
-                </button>
+                {/* 모드 변경 */}
+                <div className="mt-6 flex-1 flex flex-col min-h-0">
 
-                <button
-                    onClick={() => handleSelectStrictMode("less")}
-                    className={`
-            mt-3 w-full bg-white rounded-2xl p-5 shadow-sm block text-left
-            ${strictMode === "less" ? "ring-2 ring-[#A8C8D8]" : ""}
-          `}
-                >
-                    <p className="text-center text-sm text-[#8B9BAA]">덜 엄격하게</p>
-                    <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
-                </button>
-                <div className="flex flex-col items-center">
-                    <button
-                        onClick={handleWithdraw}
-                        className="mt-3 px-4 py-1.5 text-xs text-[#3D4D5C]"
-                    >
+                    <h2 className="text-base font-bold text-[#3D4D5C] mb-3 px-1">모드 변경</h2>
+                    
+                    <div className="flex-1 flex flex-col gap-4 mb-4">
+                        {/* 엄격하게 버튼 */}
+                        <button
+                            onClick={() => handleSelectStrictMode("strict")}
+                            className={`flex-1 flex flex-col items-center justify-center rounded-2xl shadow-sm border-2 transition-all ${
+                                strictMode === "strict" ? "bg-white border-[#A8C8D8]" : "bg-white/60 border-transparent"
+                            }`}
+                        >
+                            <p className={`text-sm font-medium mb-3 ${strictMode === "strict" ? "text-[#3D4D5C]" : "text-[#8B9BAA]"}`}>
+                                엄격하게
+                            </p>
+
+                            <div className={`w-3/4 h-12 rounded-xl transition-colors ${strictMode === "strict" ? "bg-[#E9ECEF]" : "bg-[#F1F3F5]"}`} />
+                        </button>
+
+                        {/* 덜 엄격하게 버튼 */}
+                        <button
+                            onClick={() => handleSelectStrictMode("less")}
+                            className={`flex-1 flex flex-col items-center justify-center rounded-2xl shadow-sm border-2 transition-all ${
+                                strictMode === "less" ? "bg-white border-[#A8C8D8]" : "bg-white/60 border-transparent"
+                            }`}
+                        >
+                            <p className={`text-sm font-medium mb-3 ${strictMode === "less" ? "text-[#3D4D5C]" : "text-[#8B9BAA]"}`}>
+                                덜 엄격하게
+                            </p>
+                            <div className={`w-3/4 h-12 rounded-xl transition-colors ${strictMode === "less" ? "bg-[#E9ECEF]" : "bg-[#F1F3F5]"}`} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* 탈퇴 버튼 */}
+                <div className="flex justify-center shrink-0">
+                    <button onClick={handleWithdraw} className="text-[10px] text-[#8B9BAA] border-b border-[#8B9BAA] pb-0.5">
                         회원 탈퇴
                     </button>
                 </div>
             </div>
-        </>
+        </div>
+    </>
     );
 }
 

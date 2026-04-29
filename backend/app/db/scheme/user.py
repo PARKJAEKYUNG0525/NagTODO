@@ -41,6 +41,7 @@ class UserUpdate(BaseModel):
     birthday : date | None = None
     img_id : str | None = None
     music_id : str | None = None
+    status_message: str | None = None
 
 class UserInDB(UserBase):
     user_id: int
@@ -52,6 +53,7 @@ class UserInDB(UserBase):
     birthday: date
     img_id : str | None = None
     music_id : str | None = None
+    status_message: str | None = None
 
     class Config:
         from_attributes = True
