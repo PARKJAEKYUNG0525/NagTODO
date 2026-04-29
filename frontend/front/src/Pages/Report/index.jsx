@@ -461,7 +461,7 @@ function DonutChart({ categoryEntries, overallRate }) {
     }
 
     const segDeg = 360 / categoryEntries.length;
-    let cumDeg = -90;
+    let cumDeg = 0;
     const segments = categoryEntries.map(([name], idx) => {
         const start = cumDeg;
         cumDeg += segDeg;
