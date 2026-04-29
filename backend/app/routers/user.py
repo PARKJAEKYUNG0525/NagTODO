@@ -76,6 +76,14 @@ async def update_me(
 ):
     return await user_svc.update_user_svc(db, current_user.user_id, data)
 
+# # U 수정 - state 변경
+# @router.patch("/me/state")
+# async def update_state(
+#     db: AsyncSession = Depends(get_db),
+#     current_user: User = Depends(get_current_user)
+# ):
+#     return await user_svc.update_state_svc(db, current_user.user_id)
+
 # U 수정 - 비밀번호
 @router.patch("/me/password")
 async def update_password(
@@ -90,7 +98,10 @@ async def update_password(
 async def update_user(user_id: int, data: UserUpdate, db: AsyncSession = Depends(get_db)):
     return await user_svc.update_user_svc(db, user_id, data)
 
-# D 삭제
-@router.delete("/{user_id}")
-async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    return await user_svc.delete_user_svc(db, user_id)
+# D 삭제 - 본인
+@router.delete("/me")
+async def delete_me(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return await user_svc.delete_user_svc(db, current_user.user_id)

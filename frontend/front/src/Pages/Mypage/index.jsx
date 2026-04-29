@@ -9,7 +9,7 @@ import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
 import { BsFillBellFill } from "react-icons/bs";
 
 export default function MyPage() {
-    const { user, setUser, logout } = useAuth();
+    const { user, setUser, logout, deleteUser } = useAuth();
     const { notifications } = useNotification();
     const [isAdmin, setIsAdmin] = useState(false);
     const { updateProfile, updatePassword, checkUsername, updateStatusMessage } = useMypage();
@@ -79,7 +79,7 @@ export default function MyPage() {
 
     // const handleNotification = () => alert("알림 아이콘 클릭");
 
-    const handleWithdraw = () => alert("회원탈퇴 안내");
+    // const handleWithdraw = () => alert("회원탈퇴 안내");
     const handleEditProfile = () => {
         setForm(prev => ({
             ...prev,
@@ -303,12 +303,12 @@ export default function MyPage() {
 
                     <Field label="닉네임" value={form.username} onChange={(e) => setForm({...form, username: e.target.value})} />
                     <Field label="이메일" value={form.email} readOnly />
-                    <Field label="현재 비밀번호" type="password" value={form.currentPassword} onChange={(e) => setForm({...form, currentPassword: e.target.value})} placeholder={"********"}/>
-                    <Field label="새 비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} placeholder={"********"}/>
+                    <Field label="현재 비밀번호" type="password" value={form.currentPassword} onChange={(e) => setForm({...form, currentPassword: e.target.value})} placeholder={"••••••••"}/>
+                    <Field label="새 비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} placeholder={"••••••••"}/>
                     <Field label="새 비밀번호 확인"
                         type="password"
                         value={form.confirmPassword} onChange={(e) => setForm({...form, confirmPassword: e.target.value})}
-                        placeholder={"********"}
+                        placeholder={"••••••••"}
                     />
 
                     <div>
@@ -621,7 +621,7 @@ export default function MyPage() {
 
                 {/* 탈퇴 버튼 */}
                 <div className="flex justify-center shrink-0">
-                    <button onClick={handleWithdraw} className="text-[10px] text-[#8B9BAA] border-b border-[#8B9BAA] pb-0.5">
+                    <button onClick={deleteUser} className="text-[10px] text-[#8B9BAA] border-b border-[#8B9BAA] pb-0.5">
                         회원 탈퇴
                     </button>
                 </div>

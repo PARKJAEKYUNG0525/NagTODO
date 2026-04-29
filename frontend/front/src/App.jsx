@@ -18,6 +18,7 @@ import Friend from "./Pages/Friend/index.jsx";
 import Todo from "./Pages/Todo/index.jsx";
 import Report from "./Pages/Report/index.jsx";
 import MyPage from "./Pages/MyPage/index.jsx";
+import FriendDetail from "./Pages/FriendDetail/index.jsx";
 import { MusicProvider } from "@/hooks/useMusic.jsx";
 
 const ProtectedRoute = ({ children }) => {
@@ -94,6 +95,7 @@ const router = createBrowserRouter([
                     // 일단 로그인 -> 쿠키 생성 잘 되면 아래 주석 해제
                     { path: "main", element: <Home /> },
                     { path: "friend", element: <Friend/>},
+                    { path: "friend/:userId", element: <FriendDetail/>},
                     { path: "todo", element: <Todo/>},
                     { path: "report", element: <Report/>},
                     { path: "mypage", element: <MyPage/>}
