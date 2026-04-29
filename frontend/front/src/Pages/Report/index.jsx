@@ -6,6 +6,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useAuth } from "@/hooks/useAuth";
 import { useReport } from "@/hooks/useReport";
+import { BsFillBellFill } from "react-icons/bs";
 
 const CATEGORY_COLORS = ["#E89B9B", "#F4D58A", "#A8D5B4", "#A8C8D8", "#C5A8D8", "#D8A8C5", "#D4B896"];
 const YEARS = [2024, 2025, 2026];
@@ -151,10 +152,15 @@ export default function MonthlyReport() {
         <>
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">월간 리포트</h1>
-                <div className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm">
-                    <span className="w-5 h-5 block" />
-                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-                </div>
+                    <button
+                        onClick={() => setIsNotiOpen(true)}
+                        className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
+                    >
+                        {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
+                        <BsFillBellFill className="text-white" size={20} />
+                        {/* 알림 도트 */}
+                        <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+                    </button>
             </header>
 
             <div className="flex-1 overflow-y-auto px-6 pt-6 pb-4">
