@@ -1,5 +1,5 @@
 import api from "../utils/api.js";
-import { showWarningAlert, showSuccessAlert } from "../utils/alertUtiles.js";
+import {showWarningAlert, showSuccessAlert} from "../utils/alertUtils.js";
 
 import { useAuth } from "@/hooks/useAuth.jsx";
 import React, { useCallback, useState } from 'react';
@@ -17,7 +17,7 @@ export const useTodo = () => {
             const response = await api.post("/todos", newTodo);
 
             if (response.status === 200 || response.status === 201) {
-                showSuccessAlert({ title: "게시글이 생성되었습니다." });
+                showSuccessAlert({title: "게시글이 생성되었습니다."});
                 return response.data;
             }
         }

@@ -3,7 +3,6 @@ from .friend import Friend
 from .todo import Todo
 from .recommend import Recommend
 from .pw_history import PwHistory
-from .homepage import Homepage
 from .cloth import Cloth
 from .friend_todo_view import FriendTodoView
 from .category import Category

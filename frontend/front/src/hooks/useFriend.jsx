@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import api from "../utils/api";
-import { showSuccessAlert, showWarningAlert } from "../utils/alertUtiles.js";
+ import { showSuccessAlert, showWarningAlert } from "../utils/alertUtils.js";
 
 export const useFriend = () => {
     const [friends, setFriends] = useState([]);          // 수락된 친구 목록
@@ -9,7 +9,7 @@ export const useFriend = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSearching, setIsSearching] = useState(false); // 검색 전용 로딩 상태 추가
 
-    // 1. 받은 신청 목록 조회 (R)
+    // // 1. 받은 신청 목록 조회 (R)
     const fetchReceivedRequests = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -33,19 +33,19 @@ export const useFriend = () => {
         
         setIsSearching(true);
         try {
-            setError("");
-            const response = await api.get(`/friends/search?query=${query}`);
-            if (response.status === 200) {
-                // 결과가 단일 객체라면 [response.data], 배열이라면 response.data
-                return Array.isArray(response.data) ? response.data : [response.data];
-            }
-            return [];
+        setError("");
+        const response = await api.get(`/users/search?query=${query}`);
+        console.log("검색 결과:", response.data);
+        
+        if (response.status === 200) {
+            return Array.isArray(response.data) ? response.data : [response.data];
+        }
+        return [];
         } catch (error) {
-            // 실시간 검색 시에는 Alert를 띄우지 않고 에러만 기록
-            console.error("검색 실패:", error.response?.data.detail);
-            return [];
+        console.error("검색 실패:", error.response?.data); 
+        return [];
         } finally {
-            setIsSearching(false);
+        setIsSearching(false);
         }
     }, []);
 
@@ -57,7 +57,7 @@ export const useFriend = () => {
             const response = await api.post("/friends/", { receiver_id: receiverId });
             
             if (response.status === 201) {
-                showSuccessAlert("신청 완료", "성공적으로 요청을 보냈습니다.");
+                showSuccessAlert({title:"신청 완료", text:"성공적으로 요청을 보냈습니다."});
                 return true;
             }
         } catch (error) {
@@ -80,8 +80,9 @@ export const useFriend = () => {
         error,
         setError,
         isLoading,
+        isSearching,
         searchUser,
-        sendRequest,
-        fetchReceivedRequests
+        // sendRequest,
+        // fetchReceivedRequests
     };
 };

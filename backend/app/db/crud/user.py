@@ -46,6 +46,17 @@ class UserCrud:
         await db.flush()
         return user
 
+    # R 조회 - 닉네임 또는 이메일로 검색
+    @staticmethod
+    async def search_users(db: AsyncSession, query: str, current_user_id: int) -> list[User]:
+        result = await db.execute(
+            select(User).where(
+                (User.username.ilike(f"%{query}%") | User.email.ilike(f"%{query}%")),
+                User.user_id != current_user_id  # 본인 제외
+            )
+        )
+        return list(result.scalars().all())
+
     # D 삭제
     @staticmethod
     async def delete_user(db: AsyncSession, user: User) -> None:

@@ -31,7 +31,12 @@ class MusicService:
                 detail="music 생성에 실패했습니다."
             )
 
-    # R 단일 조회
+    # R 조회 - 전체 조회
+    @staticmethod
+    async def get_all_musics_svc(db: AsyncSession):
+        return await MusicCrud.get_all_musics(db)
+
+    # R 조회 - 단일 조회
     @staticmethod
     async def get_music_svc(db: AsyncSession, music_id: str) -> Music:
         music = await MusicCrud.get_music(db, music_id)
@@ -42,10 +47,10 @@ class MusicService:
             )
         return music
 
-    # R 목록 조회 (homepage 기준)
-    @staticmethod
-    async def get_all_musics_by_homepage_svc(db: AsyncSession, homepage_id: str):
-        return await MusicCrud.get_all_musics_by_homepage(db, homepage_id)
+    # R 조회 - homepage 기준 조회
+    # @staticmethod
+    # async def get_music_by_homepage_svc(db: AsyncSession, homepage_id: str):
+    #     return await MusicCrud.get_music_by_homepage(db, homepage_id)
 
     # U 수정
     @staticmethod

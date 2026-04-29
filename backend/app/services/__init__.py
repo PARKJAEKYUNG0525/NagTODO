@@ -3,7 +3,7 @@ from .user import UserService
 from .todo import TodoService
 # from .recommend import RecommendService
 from .pw_history import PwHistoryService
-from .homepage import HomepageService
+# from .homepage import HomepageService
 from .cloth import ClothService
 from .friend_todo_view import FriendTodoViewService
 from .category import CategoryService

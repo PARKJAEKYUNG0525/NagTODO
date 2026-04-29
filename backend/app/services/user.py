@@ -74,6 +74,12 @@ class UserService:
     async def get_all_users_svc(db: AsyncSession) -> list[User]:
         users = await UserCrud.get_all_users(db)
         return users
+    
+    # R 조회 - 검색
+    @staticmethod
+    async def search_users_svc(db: AsyncSession, query: str, current_user_id: int):
+        users = await UserCrud.search_users(db, query, current_user_id)
+        return users
 
     # U 수정
     @staticmethod
