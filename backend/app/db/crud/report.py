@@ -25,6 +25,15 @@ class ReportCrud:
         result = await db.execute(select(Report))
         return list(result.scalars().all())
 
+    # R 조회 - user_id별 조회 (최신순)
+    @staticmethod
+    async def get_reports_by_user(db: AsyncSession, user_id: int) -> list[Report]:
+        from sqlalchemy import desc
+        result = await db.execute(
+            select(Report).where(Report.user_id == user_id).order_by(desc(Report.date))
+        )
+        return list(result.scalars().all())
+
     # U 수정
     @staticmethod
     async def update_report(db: AsyncSession, report: Report, data: ReportUpdate) -> Report:

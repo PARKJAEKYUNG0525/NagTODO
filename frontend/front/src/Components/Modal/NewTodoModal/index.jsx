@@ -1,14 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { format } from "date-fns";
 import ModalLayout from "../ModalLayout";
 import { useAuth } from "../../../hooks/useAuth";
 import { useInterference } from "../../../hooks/useInterference";
-import api from "../../../utils/api";
+import { useTodo } from "../../../hooks/useTodo";
+import useCategory from "../../../hooks/useCategory";
 
 /**
  * NewTodoModal
  * - 새 할 일 추가 모달
- * - 저장 시 백엔드 POST /todos/ 호출 → AI 간섭 팝업 트리거
+ * - 저장 시 useTodo.createTodo() 호출 → AI 간섭 팝업 트리거
  *
  * props:
  *   - isOpen        : boolean
@@ -16,24 +17,29 @@ import api from "../../../utils/api";
  *   - onSubmit      : (todo)=>void  — 부모의 목록 갱신용 콜백 (선택)
  *   - selectedDate  : Date          — 캘린더에서 선택한 날짜 (기본값: 오늘)
  */
-const CATEGORIES = [
-    { key: "study",       label: "공부" },
-    { key: "workout",     label: "운동" },
-    { key: "daily",       label: "일상" },
-    { key: "appointment", label: "약속" },
-    { key: "work",        label: "업무" },
-    { key: "etc",         label: "기타" },
-];
 
 const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) => {
     const { user } = useAuth();
     const { showFeedback } = useInterference();
+    const { createTodo } = useTodo();
+    const { getCategory } = useCategory();
 
+    const [categories, setCategories] = useState([]);
     const [title, setTitle] = useState("");
     const [memo, setMemo] = useState("");
-    const [category, setCategory] = useState(CATEGORIES[0].key);
+    const [category, setCategory] = useState("");
     const [isPublic, setIsPublic] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+
+    // 카테고리 목록을 서버에서 불러온다
+    useEffect(() => {
+        getCategory().then((data) => {
+            if (data && data.length > 0) {
+                setCategories(data);
+                setCategory(data[0].category_id);
+            }
+        });
+    }, [getCategory]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -44,26 +50,26 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) 
         // 모달 즉시 닫고 사용자가 다른 작업 가능하도록 함
         setTitle("");
         setMemo("");
-        setCategory(CATEGORIES[0].key);
+        setCategory(categories[0]?.category_id ?? "");
         setIsPublic(true);
         onClose?.();
         setSubmitting(true);
 
         // AI 잔소리 생성은 백그라운드에서 처리 — 완료되면 팝업으로 알림
-        api.post("/todos/", {
+        // createTodo 내부에서 에러를 흡수하고 null을 반환하므로 .catch 불필요
+        createTodo({
             title: snapshot.title,
             detail: snapshot.memo,
             category_id: snapshot.category,
             visibility: snapshot.isPublic ? "친구공개" : "비공개",
             user_id: user.user_id,
             created_at: format(selectedDate, "yyyy-MM-dd'T'HH:mm:ss"),
-        }).then((res) => {
-            const feedback = res.data.interference?.feedback ?? "잘 좀 하렴";
-            showFeedback(feedback);
-            onSubmit?.(snapshot);
-        }).catch((err) => {
-            const detail = err.response?.data?.detail;
-            showFeedback(detail ?? "todo 저장 실패. 다시 시도 ㄱ");
+        }).then((data) => {
+            if (data) {
+                const feedback = data.interference?.feedback ?? "잘 좀 하렴";
+                showFeedback(feedback);
+                onSubmit?.(snapshot);
+            }
         }).finally(() => {
             setSubmitting(false);
         });
@@ -99,21 +105,21 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) 
                 {/* 카테고리 */}
                 <div className="flex flex-col gap-2">
                     <span className="text-xs text-[#8B9BAA]">카테고리</span>
-                    <div className="flex gap-2">
-                        {CATEGORIES.map((cat) => {
-                            const active = category === cat.key;
+                    <div className="flex gap-2 flex-wrap">
+                        {categories.map((cat) => {
+                            const active = category === cat.category_id;
                             return (
                                 <button
-                                    key={cat.key}
+                                    key={cat.category_id}
                                     type="button"
-                                    onClick={() => setCategory(cat.key)}
+                                    onClick={() => setCategory(cat.category_id)}
                                     className={`px-3 py-2 rounded-full text-xs font-medium transition ${
                                         active
                                             ? "bg-[#3D4D5C] text-white"
                                             : "bg-[#F5F8FA] text-[#8B9BAA]"
                                     }`}
                                 >
-                                    {cat.label}
+                                    {cat.name}
                                 </button>
                             );
                         })}

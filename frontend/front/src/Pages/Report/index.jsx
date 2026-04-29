@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { format, subMonths, subDays, startOfDay, getDaysInMonth } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -46,7 +46,7 @@ function ReportMarkdown({ content }) {
 export default function MonthlyReport() {
     const TODAY = startOfDay(new Date());
     const { user } = useAuth();
-    const { isLoading, error, reportData, fetchReport } = useReport();
+    const { isLoading, error, reportData, savedReports, fetchReport, fetchSavedReports } = useReport();
 
     const [reportMode, setReportMode] = useState("monthly");
     const [analyzed, setAnalyzed] = useState(false);
@@ -61,19 +61,28 @@ export default function MonthlyReport() {
     const [selectedYear, setSelectedYear] = useState(TODAY.getFullYear());
     const [selectedMonth, setSelectedMonth] = useState(TODAY.getMonth() + 1);
 
-    // 발행 이력 (추후 백엔드 연동)
-    const pastReports = [
-        { id: "m-2026-04", type: "monthly", label: "4월", range: "2026.04.01 ~ 2026.04.30" },
-        { id: "30-2026-04-21", type: "30days", label: "2026.03.21 ~ 2026.04.21", range: "2026.03.21 ~ 2026.04.21" },
-        { id: "m-2026-03", type: "monthly", label: "3월", range: "2026.03.01 ~ 2026.03.31" },
-        { id: "30-2026-03-01", type: "30days", label: "2026.02.01 ~ 2026.03.01", range: "2026.02.01 ~ 2026.03.01" },
-    ];
+    // 월 단위 드롭다운
+    const [isYearDropdownOpen, setIsYearDropdownOpen] = useState(false);
+    const [isMonthDropdownOpen, setIsMonthDropdownOpen] = useState(false);
+
+    // 발행 이력 모드
     const [selectedReport, setSelectedReport] = useState(null);
+    const [selectedReportDetail, setSelectedReportDetail] = useState(null);
     const [isReportDropdownOpen, setIsReportDropdownOpen] = useState(false);
+
+    // 발행 이력 탭 진입 시 저장된 리포트 로드
+    useEffect(() => {
+        if (reportMode === "history" && user) {
+            fetchSavedReports(user.user_id);
+        }
+    }, [reportMode, user]);
+
+    const formatDateRange = (start, end) =>
+        `${(start || "").replace(/-/g, ".")} ~ ${(end || "").replace(/-/g, ".")}`;
 
     const resultRange =
         reportMode === "history" && selectedReport
-            ? selectedReport.range
+            ? formatDateRange(selectedReport.month_start, selectedReport.month_end)
             : reportMode === "30days"
                 ? formatted30DayRange
                 : (() => {
@@ -87,13 +96,21 @@ export default function MonthlyReport() {
         setReportMode(mode);
         setAnalyzed(false);
         setSelectedReport(null);
+        setSelectedReportDetail(null);
         setIsReportDropdownOpen(false);
+        setIsYearDropdownOpen(false);
+        setIsMonthDropdownOpen(false);
     };
 
     const handlePastReportSelect = (report) => {
         setSelectedReport(report);
         setIsReportDropdownOpen(false);
         setAnalyzed(true);
+        try {
+            setSelectedReportDetail(JSON.parse(report.detail));
+        } catch {
+            setSelectedReportDetail(null);
+        }
     };
 
     const handleDateSelect = (date) => {
@@ -102,7 +119,11 @@ export default function MonthlyReport() {
         setAnalyzed(false);
     };
 
-    const handleReselect = () => setAnalyzed(false);
+    const handleReselect = () => {
+        setAnalyzed(false);
+        setSelectedReport(null);
+        setSelectedReportDetail(null);
+    };
 
     const handleAnalyze = async () => {
         if (!user) return;
@@ -126,9 +147,6 @@ export default function MonthlyReport() {
         }
     };
 
-    const stats = reportData?.stats;
-    const aiReport = reportData?.aiReport;
-    const categoryEntries = stats ? Object.entries(stats.category_stats) : [];
 
     return (
         <>
@@ -177,25 +195,57 @@ export default function MonthlyReport() {
                             분석할 <span className="text-[#E89B9B] font-semibold">년/월</span>을 선택하세요
                         </p>
                         <div className="mt-3 flex gap-3">
+                            {/* 연도 커스텀 드롭다운 */}
                             <div className="flex-1 relative">
-                                <select
-                                    value={selectedYear}
-                                    onChange={(e) => { setSelectedYear(Number(e.target.value)); setAnalyzed(false); }}
-                                    className="w-full bg-white rounded-xl px-4 py-3 text-sm text-[#3D4D5C] shadow-sm appearance-none cursor-pointer"
+                                <button
+                                    type="button"
+                                    onClick={() => { setIsYearDropdownOpen((v) => !v); setIsMonthDropdownOpen(false); }}
+                                    className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
                                 >
-                                    {YEARS.map((y) => <option key={y} value={y}>{y}년</option>)}
-                                </select>
-                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8B9BAA] text-xs pointer-events-none">▼</span>
+                                    <span>{selectedYear}년</span>
+                                    <span className="text-[#8B9BAA] text-xs">▼</span>
+                                </button>
+                                {isYearDropdownOpen && (
+                                    <ul className="absolute z-20 left-0 right-0 mt-1 bg-white rounded-xl shadow-lg overflow-hidden">
+                                        {YEARS.map((y) => (
+                                            <li key={y}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setSelectedYear(y); setAnalyzed(false); setIsYearDropdownOpen(false); }}
+                                                    className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] text-[#3D4D5C] ${selectedYear === y ? "bg-[#EEF2F5] font-semibold" : ""}`}
+                                                >
+                                                    {y}년
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </div>
+                            {/* 월 커스텀 드롭다운 */}
                             <div className="flex-1 relative">
-                                <select
-                                    value={selectedMonth}
-                                    onChange={(e) => { setSelectedMonth(Number(e.target.value)); setAnalyzed(false); }}
-                                    className="w-full bg-white rounded-xl px-4 py-3 text-sm text-[#3D4D5C] shadow-sm appearance-none cursor-pointer"
+                                <button
+                                    type="button"
+                                    onClick={() => { setIsMonthDropdownOpen((v) => !v); setIsYearDropdownOpen(false); }}
+                                    className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
                                 >
-                                    {MONTHS.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
-                                </select>
-                                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8B9BAA] text-xs pointer-events-none">▼</span>
+                                    <span>{selectedMonth}월</span>
+                                    <span className="text-[#8B9BAA] text-xs">▼</span>
+                                </button>
+                                {isMonthDropdownOpen && (
+                                    <ul className="absolute z-20 left-0 right-0 mt-1 bg-white rounded-xl shadow-lg overflow-hidden max-h-48 overflow-y-auto">
+                                        {MONTHS.map((m, i) => (
+                                            <li key={i + 1}>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => { setSelectedMonth(i + 1); setAnalyzed(false); setIsMonthDropdownOpen(false); }}
+                                                    className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] text-[#3D4D5C] ${selectedMonth === i + 1 ? "bg-[#EEF2F5] font-semibold" : ""}`}
+                                                >
+                                                    {m}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </div>
                         </div>
                         <div className="mt-4 bg-[#DEE4EA] rounded-xl px-4 py-3 flex items-start gap-2">
@@ -218,20 +268,22 @@ export default function MonthlyReport() {
                                 className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm shadow-sm"
                             >
                                 <span className={selectedReport ? "text-[#3D4D5C]" : "text-[#8B9BAA]"}>
-                                    {selectedReport ? selectedReport.label : "--- 선택하세요 ---"}
+                                    {selectedReport
+                                        ? formatDateRange(selectedReport.month_start, selectedReport.month_end)
+                                        : savedReports.length === 0 ? "저장된 리포트가 없습니다" : "--- 선택하세요 ---"}
                                 </span>
                                 <span className="text-[#8B9BAA] text-xs">▼</span>
                             </button>
-                            {isReportDropdownOpen && (
+                            {isReportDropdownOpen && savedReports.length > 0 && (
                                 <ul className="absolute z-10 left-0 right-0 mt-1 bg-white rounded-xl shadow-lg overflow-hidden max-h-64 overflow-y-auto">
-                                    {pastReports.map((report) => (
-                                        <li key={report.id}>
+                                    {savedReports.map((report) => (
+                                        <li key={report.report_id}>
                                             <button
                                                 type="button"
                                                 onClick={() => handlePastReportSelect(report)}
-                                                className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] ${selectedReport?.id === report.id ? "bg-[#EEF2F5] font-semibold" : ""} text-[#3D4D5C]`}
+                                                className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] ${selectedReport?.report_id === report.report_id ? "bg-[#EEF2F5] font-semibold" : ""} text-[#3D4D5C]`}
                                             >
-                                                {report.label}
+                                                {formatDateRange(report.month_start, report.month_end)}
                                             </button>
                                         </li>
                                     ))}
@@ -314,98 +366,189 @@ export default function MonthlyReport() {
                             </div>
                         )}
 
-                        {/* 실제 데이터 */}
-                        {!isLoading && reportData && !error && (
-                            <>
-                                {/* 달성률 카드 */}
-                                <div className="mt-3 grid grid-cols-2 gap-3">
-                                    <div className="bg-white rounded-2xl p-4 shadow-sm">
-                                        <p className="text-[11px] text-[#8B9BAA]">내 달성률</p>
-                                        <p className="mt-2 text-3xl font-bold text-[#A8C8D8]">{stats.user_success_rate}%</p>
-                                    </div>
-                                    <div className="bg-white rounded-2xl p-4 shadow-sm">
-                                        <p className="text-[11px] text-[#8B9BAA]">전체 사용자 달성률</p>
-                                        <p className="mt-2 text-3xl font-bold text-[#A8C8D8]">{stats.all_users_success_rate}%</p>
-                                    </div>
-                                </div>
-
-                                {/* 카테고리별 달성률 */}
-                                <div className="mt-4 bg-white rounded-2xl p-4 shadow-sm">
-                                    <h3 className="text-sm font-bold text-[#3D4D5C]">카테고리별 달성률</h3>
-                                    <div className="mt-4 flex items-center gap-4">
-                                        <div className="relative w-24 h-24 shrink-0">
-                                            <div className="absolute inset-0 rounded-full border-[10px] border-[#E4EEF3]" />
-                                            <div
-                                                className="absolute inset-0 rounded-full border-[10px] border-transparent"
-                                                style={{ borderTopColor: "#A8C8D8", borderRightColor: "#A8C8D8", transform: "rotate(-45deg)" }}
-                                            />
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                <span className="text-base font-bold text-[#3D4D5C]">{stats.user_success_rate}%</span>
-                                                <span className="text-[9px] text-[#8B9BAA]">전체</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex-1 flex flex-col gap-2 text-xs">
-                                            {categoryEntries.length === 0 ? (
-                                                <p className="text-[#8B9BAA]">카테고리 데이터 없음</p>
-                                            ) : (
-                                                categoryEntries.map(([name, data], idx) => (
-                                                    <div key={name} className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getCategoryColor(idx) }} />
-                                                            <span className="text-[#3D4D5C]">{name}</span>
-                                                        </div>
-                                                        <span className="text-[#8B9BAA]">{data.rate}%</span>
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* AI 분석 (클러스터) */}
-                                <h3 className="mt-6 text-sm font-bold text-[#3D4D5C]">AI 분석</h3>
-                                {aiReport.cluster_summaries.length === 0 ? (
-                                    <div className="mt-3 bg-[#EEF2F5] rounded-2xl px-4 py-3">
-                                        <p className="text-xs text-[#8B9BAA]">분석할 실패 패턴이 충분하지 않습니다.</p>
-                                    </div>
-                                ) : (
-                                    <div className="mt-3 grid grid-cols-2 gap-3">
-                                        {aiReport.cluster_summaries.map((cluster) => (
-                                            <div key={cluster.cluster_id} className="bg-white rounded-2xl p-3 shadow-sm">
-                                                <span className="inline-block px-2 py-0.5 rounded-full bg-[#EEF2F5] text-[10px] text-[#3D4D5C]">
-                                                    {cluster.dominant_category}
-                                                </span>
-                                                <p className="mt-2 text-xs text-[#3D4D5C] font-medium">{cluster.size}개 실패 task</p>
-                                                {cluster.sample_texts[0] && (
-                                                    <p className="mt-1 text-[10px] text-[#8B9BAA] line-clamp-2">{cluster.sample_texts[0]}</p>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* 분석 리포트 */}
-                                <div className="mt-4 bg-[#DEE4EA] rounded-xl px-4 py-3">
-                                    <p className="text-xs font-bold text-[#3D4D5C]">분석 리포트</p>
-                                    <div className="mt-2">
-                                        <ReportMarkdown content={aiReport.report || "리포트를 생성하지 못했습니다."} />
-                                    </div>
-                                </div>
-                            </>
+                        {/* 신규 생성 결과 */}
+                        {!isLoading && reportData && !error && reportMode !== "history" && (
+                            <ReportContent
+                                stats={reportData.stats}
+                                clusters={reportData.aiReport.cluster_summaries}
+                                reportText={reportData.aiReport.report}
+                            />
                         )}
 
-                        {/* 발행 이력 모드 */}
-                        {reportMode === "history" && selectedReport && (
-                            <div className="mt-4 bg-[#DEE4EA] rounded-xl px-4 py-3">
-                                <p className="text-xs font-bold text-[#3D4D5C]">분석 리포트</p>
-                                <p className="mt-2 text-xs text-[#3D4D5C] leading-5">
-                                    이전에 발행된 리포트입니다. (백엔드 연동 예정)
-                                </p>
+                        {/* 발행 이력 모드 - 저장된 리포트 표시 */}
+                        {reportMode === "history" && selectedReport && selectedReportDetail && (
+                            <ReportContent
+                                stats={selectedReportDetail.stats}
+                                clusters={selectedReportDetail.cluster_summaries}
+                                reportText={selectedReportDetail.report}
+                            />
+                        )}
+                        {reportMode === "history" && selectedReport && !selectedReportDetail && (
+                            <div className="mt-4 bg-[#FDECEA] rounded-xl px-4 py-3">
+                                <p className="text-xs text-[#E89B9B]">리포트 데이터를 불러올 수 없습니다.</p>
                             </div>
                         )}
                     </>
                 )}
             </div>
         </>
+    );
+}
+
+function ReportContent({ stats, clusters, reportText }) {
+    const categoryEntries = stats ? Object.entries(stats.category_stats || {}) : [];
+
+    return (
+        <>
+            {/* 달성률 카드 */}
+            {stats && (
+                <>
+                    <div className="mt-3 grid grid-cols-2 gap-3">
+                        <div className="bg-white rounded-2xl p-4 shadow-sm">
+                            <p className="text-[11px] text-[#8B9BAA]">내 달성률</p>
+                            <p className="mt-2 text-3xl font-bold text-[#A8C8D8]">{stats.user_success_rate}%</p>
+                        </div>
+                        <div className="bg-white rounded-2xl p-4 shadow-sm">
+                            <p className="text-[11px] text-[#8B9BAA]">전체 사용자 달성률</p>
+                            <p className="mt-2 text-3xl font-bold text-[#A8C8D8]">{stats.all_users_success_rate}%</p>
+                        </div>
+                    </div>
+
+                    {/* 카테고리별 달성률 */}
+                    <div className="mt-4 bg-white rounded-2xl p-4 shadow-sm">
+                        <h3 className="text-sm font-bold text-[#3D4D5C]">카테고리별 달성률</h3>
+                        <div className="mt-4 flex items-center gap-4">
+                            <DonutChart categoryEntries={categoryEntries} overallRate={stats.user_success_rate} />
+                            <div className="flex-1 flex flex-col gap-2 text-xs">
+                                {categoryEntries.length === 0 ? (
+                                    <p className="text-[#8B9BAA]">카테고리 데이터 없음</p>
+                                ) : (
+                                    categoryEntries.map(([name, data], idx) => (
+                                        <div key={name} className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getCategoryColor(idx) }} />
+                                                <span className="text-[#3D4D5C]">{name}</span>
+                                            </div>
+                                            <span className="text-[#8B9BAA]">{data.rate}%</span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+
+            {/* AI 분석 (클러스터) */}
+            <h3 className="mt-6 text-sm font-bold text-[#3D4D5C]">AI 분석</h3>
+            <ClusterGrid clusters={clusters} />
+
+            {/* 분석 리포트 */}
+            <div className="mt-4 bg-[#DEE4EA] rounded-xl px-4 py-3">
+                <p className="text-xs font-bold text-[#3D4D5C]">분석 리포트</p>
+                <div className="mt-2">
+                    <ReportMarkdown content={reportText || "리포트 내용이 없습니다."} />
+                </div>
+            </div>
+        </>
+    );
+}
+
+function DonutChart({ categoryEntries, overallRate }) {
+    const [tooltip, setTooltip] = useState(null);
+
+    const SIZE = 128;
+    const CX = SIZE / 2;
+    const CY = SIZE / 2;
+    const R_OUTER = 60;
+    const R_INNER = 38;
+
+    const totalRate = categoryEntries.reduce((sum, [, data]) => sum + (data.rate || 0), 0);
+
+    if (categoryEntries.length === 0 || totalRate === 0) {
+        return (
+            <div className="relative w-32 h-32 shrink-0 rounded-full bg-[#E4EEF3] flex items-center justify-center">
+                <div className="w-[60%] h-[60%] rounded-full bg-white flex flex-col items-center justify-center">
+                    <span className="text-base font-bold text-[#3D4D5C]">{overallRate}%</span>
+                    <span className="text-[9px] text-[#8B9BAA]">전체</span>
+                </div>
+            </div>
+        );
+    }
+
+    const polar = (r, deg) => {
+        const rad = (deg - 90) * (Math.PI / 180);
+        return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
+    };
+
+    const arcPath = (startDeg, endDeg) => {
+        const s = polar(R_OUTER, startDeg);
+        const e = polar(R_OUTER, endDeg);
+        const si = polar(R_INNER, endDeg);
+        const ei = polar(R_INNER, startDeg);
+        const large = endDeg - startDeg > 180 ? 1 : 0;
+        return `M${s.x},${s.y} A${R_OUTER},${R_OUTER} 0 ${large} 1 ${e.x},${e.y} L${si.x},${si.y} A${R_INNER},${R_INNER} 0 ${large} 0 ${ei.x},${ei.y} Z`;
+    };
+
+    let cumDeg = 0;
+    const segments = categoryEntries
+        .map(([name, data], idx) => {
+            const deg = (data.rate / totalRate) * 360;
+            if (deg === 0) return null;
+            const seg = { name, rate: data.rate, idx, startDeg: cumDeg, endDeg: cumDeg + deg };
+            cumDeg += deg;
+            return seg;
+        })
+        .filter(Boolean);
+
+    return (
+        <div className="relative w-32 h-32 shrink-0">
+            <svg width={SIZE} height={SIZE}>
+                {segments.map(({ name, rate, idx, startDeg, endDeg }) => (
+                    <path
+                        key={name}
+                        d={arcPath(startDeg, endDeg)}
+                        fill={getCategoryColor(idx)}
+                        onMouseEnter={() => setTooltip({ name, rate })}
+                        onMouseLeave={() => setTooltip(null)}
+                        className="cursor-pointer"
+                    />
+                ))}
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-base font-bold text-[#3D4D5C]">{overallRate}%</span>
+                <span className="text-[9px] text-[#8B9BAA]">전체</span>
+            </div>
+            {tooltip && (
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#3D4D5C] text-white text-[10px] px-2 py-1 rounded-lg whitespace-nowrap z-10 pointer-events-none">
+                    {tooltip.name} {tooltip.rate}%
+                </div>
+            )}
+        </div>
+    );
+}
+
+function ClusterGrid({ clusters }) {
+    if (!clusters || clusters.length === 0) {
+        return (
+            <div className="mt-3 bg-[#EEF2F5] rounded-2xl px-4 py-3">
+                <p className="text-xs text-[#8B9BAA]">분석할 실패 패턴이 충분하지 않습니다.</p>
+            </div>
+        );
+    }
+    return (
+        <div className="mt-3 grid grid-cols-2 gap-3">
+            {clusters.map((cluster) => (
+                <div key={cluster.cluster_id} className="bg-white rounded-2xl p-3 shadow-sm">
+                    <span className="inline-block px-2 py-0.5 rounded-full bg-[#EEF2F5] text-[10px] text-[#3D4D5C]">
+                        {cluster.dominant_category}
+                    </span>
+                    <p className="mt-2 text-xs text-[#3D4D5C] font-medium">{cluster.size}개 실패 task</p>
+                    {cluster.sample_texts[0] && (
+                        <p className="mt-1 text-[10px] text-[#8B9BAA] line-clamp-2">{cluster.sample_texts[0]}</p>
+                    )}
+                </div>
+            ))}
+        </div>
     );
 }

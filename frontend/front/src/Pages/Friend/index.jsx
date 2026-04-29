@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react"; 
 import { Calendar } from "@/components/ui/calendar";
 import { format, isSameDay, startOfDay } from "date-fns";
 import { ko } from "date-fns/locale";
@@ -7,16 +7,22 @@ import FriendAddModal from "../../Components/Modal/FriendAddModal";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 
 import { useFriend } from "../../hooks/useFriend";
+import { useAuth } from "../../hooks/useAuth"; 
+import api from "../../utils/api"; 
 
 import { BsFillBellFill } from "react-icons/bs";
 
 export default function Friend() {
-    const [friends, setFriends] = useState([]);
+    // const [friends, setFriends] = useState([]);
+    const [isAdmin, setIsAdmin] = useState(false);
     const [view, setView] = useState("list");
     const [selectedFriend, setSelectedFriend] = useState(null);
     const [searchQuery, setSearchQuery] = useState("");
-    const { searchUser } = useFriend();
-
+    const { searchUser, sendRequest, friends, fetchFriends } = useFriend();
+    const { user: currentUser } = useAuth();
+    const [friendDetailDate, setFriendDetailDate] = useState(
+        startOfDay(new Date(2026, 3, 21))
+    );
 
     // 모달 상태
     const [isFriendAddOpen, setIsFriendAddOpen] = useState(false);
@@ -24,30 +30,112 @@ export default function Friend() {
 
 
 
-    // 알림 데이터
-    const notifications = [
-        {
-            id: 1,
-            title: "새 친구 요청",
-            body: "'codehaeun' 님이 친구 요청을 보냈어요.",
-            time: "방금 전",
-            read: false,
-        },
-        {
-            id: 2,
-            title: "친구 목표 달성",
-            body: "'친구1' 님이 오늘의 할 일을 모두 완료했어요.",
-            time: "1시간 전",
-            read: true,
-        },
-    ];
+    const [notifications, setNotifications] = useState([]);
+
+    // 알림 조회
+    const fetchNotifications = useCallback(async () => {
+        if (!currentUser?.user_id) return;
+        try {
+            const res = await api.get(`/notifications/user/${currentUser.user_id}`);
+            setNotifications((res.data || []).filter(n => !n.is_read));
+        } catch (e) {
+            console.error("알림 조회 실패:", e);
+        }
+    }, [currentUser]);
+
+    useEffect(() => {
+        fetchNotifications();
+    }, [fetchNotifications]);
 
 
+    useEffect(() => {
+        const checkAdmin = () => false;
+        setIsAdmin(checkAdmin());
+    }, []);
+
+
+    const handleSearch = () => {
+        if (!searchQuery.trim()) return;
+        const mockUsers = ["codehaeun", "junseo", "minji", "jihun"];
+        const results = mockUsers.filter((user) =>
+            user.includes(searchQuery.trim())
+        );
+        setSearchResults(results);
+        setIsSearchOpen(true);
+    };
 
     const handleNotification = () => setIsNotiOpen(true);
     const handleAdvancedSearch = () => alert("검색 옵션 열기");
 
     const handleAddFriend = () => setIsFriendAddOpen(true);
+
+    // 친구 요청 보내기
+    const handleFriendRequest = async (friend) => { 
+        const success = await sendRequest(friend.user_id, friend.username);
+        if (success) {
+            setIsFriendAddOpen(false);
+        }
+    };
+
+    // 친구 요청 수락
+    const handleAcceptFriend = async (notification) => {
+        try {
+            const friendId = notification.content.split(":")[1];
+            await api.patch(`/friends/${friendId}`, { status: "수락" });
+            await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
+            fetchNotifications();
+            fetchFriends(); // ← 친구 목록 갱신
+            showSuccessAlert({ title: "친구 추가!", text: "친구가 되었어요!" });
+        } catch (e) {
+            console.error("수락 실패:", e);
+        }
+    };
+
+    // 친구 요청 거절
+    const handleRejectFriend = async (notification) => {
+        try {
+            const friendId = notification.content.split(":")[1];
+            await api.patch(`/friends/${friendId}`, { status: "거절" });
+            await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
+            fetchNotifications();
+        } catch (e) {
+            console.error("거절 실패:", e);
+        }
+    };
+
+    // 친구 요청 보내기
+    const handleFriendRequest = async (friend) => { 
+        const success = await sendRequest(friend.user_id, friend.username);
+        if (success) {
+            setIsFriendAddOpen(false);
+        }
+    };
+
+    // 친구 요청 수락
+    const handleAcceptFriend = async (notification) => {
+        try {
+            const friendId = notification.content.split(":")[1];
+            await api.patch(`/friends/${friendId}`, { status: "수락" });
+            await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
+            fetchNotifications();
+            fetchFriends(); // ← 친구 목록 갱신
+            showSuccessAlert({ title: "친구 추가!", text: "친구가 되었어요!" });
+        } catch (e) {
+            console.error("수락 실패:", e);
+        }
+    };
+
+    // 친구 요청 거절
+    const handleRejectFriend = async (notification) => {
+        try {
+            const friendId = notification.content.split(":")[1];
+            await api.patch(`/friends/${friendId}`, { status: "거절" });
+            await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
+            fetchNotifications();
+        } catch (e) {
+            console.error("거절 실패:", e);
+        }
+    };
 
 
 
@@ -88,45 +176,229 @@ export default function Friend() {
         </div>
     );
 
+    // ====== 렌더: 친구 상세 (비관리자) ======
+    if (!isAdmin && view === "detail" && selectedFriend) {
+        const todos =
+            friendTodosByDate.find((entry) =>
+                isSameDay(entry.date, friendDetailDate)
+            )?.todos || [];
 
+        const studyDays = [
+            new Date(2026, 3, 3),
+            new Date(2026, 3, 7),
+            new Date(2026, 3, 12),
+            new Date(2026, 3, 25),
+            new Date(2026, 3, 28),
+        ];
+        const workoutDays = [new Date(2026, 3, 9)];
+        const dailyDays = [new Date(2026, 3, 5), new Date(2026, 3, 14)];
+
+        const formattedFriendDate = format(friendDetailDate, "M월 d일", {
+            locale: ko,
+        });
+
+        const handleFriendDateSelect = (date) => {
+            if (!date) return;
+            setFriendDetailDate(startOfDay(date));
+        };
+
+        return (
+            <>
+                <header className="px-6 pt-6 flex items-center justify-between">
+                    <button onClick={handleBackToList} className="flex items-center gap-2">
+                        <h1 className="text-2xl font-bold text-[#3D4D5C]">
+                            {selectedFriend.name}
+                        </h1>
+                    </button>
+                    <NotificationBell />
+                </header>
+
+                <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
+                    <div className="bg-white rounded-2xl p-4 shadow-sm">
+                        <Calendar
+                            mode="single"
+                            selected={friendDetailDate}
+                            onSelect={handleFriendDateSelect}
+                            locale={ko}
+                            showOutsideDays
+                            modifiers={{
+                                study: studyDays,
+                                workout: workoutDays,
+                                daily: dailyDays,
+                            }}
+                            modifiersClassNames={{
+                                study: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E88A8A]",
+                                workout: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#F4D58A]",
+                                daily: "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#A8D5B4]",
+                            }}
+                            className="w-full"
+                        />
+                    </div>
+
+                    <div className="mt-6">
+                        <h2 className="text-base font-bold text-[#3D4D5C]">
+                            {selectedFriend.name}의 할 일
+                        </h2>
+                        <p className="text-xs text-[#8B9BAA] mt-1">
+                            {formattedFriendDate} · {todos.length}개
+                        </p>
+                    </div>
+
+                    <div className="mt-3 flex flex-col gap-3">
+                        {todos.map((todo) => (
+                            <div key={todo.id} className="w-full bg-white rounded-2xl p-4 shadow-sm">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-start gap-3 flex-1">
+                                        <div
+                                            className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center"
+                                            style={{ backgroundColor: todo.dotColor }}
+                                        >
+                                            {todo.dotLetter && (
+                                                <span className="text-white text-xs font-bold">
+                                                    {todo.dotLetter}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-bold text-[#3D4D5C]">{todo.title}</p>
+                                            {todo.memo && (
+                                                <p className="text-xs text-[#8B9BAA] mt-1">{todo.memo}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <span className="text-[11px] text-[#87B4C4] bg-[#E4EEF3] px-2 py-0.5 rounded-full shrink-0">
+                                        {todo.category}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <NotificationModal
+                    isOpen={isNotiOpen}
+                    onClose={() => setIsNotiOpen(false)}
+                    notifications={notifications}
+                    onItemClick={(n) => console.log(n)}
+                    onAccept={handleAcceptFriend}
+                    onReject={handleRejectFriend}
+                />
+                <FriendAddModal
+                    isOpen={isFriendAddOpen}
+                    onClose={() => setIsFriendAddOpen(false)}
+                    onSearch={searchUser}
+                    onRequest={handleFriendRequest}
+                />
+            </>
+        );
+    }
+
+    // ====== 렌더: 관리자 - 회원 관리 ======
+    if (isAdmin) {
+        const filtered = members.filter((m) =>
+            m.name.includes(searchQuery.trim())
+        );
+
+        return (
+            <>
+                <header className="px-6 pt-6 flex items-center justify-between">
+                    <h1 className="text-2xl font-bold text-[#3D4D5C]">회원 관리</h1>
+                    <NotificationBell />
+                </header>
+
+                <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
+                    <SearchBar placeholder="회원 검색" />
+
+                    <div className="mt-4 flex flex-col gap-3">
+                        {filtered.length === 0 ? (
+                            <div className="bg-white rounded-2xl py-10 text-center text-sm text-[#8B9BAA]">
+                                검색 결과가 없어요.
+                            </div>
+                        ) : (
+                            filtered.map((member) => (
+                                <div
+                                    key={member.id}
+                                    className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 relative"
+                                >
+                                    <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
+                                    <div className="flex-1">
+                                        <p className="text-sm font-bold text-[#3D4D5C]">{member.name}</p>
+                                        <p className="text-xs text-[#8B9BAA] mt-1">{member.status}</p>
+                                    </div>
+                                    <button
+                                        onClick={() => handleDeleteMember(member)}
+                                        className="absolute right-4 bottom-3 px-4 py-1.5 rounded-full bg-[#E89B9B] text-[11px] font-semibold text-white"
+                                    >
+                                        삭제
+                                    </button>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+                <NotificationModal
+                    isOpen={isNotiOpen}
+                    onClose={() => setIsNotiOpen(false)}
+                    notifications={notifications}
+                    onItemClick={(n) => console.log(n)}
+                    onAccept={handleAcceptFriend}
+                    onReject={handleRejectFriend}
+                />
+                <FriendAddModal
+                    isOpen={isFriendAddOpen}
+                    onClose={() => setIsFriendAddOpen(false)}
+                    onSearch={searchUser}
+                    onRequest={handleFriendRequest}
+                />
+            </>
+        );
+    }
 
     // ====== 렌더: 비관리자 - 친구 목록 (기본) ======
-    const filteredFriends = friends.filter((f) =>
-        f.name.includes(searchQuery.trim())
-    );
+    const filteredFriends = friends.filter((f) => {
+        const friendName = f.requester_id === currentUser?.user_id
+            ? f.receiver_username
+            : f.requester_username;
+        return (friendName || "").includes(searchQuery.trim());
+    });
+    
+return (
+    <>
+        <header className="px-6 pt-6 flex items-center justify-between">
+            <h1 className="text-2xl font-bold text-[#3D4D5C]">친구</h1>
+            <NotificationBell />
+        </header>
 
-    return (
-        <>
-            <header className="px-6 pt-6 flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-[#3D4D5C]">친구</h1>
-                <NotificationBell />
-            </header>
+        <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
+            <SearchBar placeholder="친구 검색" />
 
-            <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
-                <SearchBar placeholder="친구 검색" />
+            <div className="mt-4 flex flex-col gap-3">
+                {filteredFriends.length === 0 ? (
+                    <div className="bg-white rounded-2xl py-10 text-center text-sm text-[#8B9BAA]">
+                        검색 결과가 없어요.
+                    </div>
+                ) : (
+                    filteredFriends.map((friend) => {
+                        const friendName = friend.requester_id === currentUser?.user_id
+                            ? friend.receiver_username
+                            : friend.requester_username;
 
-                <div className="mt-4 flex flex-col gap-3">
-                    {filteredFriends.length === 0 ? (
-                        <div className="bg-white rounded-2xl py-10 text-center text-sm text-[#8B9BAA]">
-                            검색 결과가 없어요.
-                        </div>
-                    ) : (
-                        filteredFriends.map((friend) => (
+                        return (
                             <button
-                                key={friend.id}
+                                key={friend.friend_id}
                                 onClick={() => handleFriendClick(friend)}
                                 className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left"
                             >
                                 <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
                                 <div className="flex-1">
-                                    <p className="text-sm font-bold text-[#3D4D5C]">{friend.name}</p>
+                                    <p className="text-sm font-bold text-[#3D4D5C]">{friendName}</p>
                                     <p className="text-xs text-[#8B9BAA] mt-1">{friend.status}</p>
                                 </div>
                             </button>
-                        ))
-                    )}
-                </div>
+                        );
+                    })
+                )}
             </div>
+        </div>
 
             {/* 플로팅 친구 추가 버튼 */}
             <button
@@ -156,12 +428,15 @@ export default function Friend() {
                 isOpen={isNotiOpen}
                 onClose={() => setIsNotiOpen(false)}
                 notifications={notifications}
-                onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
+                onItemClick={(n) => console.log(n)}
+                onAccept={handleAcceptFriend}
+                onReject={handleRejectFriend}
             />
             <FriendAddModal
                 isOpen={isFriendAddOpen}
                 onClose={() => setIsFriendAddOpen(false)}
                 onSearch={searchUser}
+                onRequest={handleFriendRequest}
             />
         </>
     );

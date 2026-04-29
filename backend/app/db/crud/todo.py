@@ -4,7 +4,6 @@ from sqlalchemy import func, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.db.models.todo import Todo
-from app.db.models.user import User
 from app.db.models.category import Category
 from app.db.models.history import History
 from app.db.scheme.todo import TodoCreate, TodoUpdate
@@ -19,18 +18,6 @@ class TodoCrud:
         await db.flush()
         return todo
 
-    # R 조회 - user 존재 확인
-    @staticmethod
-    async def get_user(db: AsyncSession, user_id: int) -> User | None:
-        result = await db.execute(select(User).where(User.user_id == user_id))
-        return result.scalar_one_or_none()
-
-    # R 조회 - category 존재 확인
-    @staticmethod
-    async def get_category(db: AsyncSession, category_id: str) -> Category | None:
-        result = await db.execute(select(Category).where(Category.category_id == category_id))
-        return result.scalar_one_or_none()
-
     # R 조회 - todo 단일 조회
     @staticmethod
     async def get_todo(db: AsyncSession, todo_id: str) -> Todo | None:
@@ -41,12 +28,6 @@ class TodoCrud:
     @staticmethod
     async def get_todos_by_user(db: AsyncSession, user_id: int) -> list[Todo]:
         result = await db.execute(select(Todo).where(Todo.user_id == user_id))
-        return list(result.scalars().all())
-    
-    # R 조회 - 전체 조회
-    @staticmethod
-    async def get_all_todos(db: AsyncSession) -> list[Todo]:
-        result = await db.execute(select(Todo))
         return list(result.scalars().all())
 
     # R 조회 - 유저 카테고리별 월간 달성률 (history.archived_at 기준)

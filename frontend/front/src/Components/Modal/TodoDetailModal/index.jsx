@@ -15,27 +15,19 @@ import useCategory from "@/hooks/useCategory.jsx";
  *   - onSave   : (updatedTodo)=>void
  *   - onDelete : (id)=>void
  */
-const CATEGORIES = [
-  { key: "study",       label: "공부" },
-  { key: "workout",     label: "운동" },
-  { key: "daily",       label: "일상" },
-  { key: "appointment", label: "약속" },
-  { key: "work",        label: "업무" },
-  { key: "etc",         label: "기타" },
-];
-
 const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
-  const { ctLoading, getCategory} = useCategory();
+  const { getCategory } = useCategory();
 
   const [title, setTitle] = useState("");
   const [memo, setMemo] = useState("");
-  const [category, setCategory] = useState();
+  const [categories, setCategories] = useState([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
   const [isPublic, setIsPublic] = useState(true);
 
-  // db에서 category 불러오기
+  // db에서 category 불러오기 (마운트 시 1회)
   const loadCategory = useCallback(async () => {
     const db_category = await getCategory();
-    if (db_category) setCategory(db_category);
+    if (db_category) setCategories(db_category);
   }, [getCategory]);
 
   useEffect(() => {
@@ -47,7 +39,7 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
     if (!todo) return;
     setTitle(todo.title || "");
     setMemo(todo.detail || "");
-    setCategory(todo.category_id || CATEGORIES[0].key);
+    setSelectedCategoryId(todo.category_id ?? null);
     setIsPublic(todo.visibility === "친구공개");
   }, [todo]);
 
@@ -63,7 +55,7 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
       ...todo,
       title: title.trim(),
       detail: memo.trim(),
-      category_id: category,
+      category_id: selectedCategoryId,
       visibility: isPublic ? "친구공개" : "비공개",
     });
     onClose?.();
@@ -101,18 +93,18 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
         <div className="flex flex-col gap-2">
           <span className="text-xs text-[#8B9BAA]">카테고리</span>
           <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((cat) => {
-              const active = category === cat.key;
+            {categories.map((cat) => {
+              const active = selectedCategoryId === cat.category_id;
               return (
                 <button
-                  key={cat.key}
+                  key={cat.category_id}
                   type="button"
-                  onClick={() => setCategory(cat.key)}
+                  onClick={() => setSelectedCategoryId(cat.category_id)}
                   className={`px-3 py-2 rounded-full text-xs font-medium transition ${
                     active ? "bg-[#3D4D5C] text-white" : "bg-[#F5F8FA] text-[#8B9BAA]"
                   }`}
                 >
-                  {cat.label}
+                  {cat.name}
                 </button>
               );
             })}

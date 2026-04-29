@@ -18,7 +18,7 @@ import Friend from "./Pages/Friend/index.jsx";
 import Todo from "./Pages/Todo/index.jsx";
 import Report from "./Pages/Report/index.jsx";
 import MyPage from "./Pages/MyPage/index.jsx";
-import { AudioProvider } from "@/hooks/useAudio.jsx";
+import { MusicProvider } from "@/hooks/useMusic.jsx";
 
 const ProtectedRoute = ({ children }) => {
     const { isAuthenticated, isLoading } = useAuth();
@@ -83,11 +83,11 @@ const router = createBrowserRouter([
             {
                 element: (
                     <ProtectedRoute>
-                        <AudioProvider>
+                        <MusicProvider>
                             {/*  일단 로그인 -> 쿠키 생성 잘 되면 아래 주석 해제*/}
                             <Outlet />
                             <Navbar />
-                        </AudioProvider>
+                        </MusicProvider>
                     </ProtectedRoute>
                 ),
                 children: [

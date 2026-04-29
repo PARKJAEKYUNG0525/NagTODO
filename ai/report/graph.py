@@ -10,6 +10,9 @@ from ai.report.nodes.summarize_clusters import summarize_clusters
 from ai.report.nodes.llm_report import llm_report
 from ai.report.nodes.quality_check import quality_check
 
+MIN_MONTHLY_TASKS = settings.MIN_MONTHLY_TASKS
+MIN_FAILURE_TASKS = settings.MIN_MONTHLY_FAIL_TASKS
+
 
 def _too_few_tasks(state: dict) -> dict:
     monthly_logs = state.get("monthly_logs") or []
@@ -23,10 +26,11 @@ def _too_few_tasks(state: dict) -> dict:
 
 
 def _minimal_report(state: dict) -> dict:
+    failed_count = len(state.get("failed_tasks") or [])
     return {
         "retrospective_report": (
-            "실패 데이터 부족. 패턴 분석 실패. "
-            "한 달 동안 본인이랑 한 약속을 5번도 안 어겼다고? 제법인데"
+            f"실패 task 수 {failed_count}개로 최소 기준({MIN_FAILURE_TASKS}개) 미달 — "
+            "패턴 분석 불가. 한 달 동안 본인이랑 한 약속을 5번도 안 어겼다고? 제법인데"
         )
     }
 
