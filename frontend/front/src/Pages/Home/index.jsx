@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 import BgChangeModal from "../../Components/Modal/BgChangeModal";
-import {useAudio} from "@/hooks/useAudio.jsx";
+import {useMusic} from "@/hooks/useMusic.jsx";
 import api from "@/utils/api.js";
 
 /**
@@ -14,14 +14,14 @@ import api from "@/utils/api.js";
  *   이 컴포넌트는 프레임 내부에 들어갈 콘텐츠만 Fragment 로 반환합니다.
  */
 export default function Home() {
-    const { play, currentMusic, toggle } = useAudio();
+    const { play, currentMusic, toggle } = useMusic();
     const [musics, setMusics] = useState([]);
     const [isMusicListOpen, setIsMusicListOpen] = useState(false);
     const playerRef = useRef(null);
 
     const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isBgOpen, setIsBgOpen] = useState(false);
-    const [currentBg, setCurrentBg] = useState("forest");
+    const [currentBg, setCurrentBg] = useState(null);
 
     const notifications = [
         {
@@ -47,7 +47,20 @@ export default function Home() {
         },
     ];
 
-    // 백엔드에서 음악 목록 fetch
+    // 사진 목록 받아오기
+    useEffect(() => {
+        api.get("/users/me").then((res) => {
+            if (res.data.img_id) {
+                // imgs 목록에서 찾아서 currentBg에 셋
+                api.get("/imgs").then((imgsRes) => {
+                    const userImg = imgsRes.data.find(i => i.img_id === res.data.img_id);
+                    if (userImg) setCurrentBg(userImg);
+                });
+            }
+        });
+    }, []);
+
+    // 음악 목록 받아오기
     useEffect(() => {
         api.get("/musics")
             .then((res) => {
@@ -75,7 +88,14 @@ export default function Home() {
     const handlePlayToggle = () => toggle();
 
     return (
-        <>
+        <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
+             style={
+                 currentBg
+                     ? {
+                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
+                     }
+                     : undefined
+             }>
             {/* 상단 헤더 (알림 벨) */}
             <header className="px-6 pt-6 flex justify-end">
                 <button
@@ -129,11 +149,11 @@ export default function Home() {
                     {isMusicListOpen && (
                         <ul
                             role="listbox"
-                            className="absolute left-0 right-0 top-full mt-2 bg-white rounded-2xl shadow-lg z-10 max-h-60 overflow-y-auto py-2"
+                            className="absolute left-0 right-0 bottom-full mb-2 bg-white rounded-2xl shadow-lg z-10 max-h-60 overflow-y-auto py-2"
                         >
                             {musics.length === 0 ? (
                                 <li className="px-4 py-2 text-sm text-[#8B9BAA]">
-                                    음악이 없어요
+                                    등록된 음악이 없어요
                                 </li>
                             ) : (
                                 musics.map((m) => {
@@ -183,12 +203,13 @@ export default function Home() {
             <BgChangeModal
                 isOpen={isBgOpen}
                 onClose={() => setIsBgOpen(false)}
-                currentBg={currentBg}
-                onApply={(key) => {
-                    setCurrentBg(key);
-                    alert(`배경 "${key}" 적용`);
+                currentBg={currentBg?.img_id}
+                onApply={(img) => {
+                    setCurrentBg(img);
+                    api.patch("/users/me", { img_id: img.img_id })
+                        .catch(err => console.warn("배경 저장 실패:", err));
                 }}
             />
-        </>
+        </div>
     );
 }

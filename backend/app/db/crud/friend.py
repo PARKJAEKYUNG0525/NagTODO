@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import joinedload
 from app.db.models.friend import Friend
 from app.db.models.user import User
 from app.db.scheme.friend import FriendCreate, FriendUpdate
@@ -43,11 +44,27 @@ class FriendCrud:
     # R 조회 - 친구 목록 조회 (수락 상태)
     @staticmethod
     async def get_all_friends(db: AsyncSession, user_id: int) -> list[Friend]:
-        result = await db.execute(select(Friend).where(
-                                                (Friend.requester_id == user_id) | (Friend.receiver_id == user_id),
-                                                Friend.status == "수락"
-                                 ))
+        result = await db.execute(
+            select(Friend)
+            .options(joinedload(Friend.requester), joinedload(Friend.receiver))  # ← 이게 있어야 함
+            .where(
+                (Friend.requester_id == user_id) | (Friend.receiver_id == user_id),
+                Friend.status == "수락"
+            )
+        )
         return list(result.scalars().all())
+    
+    # R 조회 - 중복 신청 확인
+    @staticmethod
+    async def get_existing_request(db: AsyncSession, requester_id: int, receiver_id: int) -> Friend | None:
+        result = await db.execute(
+            select(Friend).where(
+                Friend.requester_id == requester_id,
+                Friend.receiver_id == receiver_id,
+                Friend.status == "대기"
+            )
+        )
+        return result.scalar_one_or_none()
 
     # U 수정
     @staticmethod

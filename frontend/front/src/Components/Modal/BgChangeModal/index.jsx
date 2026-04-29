@@ -1,71 +1,96 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import ModalLayout from "../ModalLayout";
+import api from "@/utils/api.js";
+import useImg from "@/hooks/useImg.jsx";
 
 /**
  * BgChangeModal
- * - Home 화면에서 "배경 이미지 변경" 버튼 클릭 시 열리는 모달.
- * - 프리셋 썸네일을 고르는 간단한 그리드.
+ * - 배경 이미지 변경 모달
+ * - 백엔드 /imgs에서 받아온 이미지 그리드
  *
  * props:
  *   - isOpen     : boolean
  *   - onClose    : ()=>void
- *   - currentBg  : string  현재 배경 key
- *   - onApply    : (key)=>void
- *
- * ※ 실제 이미지 파일 연결은 나중에. 지금은 색상 placeholder.
+ *   - currentBg  : string  현재 배경 img_id
+ *   - onApply    : (img)=>void   선택한 img 객체 전체를 넘김
  */
-const BACKGROUNDS = [
-  { key: "forest", label: "비 내리는 숲", color: "#7FA7A1" },
-  { key: "ocean", label: "파도 소리", color: "#87B4C4" },
-  { key: "fire", label: "모닥불", color: "#E89B9B" },
-  { key: "cafe", label: "카페 소음", color: "#C2B280" },
-  { key: "rain", label: "빗소리", color: "#8796A5" },
-  { key: "night", label: "고요한 밤", color: "#4A5C6E" },
-];
+const BgChangeModal = ({ isOpen, onClose, currentBg, onApply }) => {
+    const { getAllImgs } = useImg();
+    const [imgs, setImgs] = useState([]);
+    const [selected, setSelected] = useState(currentBg ?? null);
 
-const BgChangeModal = ({ isOpen, onClose, currentBg = "forest", onApply }) => {
-  const [selected, setSelected] = useState(currentBg);
+    // 모달이 열릴 때 이미지 목록 fetch
+    const loadImgs = useCallback(async () => {
+        const data = await getAllImgs();
+        setImgs(Array.isArray(data) ? data : []);
+    }, [getAllImgs]);
 
-  const handleApply = () => {
-    onApply?.(selected);
-    onClose?.();
-  };
+    useEffect(() => {
+        if (isOpen) loadImgs();
+    }, [isOpen, loadImgs]);
 
-  return (
-    <ModalLayout isOpen={isOpen} onClose={onClose} title="배경 이미지 변경">
-      <div className="grid grid-cols-3 gap-3">
-        {BACKGROUNDS.map((bg) => {
-          const active = selected === bg.key;
-          return (
+    // currentBg가 바뀔 때 선택 상태 동기화
+    useEffect(() => {
+        setSelected(currentBg ?? null);
+    }, [currentBg]);
+    
+    const handleApply = () => {
+        const selectedImg = imgs.find((i) => i.img_id === selected);
+        if (selectedImg) onApply?.(selectedImg);
+        onClose?.();
+    };
+
+    const handleReset = () => {
+        onApply?.(null);    // null을 넘겨서 "초기화"를 알림
+        onClose?.();
+    };
+
+    return (
+        <ModalLayout isOpen={isOpen} onClose={onClose} title="배경 이미지 변경">
+            <div className="grid grid-cols-3 gap-3">
+                {imgs.length === 0 ? (
+                    <div className="col-span-3 py-10 text-center text-sm text-[#8B9BAA]">
+                        이미지를 불러오는 중...
+                    </div>
+                ) : (
+                    imgs.map((img) => {
+                        const active = selected === img.img_id;
+                        return (
+                            <button
+                                key={img.img_id}
+                                type="button"
+                                onClick={() => setSelected(img.img_id)}
+                                className={`flex flex-col items-center gap-2 p-2 rounded-xl transition ${
+                                    active ? "ring-2 ring-[#A8C8D8]" : ""
+                                }`}
+                            >
+                                <div className="w-full aspect-square rounded-xl shadow-inner overflow-hidden bg-[#F5F8FA]">
+                                    <img
+                                        src={`${api.defaults.baseURL}${img.file_url}`}
+                                        alt={img.title}
+                                        className="w-full h-full object-cover"
+                                        loading="lazy"
+                                    />
+                                </div>
+                                <span className="text-[11px] text-[#3D4D5C] font-medium truncate w-full text-center">
+                                    {img.title}
+                                </span>
+                            </button>
+                        );
+                    })
+                )}
+            </div>
+
             <button
-              key={bg.key}
-              type="button"
-              onClick={() => setSelected(bg.key)}
-              className={`flex flex-col items-center gap-2 p-2 rounded-xl transition ${
-                active ? "ring-2 ring-[#A8C8D8]" : ""
-              }`}
+                type="button"
+                onClick={handleApply}
+                disabled={!selected}
+                className="mt-5 w-full py-3 rounded-xl bg-[#A8C8D8] text-white font-semibold text-sm hover:bg-[#97BAC9] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <div
-                className="w-full aspect-square rounded-xl shadow-inner"
-                style={{ backgroundColor: bg.color }}
-              />
-              <span className="text-[11px] text-[#3D4D5C] font-medium">
-                {bg.label}
-              </span>
+                적용하기
             </button>
-          );
-        })}
-      </div>
-
-      <button
-        type="button"
-        onClick={handleApply}
-        className="mt-5 w-full py-3 rounded-xl bg-[#A8C8D8] text-white font-semibold text-sm hover:bg-[#97BAC9]"
-      >
-        적용하기
-      </button>
-    </ModalLayout>
-  );
+        </ModalLayout>
+    );
 };
 
 export default BgChangeModal;
