@@ -216,8 +216,9 @@ class EmbeddingStore:
                 cpu_index = faiss.read_index(str(idx_path))
                 self._index = self._to_gpu(cpu_index)
                 self._metadata = json.loads(meta_path.read_text(encoding="utf-8"))
-                # 재시작 시 soft-deleted 항목 물리 제거
+                # 재시작 시 soft-deleted 항목 물리 제거 후 디스크 반영
                 self.rebuild()
+                self.save()
             else:
                 self._index = self._to_gpu(faiss.IndexFlatIP(_VECTOR_DIM))
                 self._metadata = []
