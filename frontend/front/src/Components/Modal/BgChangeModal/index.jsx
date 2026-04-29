@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import ModalLayout from "../ModalLayout";
 import api from "@/utils/api.js";
-import useImg from "@/hooks/useImg.jsx";
+import {useImg} from "@/hooks/useImg.jsx";
+import {showWarningAlert} from "@/utils/alertUtils.js";
 
 /**
  * BgChangeModal
@@ -14,10 +15,10 @@ import useImg from "@/hooks/useImg.jsx";
  *   - currentBg  : string  현재 배경 img_id
  *   - onApply    : (img)=>void   선택한 img 객체 전체를 넘김
  */
-const BgChangeModal = ({ isOpen, onClose, currentBg, onApply }) => {
-    const { getAllImgs } = useImg();
+const BgChangeModal = ({ isOpen, onClose }) => {
+    const { getAllImgs, currentBg, setCurrentBg } = useImg();
     const [imgs, setImgs] = useState([]);
-    const [selected, setSelected] = useState(currentBg ?? null);
+    const [selected, setSelected] = useState(currentBg?.img_id ?? null);
 
     // 모달이 열릴 때 이미지 목록 fetch
     const loadImgs = useCallback(async () => {
@@ -36,12 +37,16 @@ const BgChangeModal = ({ isOpen, onClose, currentBg, onApply }) => {
     
     const handleApply = () => {
         const selectedImg = imgs.find((i) => i.img_id === selected);
-        if (selectedImg) onApply?.(selectedImg);
+        if (selectedImg) {
+            setCurrentBg(selectedImg);
+            api.patch("/users/me", { img_id : selectedImg.img_id})
+                .catch(error => showWarningAlert({"title": "배경 적용 실패", "text" : error.message}));
+        }
         onClose?.();
     };
 
     const handleReset = () => {
-        onApply?.(null);    // null을 넘겨서 "초기화"를 알림
+        setCurrentBg(null);    // null을 넘겨서 "초기화"를 알림
         onClose?.();
     };
 
@@ -89,6 +94,14 @@ const BgChangeModal = ({ isOpen, onClose, currentBg, onApply }) => {
             >
                 적용하기
             </button>
+            <div className="flex flex-col items-center">
+                <button
+                    onClick={handleReset}
+                    className="mt-3 px-4 py-1.5 text-xs text-[#F4A6A6]"
+                >
+                    초기화
+                </button>
+            </div>
         </ModalLayout>
     );
 };

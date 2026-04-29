@@ -19,6 +19,8 @@ import Todo from "./Pages/Todo/index.jsx";
 import Report from "./Pages/Report/index.jsx";
 import MyPage from "./Pages/MyPage/index.jsx";
 import { MusicProvider } from "@/hooks/useMusic.jsx";
+import { ImgProvider } from "./hooks/useImg";
+
 
 const ProtectedRoute = ({ children }) => {
     const { isAuthenticated, isLoading } = useAuth();
@@ -66,7 +68,9 @@ const router = createBrowserRouter([
         element: (
             <InterferenceProvider>
                 <AuthProvider>
-                    <RootLayout />
+                    <ImgProvider>
+                        <RootLayout />
+                    </ImgProvider>
                 </AuthProvider>
             </InterferenceProvider>
         ),

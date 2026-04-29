@@ -9,6 +9,7 @@ import { useAuth } from "../../hooks/useAuth";
 import api from "../../utils/api";
 import useTodo from "@/hooks/useTodo.jsx";
 import useCategory from "@/hooks/useCategory.jsx";
+import useImg from "@/hooks/useImg.jsx";
 
 /**
  * TodoMain 화면 (통합본)
@@ -52,12 +53,12 @@ const STATUS = {
 };
 
 export default function Todo() {
-    const { user } = useAuth();
-    const { todoLoading, getAllTodos, createTodo } = useTodo();
-    const { ctLoading, getCategory} = useCategory();
-
     // ====== 상수/상태 ======
     const TODAY = startOfDay(new Date());
+
+    const { getAllTodos } = useTodo();
+    const { getCategory} = useCategory();
+    const { currentBg, setCurrentBg, getUserBg } = useImg();
 
     const [selectedDate, setSelectedDate] = useState(TODAY);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
@@ -69,6 +70,9 @@ export default function Todo() {
     const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isNewOpen, setIsNewOpen] = useState(false);
     const [detailTodo, setDetailTodo] = useState(null);
+
+    // db에서 배경화면 불러오기
+    useEffect(() => { getUserBg(); }, []);
 
     // db에서 todo 불러오기
     const loadTodos = useCallback(async () => {
@@ -214,7 +218,15 @@ export default function Todo() {
     })();
 
     return (
-        <>
+        <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
+             style={
+                 currentBg
+                     ? {
+                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
+                     }
+                     : undefined
+             }
+        >
             {/* 상단 헤더 */}
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">
@@ -437,6 +449,6 @@ export default function Todo() {
                 }}
                 onDelete={(id) => alert(`id=${id} 삭제`)}
             />
-        </>
+        </div>
     );
 }

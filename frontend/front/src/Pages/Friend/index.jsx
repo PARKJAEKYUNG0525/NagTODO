@@ -8,7 +8,8 @@ import NotificationModal from "../../Components/Modal/NotificationModal";
 
 import { useFriend } from "../../hooks/useFriend";
 import { useAuth } from "../../hooks/useAuth"; 
-import api from "../../utils/api"; 
+import api from "../../utils/api";
+import useImg from "@/hooks/useImg.jsx";
 
 export default function Friend() {
     // const [friends, setFriends] = useState([]);
@@ -21,6 +22,7 @@ export default function Friend() {
     const [friendDetailDate, setFriendDetailDate] = useState(
         startOfDay(new Date(2026, 3, 21))
     );
+    const { currentBg, setCurrentBg, getUserBg } = useImg();
 
     // 모달 상태
     const [isFriendAddOpen, setIsFriendAddOpen] = useState(false);
@@ -53,6 +55,7 @@ export default function Friend() {
         setIsAdmin(checkAdmin());
     }, []);
 
+    useEffect(() => { getUserBg(); }, []);
 
     const handleSearch = () => {
         if (!searchQuery.trim()) return;
@@ -346,7 +349,15 @@ export default function Friend() {
     });
     
 return (
-    <>
+    <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
+         style={
+             currentBg
+                 ? {
+                     backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
+                 }
+                 : undefined
+         }
+    >
         <header className="px-6 pt-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-[#3D4D5C]">친구</h1>
             <NotificationBell />
@@ -421,6 +432,6 @@ return (
                 onSearch={searchUser}
                 onRequest={handleFriendRequest}
             />
-        </>
+        </div>
     );
 }

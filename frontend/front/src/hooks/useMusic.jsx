@@ -1,5 +1,5 @@
 import api from "@/utils/api.js";
-import React, { createContext, useContext, useRef, useState } from "react";
+import React, {createContext, useCallback, useContext, useRef, useState} from "react";
 import {showWarningAlert} from "@/utils/alertUtils.js";
 
 const MusicContext = createContext(null);
@@ -9,6 +9,17 @@ export function MusicProvider({ children }) {
     const musicRef = useRef(null);
     const [currentMusic, setCurrentMusic] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [musics, setMusics] = useState([]);
+
+    const getAllMusics = useCallback(async () => {
+        try {
+            const res = await api.get("/musics");
+            setMusics(Array.isArray(res.data) ? res.data : []);
+        } catch (err) {
+            console.error("음악 목록 불러오기 실패:", err);
+            setMusics([]);
+        }
+    }, []);
 
     const play = (music) => {
         if (!musicRef.current) return;
@@ -39,7 +50,7 @@ export function MusicProvider({ children }) {
     };
 
     return (
-        <MusicContext.Provider value={{ currentMusic, isPlaying, play, pause, toggle }}>
+        <MusicContext.Provider value={{ currentMusic, isPlaying, play, pause, toggle, musics, getAllMusics }}>
             <audio
                 ref={musicRef}
                 loop

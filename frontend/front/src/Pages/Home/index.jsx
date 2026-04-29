@@ -3,6 +3,7 @@ import NotificationModal from "../../Components/Modal/NotificationModal";
 import BgChangeModal from "../../Components/Modal/BgChangeModal";
 import {useMusic} from "@/hooks/useMusic.jsx";
 import api from "@/utils/api.js";
+import useImg from "@/hooks/useImg.jsx";
 
 /**
  * Home 화면
@@ -14,14 +15,13 @@ import api from "@/utils/api.js";
  *   이 컴포넌트는 프레임 내부에 들어갈 콘텐츠만 Fragment 로 반환합니다.
  */
 export default function Home() {
-    const { play, currentMusic, toggle } = useMusic();
-    const [musics, setMusics] = useState([]);
+    const { getUserBg, currentBg } = useImg();
+    const { musics, getAllMusics, play, currentMusic, toggle } = useMusic();
     const [isMusicListOpen, setIsMusicListOpen] = useState(false);
     const playerRef = useRef(null);
 
     const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isBgOpen, setIsBgOpen] = useState(false);
-    const [currentBg, setCurrentBg] = useState(null);
 
     const notifications = [
         {
@@ -48,29 +48,10 @@ export default function Home() {
     ];
 
     // 사진 목록 받아오기
-    useEffect(() => {
-        api.get("/users/me").then((res) => {
-            if (res.data.img_id) {
-                // imgs 목록에서 찾아서 currentBg에 셋
-                api.get("/imgs").then((imgsRes) => {
-                    const userImg = imgsRes.data.find(i => i.img_id === res.data.img_id);
-                    if (userImg) setCurrentBg(userImg);
-                });
-            }
-        });
-    }, []);
+    useEffect(() => { getUserBg(); }, []);
 
     // 음악 목록 받아오기
-    useEffect(() => {
-        api.get("/musics")
-            .then((res) => {
-                setMusics(Array.isArray(res.data) ? res.data : []);
-            })
-            .catch((err) => {
-                console.error("음악 목록 불러오기 실패:", err);
-                setMusics([]);
-            });
-    }, []);
+    useEffect(() => { getAllMusics(); }, []);
 
     // 바깥 클릭 시 드롭다운 닫기
     useEffect(() => {
@@ -203,12 +184,6 @@ export default function Home() {
             <BgChangeModal
                 isOpen={isBgOpen}
                 onClose={() => setIsBgOpen(false)}
-                currentBg={currentBg?.img_id}
-                onApply={(img) => {
-                    setCurrentBg(img);
-                    api.patch("/users/me", { img_id: img.img_id })
-                        .catch(err => console.warn("배경 저장 실패:", err));
-                }}
             />
         </div>
     );

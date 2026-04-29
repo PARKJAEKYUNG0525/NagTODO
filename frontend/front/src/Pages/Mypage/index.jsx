@@ -3,6 +3,8 @@ import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import { useAuth } from "../../hooks/useAuth";
 import useMypage from "../../hooks/useMypage";
 import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
+import api from "@/utils/api.js";
+import useImg from "@/hooks/useImg.jsx";
 
 /**
  * Mypage 화면 (통합본)
@@ -37,7 +39,6 @@ export default function MyPage() {
         birthDay: ""  
         });
 
-
     const [adminMode, setAdminMode] = useState("default"); // "default" | "edit" | "delete"
     const [editingCategoryId, setEditingCategoryId] = useState(null);
     const [editingValue, setEditingValue] = useState("");
@@ -51,6 +52,10 @@ export default function MyPage() {
         { id: 6, name: "기타" },
     ]);
     const [draggedIdx, setDraggedIdx] = useState(null);
+
+    const { currentBg, getUserBg } = useImg();
+
+    useEffect(() => { getUserBg(); }, []);
 
     useEffect(() => {
         const checkAdmin = () => false;
@@ -233,9 +238,7 @@ export default function MyPage() {
                     return;   
                 }
                 showSuccessAlert({title:"비밀번호가 변경되었습니다."});
-
             }
-
             setForm(prev => ({
                     ...prev,
                     currentPassword: "",
@@ -403,10 +406,10 @@ export default function MyPage() {
                                     onDrop={() => handleDrop(idx)}
                                     onDragEnd={handleDragEnd}
                                     className={`
-                    flex items-center py-2 px-1
-                    ${adminMode === "default" ? "cursor-move" : ""}
-                    ${draggedIdx === idx ? "opacity-50" : ""}
-                  `}
+                                    flex items-center py-2 px-1
+                                    ${adminMode === "default" ? "cursor-move" : ""}
+                                    ${draggedIdx === idx ? "opacity-50" : ""}
+                                    `}
                                 >
                                     <div className="w-6 flex flex-col gap-0.5 shrink-0">
                                         {/* 아이콘 위치: 드래그 핸들 (bi-list) */}
@@ -439,11 +442,11 @@ export default function MyPage() {
                                             disabled={isOtherEditing}
                                             className="flex-1 text-left"
                                         >
-                      <span
-                          className={`inline-block px-4 py-1.5 rounded-full text-xs font-semibold ${pillClass}`}
-                      >
-                        {cat.name}
-                      </span>
+                                            <span
+                                                className={`inline-block px-4 py-1.5 rounded-full text-xs font-semibold ${pillClass}`}
+                                            >
+                                                {cat.name}
+                                            </span>
                                         </button>
                                     )}
 
@@ -488,7 +491,15 @@ export default function MyPage() {
 
     // ====== 렌더: 비관리자 - 마이페이지 메인 ======
     return (
-        <>
+        <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
+             style={
+                 currentBg
+                     ? {
+                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
+                     }
+                     : undefined
+             }
+        >
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">마이페이지</h1>
                 <NotificationBell />
@@ -525,10 +536,10 @@ export default function MyPage() {
 
                 <button
                     onClick={() => handleSelectStrictMode("strict")}
-                    className={`
-            mt-3 w-full bg-white rounded-2xl p-5 shadow-sm block text-left
-            ${strictMode === "strict" ? "ring-2 ring-[#A8C8D8]" : ""}
-          `}
+                    className={
+                    `mt-3 w-full bg-white rounded-2xl p-5 shadow-sm block text-left
+                    ${strictMode === "strict" ? "ring-2 ring-[#A8C8D8]" : ""}
+                    `}
                 >
                     <p className="text-center text-sm font-bold text-[#3D4D5C]">
                         엄격하게
@@ -539,9 +550,9 @@ export default function MyPage() {
                 <button
                     onClick={() => handleSelectStrictMode("less")}
                     className={`
-            mt-3 w-full bg-white rounded-2xl p-5 shadow-sm block text-left
-            ${strictMode === "less" ? "ring-2 ring-[#A8C8D8]" : ""}
-          `}
+                    mt-3 w-full bg-white rounded-2xl p-5 shadow-sm block text-left
+                    ${strictMode === "less" ? "ring-2 ring-[#A8C8D8]" : ""}
+                    `}
                 >
                     <p className="text-center text-sm text-[#8B9BAA]">덜 엄격하게</p>
                     <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
@@ -555,7 +566,7 @@ export default function MyPage() {
                     </button>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 
