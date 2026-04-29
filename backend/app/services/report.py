@@ -39,6 +39,11 @@ class ReportService:
         reports = await ReportCrud.get_all_reports(db)
         return reports
 
+    # R 조회 - user_id별 리포트 조회 (최신순)
+    @staticmethod
+    async def get_reports_by_user_svc(db: AsyncSession, user_id: int) -> list[Report]:
+        return await ReportCrud.get_reports_by_user(db, user_id)
+
     # U 수정
     @staticmethod
     async def update_report_svc(db: AsyncSession, report_id: str, data: ReportUpdate) -> Report:
