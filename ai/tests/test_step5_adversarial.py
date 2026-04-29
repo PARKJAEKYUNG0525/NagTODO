@@ -84,7 +84,7 @@ class TestConfigMismatch:
         from ai.core.config import settings
 
         assert graph_min == 30
-        assert settings.MIN_MONTHLY_TASKS == 20
+        assert settings.MIN_MONTHLY_TASKS == 30
 
         state_20 = {"monthly_logs": [{}] * 20}
         assert _check_task_count(state_20) == "too_few_tasks"
