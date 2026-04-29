@@ -16,6 +16,4 @@ class History(Base):
     title:       Mapped[str]      = mapped_column(String(255), nullable=False)
     todo_status: Mapped[str]      = mapped_column(Enum("시작전", "진행중", "완료"), nullable=False)
     archived_at: Mapped[datetime] = mapped_column(TIMESTAMP, nullable=False)
-    todo_id:     Mapped[str]      = mapped_column(String(100), ForeignKey("todo.todo_id", ondelete="CASCADE"), nullable=False)
-
-    todo: Mapped["Todo"] = relationship("Todo", back_populates="histories")
+    category_name: Mapped[str] = mapped_column(String(50), nullable=False)
