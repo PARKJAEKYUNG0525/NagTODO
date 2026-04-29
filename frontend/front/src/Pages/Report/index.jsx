@@ -449,9 +449,19 @@ function ReportContent({ stats, clusters, reportText }) {
 }
 
 function DonutChart({ categoryEntries, overallRate }) {
-    if (categoryEntries.length === 0) {
+    const [tooltip, setTooltip] = useState(null);
+
+    const SIZE = 128;
+    const CX = SIZE / 2;
+    const CY = SIZE / 2;
+    const R_OUTER = 60;
+    const R_INNER = 38;
+
+    const totalRate = categoryEntries.reduce((sum, [, data]) => sum + (data.rate || 0), 0);
+
+    if (categoryEntries.length === 0 || totalRate === 0) {
         return (
-            <div className="relative w-24 h-24 shrink-0 rounded-full bg-[#E4EEF3] flex items-center justify-center">
+            <div className="relative w-32 h-32 shrink-0 rounded-full bg-[#E4EEF3] flex items-center justify-center">
                 <div className="w-[60%] h-[60%] rounded-full bg-white flex flex-col items-center justify-center">
                     <span className="text-base font-bold text-[#3D4D5C]">{overallRate}%</span>
                     <span className="text-[9px] text-[#8B9BAA]">전체</span>
@@ -460,23 +470,54 @@ function DonutChart({ categoryEntries, overallRate }) {
         );
     }
 
-    const segDeg = 360 / categoryEntries.length;
+    const polar = (r, deg) => {
+        const rad = (deg - 90) * (Math.PI / 180);
+        return { x: CX + r * Math.cos(rad), y: CY + r * Math.sin(rad) };
+    };
+
+    const arcPath = (startDeg, endDeg) => {
+        const s = polar(R_OUTER, startDeg);
+        const e = polar(R_OUTER, endDeg);
+        const si = polar(R_INNER, endDeg);
+        const ei = polar(R_INNER, startDeg);
+        const large = endDeg - startDeg > 180 ? 1 : 0;
+        return `M${s.x},${s.y} A${R_OUTER},${R_OUTER} 0 ${large} 1 ${e.x},${e.y} L${si.x},${si.y} A${R_INNER},${R_INNER} 0 ${large} 0 ${ei.x},${ei.y} Z`;
+    };
+
     let cumDeg = 0;
-    const segments = categoryEntries.map(([name], idx) => {
-        const start = cumDeg;
-        cumDeg += segDeg;
-        return `${getCategoryColor(idx)} ${start}deg ${cumDeg}deg`;
-    });
+    const segments = categoryEntries
+        .map(([name, data], idx) => {
+            const deg = (data.rate / totalRate) * 360;
+            if (deg === 0) return null;
+            const seg = { name, rate: data.rate, idx, startDeg: cumDeg, endDeg: cumDeg + deg };
+            cumDeg += deg;
+            return seg;
+        })
+        .filter(Boolean);
 
     return (
-        <div
-            className="relative w-24 h-24 shrink-0 rounded-full"
-            style={{ background: `conic-gradient(${segments.join(", ")})` }}
-        >
-            <div className="absolute inset-[10px] rounded-full bg-white flex flex-col items-center justify-center">
+        <div className="relative w-32 h-32 shrink-0">
+            <svg width={SIZE} height={SIZE}>
+                {segments.map(({ name, rate, idx, startDeg, endDeg }) => (
+                    <path
+                        key={name}
+                        d={arcPath(startDeg, endDeg)}
+                        fill={getCategoryColor(idx)}
+                        onMouseEnter={() => setTooltip({ name, rate })}
+                        onMouseLeave={() => setTooltip(null)}
+                        className="cursor-pointer"
+                    />
+                ))}
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                 <span className="text-base font-bold text-[#3D4D5C]">{overallRate}%</span>
                 <span className="text-[9px] text-[#8B9BAA]">전체</span>
             </div>
+            {tooltip && (
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-[#3D4D5C] text-white text-[10px] px-2 py-1 rounded-lg whitespace-nowrap z-10 pointer-events-none">
+                    {tooltip.name} {tooltip.rate}%
+                </div>
+            )}
         </div>
     );
 }
