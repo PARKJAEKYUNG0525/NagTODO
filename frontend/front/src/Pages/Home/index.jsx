@@ -23,7 +23,7 @@ import {
  *   이 컴포넌트는 프레임 내부에 들어갈 콘텐츠만 Fragment 로 반환합니다.
  */
 export default function Home() {
-    const { play, currentMusic, toggle } = useMusic();
+    const { isPlaying, play, currentMusic, toggle } = useMusic();
     const [musics, setMusics] = useState([]);
     const [isMusicListOpen, setIsMusicListOpen] = useState(false);
     const playerRef = useRef(null);
@@ -138,14 +138,13 @@ export default function Home() {
                     <button
                         onClick={handlePlayToggle}
                         className="w-8 h-8 rounded-full bg-[#A8C8D8] flex items-center justify-center shrink-0 mr-3 transition-colors duration-200 hover:bg-[#97b7c7]"
-                        aria-label={play ? "정지" : "재생"}
+                        aria-label={isPlaying ? "정지" : "재생"}
                     >
                         {/* play가 true면 네모(정지), false면 세모(재생) */}
-                        {play ? (
-                            <BsPlayFill className="text-white ml-0.5" size={20} />
-                            
-                        ) : (
+                        {isPlaying ? (
                             <BsFillSquareFill className="text-white" size={10} />
+                        ) : (
+                            <BsPlayFill className="text-white ml-0.5" size={20} />
                         )}
                     </button>
 
