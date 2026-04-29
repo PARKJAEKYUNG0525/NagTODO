@@ -6,7 +6,6 @@ import NewTodoModal from "../../Components/Modal/NewTodoModal";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
 import { useAuth } from "../../hooks/useAuth";
-import api from "../../utils/api";
 import useTodo from "@/hooks/useTodo.jsx";
 import useCategory from "@/hooks/useCategory.jsx";
 
@@ -53,7 +52,7 @@ const STATUS = {
 
 export default function Todo() {
     const { user } = useAuth();
-    const { todoLoading, getAllTodos, createTodo, deleteTodo } = useTodo();
+    const { todoLoading, getAllTodos, createTodo, updateTodo, deleteTodo } = useTodo();
     const { ctLoading, getCategory} = useCategory();
 
     // ====== 상수/상태 ======
@@ -161,20 +160,20 @@ export default function Todo() {
         const prevStatus = todo.todo_status;
         const nextStatus = getNextStatus(prevStatus);
 
+        // 낙관적 업데이트 — 서버 응답 전에 UI를 먼저 갱신한다
         setTodos((prev) =>
             prev.map((t) =>
                 t.todo_id === todo.todo_id ? { ...t, todo_status: nextStatus } : t
             )
         );
-        try {
-            await api.patch(`/todos/${todo.todo_id}`, { todo_status: nextStatus });
-        } catch (err) {
+        const result = await updateTodo(todo.todo_id, { todo_status: nextStatus });
+        if (!result) {
+            // 요청 실패 시 이전 상태로 롤백
             setTodos((prev) =>
                 prev.map((t) =>
                     t.todo_id === todo.todo_id ? { ...t, todo_status: prevStatus } : t
                 )
             );
-            alert("상태 변경에 실패했어요.");
         }
     };
 
@@ -407,19 +406,16 @@ export default function Todo() {
                 onClose={() => setDetailTodo(null)}
                 todo={detailTodo}
                 onSave={async (updated) => {
-                    try {
-                        await api.patch(`/todos/${updated.todo_id}`, {
-                            title:       updated.title,
-                            detail:      updated.detail,
-                            category_id: updated.category_id,
-                            todo_status: updated.todo_status,
-                            visibility:  updated.visibility,
-                        });
+                    const result = await updateTodo(updated.todo_id, {
+                        title:       updated.title,
+                        detail:      updated.detail,
+                        category_id: updated.category_id,
+                        todo_status: updated.todo_status,
+                        visibility:  updated.visibility,
+                    });
+                    if (result) {
                         setDetailTodo(null);
                         loadTodos();
-                    } catch (err) {
-                        console.error("todo 수정 실패", JSON.stringify(err?.response?.data ?? err?.message ?? err));
-                        alert(err?.response?.data?.detail ?? "저장에 실패했어요. 다시 시도해 주세요.");
                     }
                 }}
                 onDelete={async (id) => {
