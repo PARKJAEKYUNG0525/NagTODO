@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from app.db.crud.friend import FriendCrud
-from app.db.scheme.friend import FriendCreate, FriendUpdate
+from app.db.scheme.friend import FriendCreate, FriendUpdate, FriendRead  
 from app.db.models.friend import Friend
 
 class FriendService:
@@ -40,13 +40,11 @@ class FriendService:
     # R 조회 - 받은 신청 목록 조회
     @staticmethod
     async def get_receive_svc(db: AsyncSession, user_id: int) -> list[Friend]:
-        received = await FriendCrud.get_receive(db, user_id)
-        if not received:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="신청을 받은 목록이 없습니다"
-            )
-        return received
+    # async def get_receive_svc(db, user_id):
+        result = await FriendCrud.get_receive(db, user_id)
+        if not result:
+            return []  # 404 대신 빈 배열 반환
+        return result
 
     # U 수정 (친구 신청 수락 / 거절)
     @staticmethod
@@ -108,8 +106,12 @@ class FriendService:
                 detail="friend 삭제에 실패했습니다."
             )
         
+    @staticmethod
+    async def get_accepted_svc(db: AsyncSession, user_id: int):
+        result = await FriendCrud.get_all_friends(db, user_id)
+        return [FriendRead.from_orm_with_users(f) for f in result] if result else []
+        
 
-#------------------------------------------------------------------------
     # 검색 (이메일/닉네임 통합 검색)
     @staticmethod
     async def search_friend_svc(db: AsyncSession, query: str):
@@ -130,6 +132,14 @@ class FriendService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="본인에게 친구 신청을 보낼 수 없습니다."
+            )
+        
+        # 중복 신청 확인 ← 추가
+        existing = await FriendCrud.get_existing_request(db, requester_id, receiver_id)
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="이미 친구 신청을 보냈습니다."
             )
         
         try:
