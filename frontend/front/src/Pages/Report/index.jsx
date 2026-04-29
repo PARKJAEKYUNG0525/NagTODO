@@ -453,8 +453,60 @@ function ReportContent({ stats, aiReport, categoryEntries }) {
 
 function SavedReportContent({ detail }) {
     const clusters = detail.cluster_summaries || [];
+    const stats = detail.stats;
+    const categoryEntries = stats ? Object.entries(stats.category_stats || {}) : [];
+
     return (
         <>
+            {/* 달성률 카드 */}
+            {stats && (
+                <>
+                    <div className="mt-3 grid grid-cols-2 gap-3">
+                        <div className="bg-white rounded-2xl p-4 shadow-sm">
+                            <p className="text-[11px] text-[#8B9BAA]">내 달성률</p>
+                            <p className="mt-2 text-3xl font-bold text-[#A8C8D8]">{stats.user_success_rate}%</p>
+                        </div>
+                        <div className="bg-white rounded-2xl p-4 shadow-sm">
+                            <p className="text-[11px] text-[#8B9BAA]">전체 사용자 달성률</p>
+                            <p className="mt-2 text-3xl font-bold text-[#A8C8D8]">{stats.all_users_success_rate}%</p>
+                        </div>
+                    </div>
+
+                    {/* 카테고리별 달성률 */}
+                    <div className="mt-4 bg-white rounded-2xl p-4 shadow-sm">
+                        <h3 className="text-sm font-bold text-[#3D4D5C]">카테고리별 달성률</h3>
+                        <div className="mt-4 flex items-center gap-4">
+                            <div className="relative w-24 h-24 shrink-0">
+                                <div className="absolute inset-0 rounded-full border-[10px] border-[#E4EEF3]" />
+                                <div
+                                    className="absolute inset-0 rounded-full border-[10px] border-transparent"
+                                    style={{ borderTopColor: "#A8C8D8", borderRightColor: "#A8C8D8", transform: "rotate(-45deg)" }}
+                                />
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span className="text-base font-bold text-[#3D4D5C]">{stats.user_success_rate}%</span>
+                                    <span className="text-[9px] text-[#8B9BAA]">전체</span>
+                                </div>
+                            </div>
+                            <div className="flex-1 flex flex-col gap-2 text-xs">
+                                {categoryEntries.length === 0 ? (
+                                    <p className="text-[#8B9BAA]">카테고리 데이터 없음</p>
+                                ) : (
+                                    categoryEntries.map(([name, data], idx) => (
+                                        <div key={name} className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: getCategoryColor(idx) }} />
+                                                <span className="text-[#3D4D5C]">{name}</span>
+                                            </div>
+                                            <span className="text-[#8B9BAA]">{data.rate}%</span>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
+
             <h3 className="mt-6 text-sm font-bold text-[#3D4D5C]">AI 분석</h3>
             <ClusterGrid clusters={clusters} />
 

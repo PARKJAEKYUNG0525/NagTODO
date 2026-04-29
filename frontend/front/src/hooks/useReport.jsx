@@ -34,7 +34,7 @@ export function useReport() {
             setReportData(data);
 
             // 생성된 리포트를 백엔드에 저장 (실패해도 결과 표시는 유지)
-            await _saveReport({ userId, monthStart, monthEnd, aiReport: aiRes.data });
+            await _saveReport({ userId, monthStart, monthEnd, stats: statsRes.data, aiReport: aiRes.data });
 
             return data;
         } catch (e) {
@@ -44,12 +44,13 @@ export function useReport() {
         }
     };
 
-    const _saveReport = async ({ userId, monthStart, monthEnd, aiReport }) => {
+    const _saveReport = async ({ userId, monthStart, monthEnd, stats, aiReport }) => {
         try {
             await api.post("/reports/", {
                 title: `월간 리포트 ${monthStart} ~ ${monthEnd}`,
                 date: new Date().toISOString(),
                 detail: JSON.stringify({
+                    stats,
                     report: aiReport.report,
                     cluster_summaries: aiReport.cluster_summaries,
                     category_stats: aiReport.category_stats,
