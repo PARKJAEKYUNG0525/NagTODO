@@ -1,7 +1,7 @@
 import uuid
 from app.db.database import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, TIMESTAMP, Enum, ForeignKey,Integer
+from sqlalchemy import String, TIMESTAMP, Enum, Integer
 from datetime import datetime
 from typing import TYPE_CHECKING
 
