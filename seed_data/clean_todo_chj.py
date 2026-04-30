@@ -3,7 +3,7 @@ import uuid
 from datetime import datetime
 
 NAME = 'chj'
-USERID = 3
+USERID = 103
 
 TYPE_MAP = {
     "운동": "운동",
@@ -21,13 +21,17 @@ STATUS_MAP = {
 }
 
 
-def parse_korean_date(date_str: str, year=2026):
+def parse_korean_date(date_str: str):
     """
-    '12월 22' → datetime(2026, 12, 22)
+    '12월 22' → datetime(2025, 12, 22)
+    '3월 1'  → datetime(2026, 3, 1)
+    10월 이후는 2025년, 그 외는 2026년으로 처리
     """
     try:
         month, day = date_str.replace("월", "").split()
-        return datetime(year, int(month), int(day))
+        month = int(month)
+        year = 2025 if month >= 10 else 2026
+        return datetime(year, month, int(day))
     except Exception:
         return None
 
@@ -50,6 +54,10 @@ def parse_simple_csv(input_path):
             parsed_date = parse_korean_date(date_str)
             if not parsed_date:
                 print(f"날짜 파싱 실패: {date_str}")
+                continue
+
+            # 2026-03-01 이전 데이터 제외
+            if parsed_date < datetime(2026, 3, 1):
                 continue
 
             # 상태 변환

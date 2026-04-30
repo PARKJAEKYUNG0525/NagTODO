@@ -4,7 +4,7 @@ import csv
 from datetime import datetime
 
 NAME = 'ljh'
-USERID = 4
+USERID = 104
 
 STATUS_MAP = {
     "성공": "완료",

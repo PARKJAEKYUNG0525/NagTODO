@@ -4,7 +4,7 @@ import csv
 from datetime import datetime
 
 NAME = 'jsy'
-USERID = 1
+USERID = 101
 
 STATUS_MAP = {
     "완료": "완료",
