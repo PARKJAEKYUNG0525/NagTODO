@@ -115,7 +115,7 @@ export default function FriendDetail() {
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => navigate(-1)}
-                        className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm"
+                        className="w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-sm cursor-pointer"
                         aria-label="뒤로가기"
                     >
                         <IoChevronBack className="w-5 h-5 text-[#3D4D5C]" />

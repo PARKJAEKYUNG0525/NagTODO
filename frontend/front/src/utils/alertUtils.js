@@ -33,9 +33,9 @@ export async function showWarningDialog({
         showCancelButton: true,
         confirmButtonText: confirmText,
         cancelButtonText: cancelText,
-        confirmButtonColor: "#E89B9B",
-        cancelButtonColor: "#EEF2F5",
-        reverseButtons: true,
+        confirmButtonColor: "#EEF2F5",
+        cancelButtonColor: "#E89B9B",
+        reverseButtons: false,
         customClass: sharedCustomClass,
     });
     return result.isConfirmed;

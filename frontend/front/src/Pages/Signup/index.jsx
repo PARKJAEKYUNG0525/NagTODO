@@ -116,7 +116,7 @@ export default function Signup({ onLoginClick }) {
                             placeholder="홍길동"
                             value={form.username}
                             onChange={handleChange}
-                            className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA]"
+                            className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA] cursor-text"
                         />
                     </div>
 
@@ -129,7 +129,7 @@ export default function Signup({ onLoginClick }) {
                             placeholder="name@example.com"
                             value={form.email}
                             onChange={handleChange}
-                            className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA]"
+                            className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA] cursor-text"
                         />
                     </div>
 
@@ -142,7 +142,7 @@ export default function Signup({ onLoginClick }) {
                             placeholder="••••••••"
                             value={form.password}
                             onChange={handleChange}
-                            className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA]"
+                            className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA] cursor-text"
                         />
                     </div>
 
@@ -155,7 +155,7 @@ export default function Signup({ onLoginClick }) {
                             placeholder="••••••••"
                             value={form.confirmPassword}
                             onChange={handleChange}
-                            className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA]"
+                            className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA] cursor-text"
                         />
                     </div>
 
@@ -225,7 +225,7 @@ export default function Signup({ onLoginClick }) {
                     <span className="text-xs text-[#718096]">이미 계정이 있으신가요?</span>
                     <button
                         onClick={handleLoginClick}
-                        className="text-xs font-semibold text-[#7BBFCD] hover:text-[#5AAAB8] transition-colors duration-200 bg-transparent border-none cursor-pointer p-0"
+                        className="text-xs font-semibold text-[#7BBFCD] hover:text-[#5AAAB8] transition-colors duration-200 bg-transparent border-none cursor-pointer p-0 "
                     >
                         로그인
                     </button>

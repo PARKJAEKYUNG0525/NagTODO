@@ -11,7 +11,6 @@ export const AuthProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
-    const [isDeleting, setIsDeleting] = useState(false);
 
 
     const login = async (email, password) => {
@@ -69,40 +68,6 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const deleteUser = async () => {
-
-        try {
-            const response = await api.delete("/users/me");
-            if (response.status === 200) {
-                setIsDeleting(true);
-                setIsAuthenticated(false);
-                setUser(null);
-                await showSuccessAlert({ title: "탈퇴가 완료되었습니다" });
-                navigate("/");
-            }
-        } catch (error) {
-            console.log(error);
-            setError(error.response?.data.detail || "회원탈퇴에 실패했습니다");
-        } finally {
-        setIsDeleting(false);
-        }
-    };
-
-    // const deleteAccount = async () => {
-    //     try {
-    //         const response = await api.patch("/users/me/state");
-    //         if (response.status === 200) {
-    //             setIsAuthenticated(false);
-    //             setUser(null);
-    //             showSuccessAlert({ title: "탈퇴가 완료되었습니다" });
-    //             navigate("/");
-    //         }
-    //     } catch (error) {
-    //         console.log(error);
-    //         setError(error.response?.data.detail || "회원탈퇴에 실패했습니다");
-    //     }
-    // };
-
     // JWT 토큰 검증 + 사용자 상태 관리 함수
     // 현재 로그인한 사용자인지 확인하기 위함
     // 성공 시 서버가 사용자 정보 반환
@@ -141,7 +106,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider
-            value={{ error, setError, isAuthenticated, login, signup, logout, user, setUser, deleteUser, isDeleting }}
+            value={{ error, setError, isAuthenticated, login, signup, logout, user, setUser }}
         >
             {children}
         </AuthContext.Provider>

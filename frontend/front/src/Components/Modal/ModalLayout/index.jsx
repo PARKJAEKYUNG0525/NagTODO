@@ -33,19 +33,19 @@ const ModalLayout = ({ isOpen, onClose, title, children }) => {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* 배경 오버레이 */}
       <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/40 backdrop-blur-sm cursor-pointer"
         onClick={onClose}
       />
 
       {/* 카드 */}
-      <div className="relative bg-white rounded-[24px] shadow-2xl max-w-md w-full overflow-hidden"
+      <div className="relative bg-white rounded-[24px] shadow-2xl max-w-md w-full overflow-hidden "
       onClick={(e) => e.stopPropagation()}>
         {/* 헤더 */}
         <div className="flex justify-between items-center px-6 pt-6 pb-3">
           <h2 className="text-[20px] font-bold text-[#3D4D5C]">{title}</h2>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[#8B9BAA] hover:bg-[#EEF2F5]"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-[#8B9BAA] hover:bg-[#EEF2F5] cursor-pointer"
             aria-label="닫기"
           >
             {/* 아이콘 위치: 닫기 (bi-x-lg) */}

@@ -39,7 +39,7 @@ export default function NotificationBell() {
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+                className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0 cursor-pointer"
             >
                 <BsFillBellFill className="w-5 h-5 text-white" />
                 {notifications.length > 0 && (
