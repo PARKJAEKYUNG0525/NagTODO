@@ -48,6 +48,13 @@ class UserCrud:
         await db.flush()
         return user
 
+    # U 수정 - state 변경
+    @staticmethod
+    async def update_state_by_id(db: AsyncSession, user_id: int, state: bool):
+        user = await UserCrud.get_user(db, user_id)
+        user.state = state
+        return user
+
     # R 조회 - 닉네임 또는 이메일로 검색
     @staticmethod
     async def search_users(db: AsyncSession, query: str, current_user_id: int) -> list[User]:

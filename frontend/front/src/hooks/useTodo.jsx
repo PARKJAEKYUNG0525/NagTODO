@@ -30,13 +30,14 @@ export const useTodo = () => {
 
 
     // R 조회 - todo 전체 조회
-    const getAllTodos = useCallback(async() => {
-        if (!user?.user_id) return;
+    const getAllTodos = useCallback(async(targetUserId) => {
+        const id = targetUserId ?? user?.user_id;
+        if (!id) return;
 
         setTodoLoading(true);
 
         try {
-            const response = await api.get(`/todos/user/${user.user_id}`);
+            const response = await api.get(`/todos/user/${id}`);
             return response.data;
         }
         catch (error) {

@@ -4,7 +4,7 @@ from app.db.database import get_db
 from app.db.scheme.user import UserCreate, UserUpdate, UserRead, UserLogin, UserPasswordUpdate
 from app.db.models.user import User
 from app.services.user import UserService as user_svc
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from app.core.jwt_handle import get_current_user
 
@@ -25,6 +25,14 @@ async def login(data: UserLogin, db: AsyncSession = Depends(get_db)):
     response.set_cookie(key="access_token", value=access_token, httponly=True, samesite="none", secure=True)
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, samesite="none", secure=True)
     return response
+
+# 로그아웃
+@router.post("/logout")
+async def logout(response: Response, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+    await user_svc.logout_svc(db, current_user.user_id)
+    response.delete_cookie(key="access_token", httponly=True, samesite="none", secure=True)
+    response.delete_cookie(key="refresh_token", httponly=True, samesite="none", secure=True)
+    return {"message": "로그아웃 성공"}
 
 # R 조회 - 고정 경로 먼저
 @router.get("/me", response_model=UserRead)
@@ -68,6 +76,14 @@ async def update_me(
 ):
     return await user_svc.update_user_svc(db, current_user.user_id, data)
 
+# # U 수정 - state 변경
+# @router.patch("/me/state")
+# async def update_state(
+#     db: AsyncSession = Depends(get_db),
+#     current_user: User = Depends(get_current_user)
+# ):
+#     return await user_svc.update_state_svc(db, current_user.user_id)
+
 # U 수정 - 비밀번호
 @router.patch("/me/password")
 async def update_password(
@@ -82,7 +98,10 @@ async def update_password(
 async def update_user(user_id: int, data: UserUpdate, db: AsyncSession = Depends(get_db)):
     return await user_svc.update_user_svc(db, user_id, data)
 
-# D 삭제
-@router.delete("/{user_id}")
-async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
-    return await user_svc.delete_user_svc(db, user_id)
+# D 삭제 - 본인
+@router.delete("/me")
+async def delete_me(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    return await user_svc.delete_user_svc(db, current_user.user_id)

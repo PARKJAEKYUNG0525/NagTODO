@@ -145,6 +145,15 @@ class UserService:
                 detail="비밀번호 변경에 실패했습니다."
             )
 
+    # U 수정 - state
+    # @staticmethod
+    # async def update_state_svc(db: AsyncSession, user_id: int):
+    #     updated_user = await UserCrud.update_state_by_id(db, user_id, 0)
+    #     await db.commit()
+    #     await db.refresh(updated_user)
+    #     return {"message": "탈퇴가 완료되었습니다"}
+
+
     # D 삭제
     @staticmethod
     async def delete_user_svc(db: AsyncSession, user_id: int) -> dict:
@@ -174,6 +183,9 @@ class UserService:
 
         if not db_user or not verify_password(user.pw, db_user.pw):
             raise HTTPException(status_code=401, detail="잘못된 이메일 혹은 비밀번호입니다")
+        
+        if str(db_user.state) == 0:
+            raise HTTPException(status_code=403, detail="사용할 수 없는 user입니다")
 
         refresh_token = create_refresh_token(db_user.user_id)
         access_token = create_access_token(db_user.user_id)
@@ -182,3 +194,11 @@ class UserService:
         await db.commit()
         await db.refresh(updated_user)
         return updated_user, access_token, refresh_token
+    
+    # 로그아웃
+    @staticmethod
+    async def logout_svc(db: AsyncSession, user_id: int):
+        updated_user = await UserCrud.update_refresh_token_by_id(db, user_id, None)
+        await db.commit()
+        await db.refresh(updated_user)
+        return updated_user
