@@ -3,19 +3,6 @@ import ModalLayout from "../ModalLayout";
 
 // const [notifications, setNotifications] = useState([]);
 
-/**
- * NotificationModal
- * - 헤더의 알림 벨 클릭 시 열리는 알림 목록 모달.
- * - ModalLayout 안에 간단한 알림 리스트를 렌더합니다.
- *
- * props:
- *   - isOpen        : boolean
- *   - onClose       : ()=>void
- *   - notifications : [{ id, title, body, time, read }]
- *   - onItemClick   : (notification)=>void
- *
- * ※ 지금은 간단한 카드 리스트만. 추후 필터/탭/알림 설정 버튼 분리 예정.
- */
 const NotificationModal = ({
   isOpen,
   onClose,

@@ -1,6 +1,6 @@
 import api from "../utils/api.js";
-import {createContext, useCallback, useContext, useState} from "react";
-import {showWarningAlert} from "@/utils/alertUtils.js";
+import { createContext, useCallback, useContext, useState } from "react";
+import { showWarningAlert } from "@/utils/alertUtils.js";
 
 const ImgContext = createContext(null);
 

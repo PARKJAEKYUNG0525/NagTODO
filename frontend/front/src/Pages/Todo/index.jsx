@@ -5,31 +5,14 @@ import { ko } from "date-fns/locale";
 import NewTodoModal from "../../Components/Modal/NewTodoModal";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
-import { useAuth } from "../../hooks/useAuth";
 import useTodo from "@/hooks/useTodo.jsx";
 import useCategory from "@/hooks/useCategory.jsx";
-import useImg from "@/hooks/useImg.jsx";
+import { useImg } from "@/hooks/useImg";
+
+import { useAuth } from "../../hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 
 import { BsFillBellFill } from "react-icons/bs";
-
-/**
- * TodoMain 화면 (통합본)
- * 상태에 따라 세 가지 뷰를 하나의 파일에서 렌더합니다.
- *
- *  [1] 기본 뷰 (오늘 · 보기 모드)
- *      - 헤더 우측: "할 일 삭제" 텍스트 버튼
- *      - 우하단 플로팅 + 버튼 표시
- *  [2] 삭제 선택 모드 (오늘 · 선택 모드)
- *      - "할 일 삭제" 클릭 → isDeleteMode = true
- *      - 헤더 우측: "전체 선택 | 선택한 할 일 삭제 | 취소"
- *      - 플로팅 + 버튼 숨김
- *  [3] 지난 날짜 뷰 (달력에서 오늘(2026-04-21)이 아닌 날짜 선택 시)
- *      - 타이틀 / 서브타이틀이 date-fns format 으로 동적 생성
- *
- * ※ 9:16 프레임 / 하단 Navbar 는 App.jsx 가 담당. 여기서는 내부 콘텐츠만.
- * ※ shadcn/ui Calendar: npx shadcn-ui@latest add calendar
- * ※ date-fns: npm i date-fns
- */
 
 // 달성률에 따른 도트 색
 const RATE_COLOR = {
@@ -57,9 +40,10 @@ export default function Todo() {
     // ====== 상수/상태 ======
     const TODAY = startOfDay(new Date());
 
-    const { getAllTodos } = useTodo();
-    const { getCategory } = useCategory();
+    const { todoLoading, getAllTodos, createTodo, updateTodo, deleteTodo } = useTodo();
+    const { ctLoading, getCategory } = useCategory();
     const { currentBg, setCurrentBg, getUserBg } = useImg();
+    const { notifications } = useNotification();
 
     const [selectedDate, setSelectedDate] = useState(TODAY);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
@@ -75,15 +59,15 @@ export default function Todo() {
     // db에서 배경화면 불러오기
     useEffect(() => { getUserBg(); }, []);
 
+    useEffect(() => { loadTodos(); }, [loadTodos]);
+
+    useEffect(() => { loadCategory(); }, [loadCategory]);
+
     // db에서 todo 불러오기
     const loadTodos = useCallback(async () => {
         const db_todo = await getAllTodos();
         if (db_todo) setTodos(db_todo);
     }, [getAllTodos]);
-
-    useEffect(() => {
-        loadTodos();
-    }, [loadTodos]);
 
     // db에서 category 불러오기
     const loadCategory = useCallback(async () => {
@@ -91,9 +75,7 @@ export default function Todo() {
         if (db_category) setCategories(db_category);
     }, [getCategory]);
 
-    useEffect(() => {
-        loadCategory();
-    }, [loadCategory]);
+    const handleNotification = () => setIsNotiOpen(true);
 
     const currentTodos = todos.filter((t) =>
         isSameDay(startOfDay(new Date(t.created_at)), selectedDate)
@@ -206,6 +188,20 @@ export default function Todo() {
         return { highDays: high, midDays: mid, lowDays: low };
     })();
 
+    // 공용 UI: 상단 벨 버튼
+    const NotificationBell = () => (
+        <button
+            onClick={handleNotification}
+            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+        >
+            <BsFillBellFill className="w-5 h-5 text-white" />
+
+            {notifications.length > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+            )}
+        </button>
+    );
+
     return (
         <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
              style={
@@ -221,15 +217,7 @@ export default function Todo() {
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">
                     {format(selectedDate, "M월", { locale: ko })}
                 </h1>
-                <button
-                    onClick={() => setIsNotiOpen(true)}
-                    className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
-                >
-                    {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-                    <BsFillBellFill className="text-white" size={20} />
-                    {/* 알림 도트 */}
-                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-                </button>
+                <NotificationBell />
             </header>
 
             {/* 스크롤 영역 */}
@@ -405,7 +393,7 @@ export default function Todo() {
             <NotificationModal
                 isOpen={isNotiOpen}
                 onClose={() => setIsNotiOpen(false)}
-                notifications={[]}
+                notifications={notifications}
             />
             <NewTodoModal
                 isOpen={isNewOpen}

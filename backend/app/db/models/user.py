@@ -29,6 +29,7 @@ class User(Base):
     birthday:        Mapped[Date]               = mapped_column(Date, nullable=False)
     state:           Mapped[bool]               = mapped_column(Boolean, nullable=False, server_default=text('1')) # 1은 회원, 0은 탈퇴
     refresh_token:   Mapped[Optional[str]]      = mapped_column(String(255), nullable=True)
+    status_message:  Mapped[Optional[str]]      = mapped_column(String(500), nullable=True)
 
     cloth_id: Mapped[Optional[str]] = mapped_column(
         String(100),

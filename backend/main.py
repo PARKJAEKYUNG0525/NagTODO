@@ -39,8 +39,6 @@ async def lifespan(app:FastAPI):
 
 app=FastAPI(lifespan=lifespan)
 
-app.add_middleware(RefreshTokenMiddleware)
-
 # 요청 허용 관련 설정
 app.add_middleware(
     CORSMiddleware,
@@ -53,6 +51,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(RefreshTokenMiddleware)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 

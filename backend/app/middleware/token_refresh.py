@@ -51,7 +51,7 @@ class RefreshTokenMiddleware(BaseHTTPMiddleware):
                 await db.commit()
             except Exception:
                 await db.rollback()
-                raise
+                return response
 
             set_auth_cookies(response, new_access_token, new_refresh_token)
         return response

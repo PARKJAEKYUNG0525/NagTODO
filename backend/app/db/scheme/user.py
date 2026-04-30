@@ -42,6 +42,7 @@ class UserUpdate(BaseModel):
     cloth_id: str | None = None
     img_id : str | None = None
     music_id : str | None = None
+    status_message: str | None = None
 
 class UserInDB(UserBase):
     user_id: int
@@ -54,6 +55,7 @@ class UserInDB(UserBase):
     cloth_id: str | None = None
     img_id : str | None = None
     music_id : str | None = None
+    status_message: str | None = None
 
     class Config:
         from_attributes = True
