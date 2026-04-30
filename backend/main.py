@@ -1,10 +1,11 @@
 import uvicorn
+from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.db.database import Base, async_engine, AsyncSessionLocal
-from app.db.seed import seed_categories, seed_musics, seed_imgs
+from app.db.seed import seed_categories, seed_musics, seed_imgs, seed_cloths
 from fastapi.concurrency import asynccontextmanager
 
 from app.middleware.token_refresh import RefreshTokenMiddleware
@@ -14,7 +15,7 @@ from app.routers.category import router as category_router
 from app.routers.cloth import router as cloth_router
 from app.routers.friend_todo_view import router as friend_todo_view_router
 from app.routers.friend import router as friend_router
-from app.routers.history import router as history_router
+# from app.routers.history import router as history_router  # history 테이블 제거
 from app.routers.img import router as img_router
 from app.routers.music import router as music_router
 from app.routers.pw_history import router as pw_history_router
@@ -31,6 +32,7 @@ async def lifespan(app:FastAPI):
     async with AsyncSessionLocal() as session:
         async with session.begin():
             await seed_categories(session)
+            await seed_cloths(session)
             await seed_imgs(session)
             await seed_musics(session)
     yield
@@ -53,14 +55,14 @@ app.add_middleware(
 
 app.add_middleware(RefreshTokenMiddleware)
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
 
 app.include_router(user_router)
 app.include_router(category_router)
 app.include_router(cloth_router)
 app.include_router(friend_todo_view_router)
 app.include_router(friend_router)
-app.include_router(history_router)
+# app.include_router(history_router)  # history 테이블 제거
 app.include_router(img_router)
 
 app.include_router(music_router)

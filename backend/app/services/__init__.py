@@ -7,7 +7,7 @@ from .pw_history import PwHistoryService
 from .cloth import ClothService
 from .friend_todo_view import FriendTodoViewService
 from .category import CategoryService
-from .history import HistoryService
+# from .history import HistoryService  # history 테이블 제거
 from .img import ImgService
 from .music import MusicService
 from .report import ReportService

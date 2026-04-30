@@ -13,8 +13,8 @@ Returns:
     similar_failures: 실패 task 텍스트 목록 (개인 실패 우선, 최대 10개)
 '''
 
-# 반환할 유사 실패 todo 최대 개수 (개인 실패 우선)
-_MAX_FAILURES = 10
+# 반환할 유사 실패 todo 최대 개수 (현재 사용자 실패만)
+_MAX_FAILURES = 3
 
 def compute_stats(similar_tasks: list[dict], user_id: str) -> dict:
 
@@ -46,14 +46,10 @@ def compute_stats(similar_tasks: list[dict], user_id: str) -> dict:
     else:
         personal_rate = None
 
-    # 개인 실패 우선, 나머지 전체 실패로 채워 최대 10개
-    personal_failures = [t["text"] for t in personal if not t.get("completed", False)]
-    other_failures = [
-        t["text"]
-        for t in similar_tasks
-        if not t.get("completed", False) and t.get("user_id") != user_id
-    ]
-    similar_failures = (personal_failures + other_failures)[:_MAX_FAILURES]
+    # 현재 사용자의 실패 사례만 최대 3개
+    similar_failures = [
+        t["text"] for t in personal if not t.get("completed", False)
+    ][:_MAX_FAILURES]
 
     return {
         "global_rate": global_rate,

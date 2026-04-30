@@ -14,11 +14,12 @@ import useCategory from "../../../hooks/useCategory";
  * props:
  *   - isOpen        : boolean
  *   - onClose       : ()=>void
- *   - onSubmit      : (todo)=>void  — 부모의 목록 갱신용 콜백 (선택)
- *   - selectedDate  : Date          — 캘린더에서 선택한 날짜 (기본값: 오늘)
+ *   - onSubmit      : (snapshot)=>void  — 모달 닫힌 직후 낙관적 업데이트용 콜백 (선택)
+ *   - onSaved       : ()=>void          — API 완료 후 실제 목록 동기화용 콜백 (선택)
+ *   - selectedDate  : Date              — 캘린더에서 선택한 날짜 (기본값: 오늘)
  */
 
-const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) => {
+const NewTodoModal = ({ isOpen, onClose, onSubmit, onSaved, selectedDate = new Date() }) => {
     const { user } = useAuth();
     const { showFeedback } = useInterference();
     const { createTodo } = useTodo();
@@ -55,6 +56,9 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) 
         onClose?.();
         setSubmitting(true);
 
+        // 낙관적 업데이트: 모달 닫힌 직후 부모에 스냅샷 전달
+        onSubmit?.(snapshot);
+
         // AI 잔소리 생성은 백그라운드에서 처리 — 완료되면 팝업으로 알림
         // createTodo 내부에서 에러를 흡수하고 null을 반환하므로 .catch 불필요
         createTodo({
@@ -66,17 +70,22 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) 
             created_at: format(selectedDate, "yyyy-MM-dd'T'HH:mm:ss"),
         }).then((data) => {
             if (data) {
-                const feedback = data.interference?.feedback ?? "잘 좀 하렴";
-                showFeedback(feedback);
-                onSubmit?.(snapshot);
+                showFeedback(snapshot.title, data.interference);
             }
         }).finally(() => {
             setSubmitting(false);
+            // 성공/실패 무관하게 실제 DB 상태로 목록 동기화
+            onSaved?.();
         });
     };
 
     return (
         <ModalLayout isOpen={isOpen} onClose={onClose} title="새 할 일 추가">
+            {/* 분석 품질 안내 */}
+            <div className="mb-1 bg-[#DEE4EA] rounded-xl px-4 py-3 flex items-start gap-2">
+                <span className="text-[#F4D58A] text-sm">💡</span>
+                <p className="text-xs text-[#3D4D5C]">더 정밀한 AI 분석을 위해 TODO를 구체적으로 작성해 주세요.<br />예) "운동하기" → "저녁 7시 러닝머신 30분"</p>
+            </div>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* 제목 */}
                 <label className="flex flex-col gap-1">

@@ -24,6 +24,8 @@ class FriendInDB(FriendBase):
 class FriendRead(FriendInDB):
     requester_username: str | None = None
     receiver_username: str | None = None
+    requester_status_message: str | None = None
+    receiver_status_message: str | None = None
 
     @classmethod
     def from_orm_with_users(cls, friend):
@@ -35,4 +37,6 @@ class FriendRead(FriendInDB):
             requester_id=friend.requester_id,
             requester_username=friend.requester.username if friend.requester else None,
             receiver_username=friend.receiver.username if friend.receiver else None,
+            requester_status_message=friend.requester.status_message if friend.requester else None,
+            receiver_status_message=friend.receiver.status_message if friend.receiver else None,
         )
