@@ -29,7 +29,7 @@ async def load_logs(state: dict) -> dict:
     async with httpx.AsyncClient(timeout=30) as client:
         try:
             todos_resp = await client.get(
-                f"{settings.BACKEND_API_URL}/history/monthly-logs",
+                f"{settings.BACKEND_API_URL}/todos/monthly-logs",
                 params=params,
             )
             todos_resp.raise_for_status()
