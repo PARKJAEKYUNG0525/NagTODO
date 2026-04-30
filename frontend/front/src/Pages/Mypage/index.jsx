@@ -293,7 +293,6 @@ export default function MyPage() {
             setPendingCloth(null);
             setView("main");
         } catch (error) {
-            console.error(error);
             setError("(Mypage/index)저장 중 오류가 발생했습니다.");
         }
     };
@@ -591,7 +590,7 @@ export default function MyPage() {
 
     // ====== 렌더: 비관리자 - 마이페이지 메인 ======
     return (
-        <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
+        <div className="flex-1 min-h-0 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
              style={
                  currentBg
                      ? {
@@ -605,7 +604,7 @@ export default function MyPage() {
                     <NotificationBell />
             </header>
 
-            <div className="flex-1 px-6 pb-8 flex flex-col">
+            <div className="flex-1 overflow-y-auto px-6 pb-8 flex flex-col gap-5">
                 {/* 프로필 카드 */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm relative shrink-0">
                     <button onClick={logout} className="absolute top-4 right-5 text-[10px] text-[#8B9BAA]">
@@ -636,8 +635,8 @@ export default function MyPage() {
                 </div>
 
                 {/* 상태메세지 */}
-                <div className="mt-5 shrink-0">
-                    <div className="flex justify-between items-end mb-2 px-1">
+                <div className="shrink-0">
+                    <div className="flex justify-between items-end mb-3 px-1">
                         <h2 className="text-[13px] font-bold text-[#3D4D5C]">상태메세지</h2>
                         <span className="text-[10px] text-[#8B9BAA]">{statusMessage?.length || 0}/50</span>
                     </div>
@@ -659,36 +658,28 @@ export default function MyPage() {
                 </div>
 
                 {/* 모드 변경 */}
-                <div className="mt-6 flex-1 flex flex-col min-h-0">
-
+                <div className="flex flex-col">
                     <h2 className="text-base font-bold text-[#3D4D5C] mb-3 px-1">모드 변경</h2>
-
                     <div className="flex-1 flex flex-col gap-4 mb-4">
                         {/* 엄격하게 버튼 */}
                         <button
                             onClick={() => handleSelectStrictMode("strict")}
-                            className={`flex-1 flex flex-col items-center justify-center rounded-2xl shadow-sm border-2 transition-all ${
-                                strictMode === "strict" ? "bg-white border-[#A8C8D8]" : "bg-white/60 border-transparent"
-                            }`}
+                            className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left
+                            ${strictMode === "strict" ? "ring-2 ring-[#A8C8D8]" : ""}
+                            `}
                         >
-                            <p className={`text-sm font-medium mb-3 ${strictMode === "strict" ? "text-[#3D4D5C]" : "text-[#8B9BAA]"}`}>
-                                엄격하게
-                            </p>
-
-                            <div className={`w-3/4 h-12 rounded-xl transition-colors ${strictMode === "strict" ? "bg-[#E9ECEF]" : "bg-[#F1F3F5]"}`} />
+                            <p className="text-center text-sm font-bold text-[#3D4D5C]">엄격하게</p>
+                            <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
                         </button>
 
-                        {/* 덜 엄격하게 버튼 */}
                         <button
                             onClick={() => handleSelectStrictMode("less")}
-                            className={`flex-1 flex flex-col items-center justify-center rounded-2xl shadow-sm border-2 transition-all ${
-                                strictMode === "less" ? "bg-white border-[#A8C8D8]" : "bg-white/60 border-transparent"
-                            }`}
+                            className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left
+                            ${strictMode === "less" ? "ring-2 ring-[#A8C8D8]" : ""}
+                            `}
                         >
-                            <p className={`text-sm font-medium mb-3 ${strictMode === "less" ? "text-[#3D4D5C]" : "text-[#8B9BAA]"}`}>
-                                덜 엄격하게
-                            </p>
-                            <div className={`w-3/4 h-12 rounded-xl transition-colors ${strictMode === "less" ? "bg-[#E9ECEF]" : "bg-[#F1F3F5]"}`} />
+                            <p className="text-center text-sm text-[#8B9BAA]">덜 엄격하게</p>
+                            <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
                         </button>
                     </div>
                 </div>

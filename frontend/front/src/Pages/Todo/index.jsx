@@ -59,21 +59,21 @@ export default function Todo() {
     // db에서 배경화면 불러오기
     useEffect(() => { getUserBg(); }, []);
 
-    useEffect(() => { loadTodos(); }, [loadTodos]);
-
-    useEffect(() => { loadCategory(); }, [loadCategory]);
-
     // db에서 todo 불러오기
     const loadTodos = useCallback(async () => {
         const db_todo = await getAllTodos();
         if (db_todo) setTodos(db_todo);
     }, [getAllTodos]);
 
+    useEffect(() => { loadTodos(); }, [loadTodos]);
+
     // db에서 category 불러오기
     const loadCategory = useCallback(async () => {
         const db_category = await getCategory();
         if (db_category) setCategories(db_category);
     }, [getCategory]);
+
+    useEffect(() => { loadCategory(); }, [loadCategory]);
 
     const handleNotification = () => setIsNotiOpen(true);
 

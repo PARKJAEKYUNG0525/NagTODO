@@ -194,13 +194,13 @@ export default function MonthlyReport() {
                     <div className="flex gap-2">
                         <button
                             onClick={() => handleTabChange("monthly")}
-                            className={`px-4 py-2 rounded-full text-xs whitespace-nowrap ${reportMode === "monthly" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
+                            className={`flex-1 px-4 py-2 rounded-full text-xs whitespace-nowrap ${reportMode === "monthly" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
                         >
                             월 단위 리포트 보기
                         </button>
                         <button
                             onClick={() => handleTabChange("30days")}
-                            className={`px-4 py-2 rounded-full text-xs whitespace-nowrap ${reportMode === "30days" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
+                            className={`flex-1 px-4 py-2 rounded-full text-xs whitespace-nowrap ${reportMode === "30days" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
                         >
                             최근 30일 리포트 보기
                         </button>
