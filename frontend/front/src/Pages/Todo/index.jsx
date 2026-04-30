@@ -225,7 +225,8 @@ export default function Todo() {
     return (
         <>
             {/* 상단 헤더 */}
-            <header className="px-6 pt-6 flex justify-end">
+            <header className="px-6 pt-6 flex items-center justify-between">
+                <h1 className="text-xl font-bold text-[#3D4D5C]">TODO</h1>
                 <NotificationBell />
             </header>
 
