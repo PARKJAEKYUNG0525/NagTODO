@@ -10,6 +10,7 @@ import useCategory from "@/hooks/useCategory.jsx";
 import { useImg } from "@/hooks/useImg";
 
 import { useAuth } from "../../hooks/useAuth";
+import api from "@/utils/api";
 import { useNotification } from "@/hooks/useNotification";
 
 import { BsFillBellFill } from "react-icons/bs";
