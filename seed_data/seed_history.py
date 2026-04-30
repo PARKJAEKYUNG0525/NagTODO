@@ -20,14 +20,22 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+import os
 from dotenv import load_dotenv
 load_dotenv(ROOT / ".env")
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
-from backend.app.core.settings import settings as backend_settings
 from ai.core.dependencies import get_embedding_model, get_embedding_store
+
+def _db_url() -> str:
+    user     = os.environ["DB_USER"]
+    password = os.environ["DB_PASSWORD"]
+    host     = os.environ.get("DB_HOST", "localhost")
+    port     = os.environ.get("DB_PORT", "3306")
+    name     = os.environ["DB_NAME"]
+    return f"mysql+pymysql://{user}:{password}@{host}:{port}/{name}"
 
 
 def _load_csv_rows() -> list[dict]:
@@ -46,7 +54,7 @@ def _load_csv_rows() -> list[dict]:
 
 
 def _seed_db(rows: list[dict]) -> int:
-    engine = create_engine(backend_settings.sync_db_url)
+    engine = create_engine(_db_url())
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
