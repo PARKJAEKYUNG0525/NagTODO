@@ -66,8 +66,7 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) 
             created_at: format(selectedDate, "yyyy-MM-dd'T'HH:mm:ss"),
         }).then((data) => {
             if (data) {
-                const feedback = data.interference?.feedback ?? "잘 좀 하렴";
-                showFeedback(feedback);
+                showFeedback(snapshot.title, data.interference);
                 onSubmit?.(snapshot);
             }
         }).finally(() => {
