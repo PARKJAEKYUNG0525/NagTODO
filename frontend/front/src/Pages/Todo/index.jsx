@@ -3,16 +3,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, isSameDay, startOfDay, isBefore } from "date-fns";
 import { ko } from "date-fns/locale";
 import NewTodoModal from "../../Components/Modal/NewTodoModal";
-import NotificationModal from "../../Components/Modal/NotificationModal";
+import NotificationBell from "../../Components/Notification";
 import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
 import useTodo from "@/hooks/useTodo.jsx";
 import useCategory from "@/hooks/useCategory.jsx";
 import { useImg } from "@/hooks/useImg";
+import api from "@/utils/api.js";
 
 import { useAuth } from "../../hooks/useAuth";
-import { useNotification } from "@/hooks/useNotification";
-
-import { BsFillBellFill } from "react-icons/bs";
 
 // 달성률에 따른 도트 색
 const RATE_COLOR = {
@@ -43,7 +41,6 @@ export default function Todo() {
     const { todoLoading, getAllTodos, createTodo, updateTodo, deleteTodo } = useTodo();
     const { ctLoading, getCategory } = useCategory();
     const { currentBg, setCurrentBg, getUserBg } = useImg();
-    const { notifications } = useNotification();
 
     const [selectedDate, setSelectedDate] = useState(TODAY);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
@@ -52,7 +49,6 @@ export default function Todo() {
     const [categories, setCategories] = useState([]);
 
     // 모달 상태
-    const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isNewOpen, setIsNewOpen] = useState(false);
     const [detailTodo, setDetailTodo] = useState(null);
 
@@ -74,8 +70,6 @@ export default function Todo() {
     }, [getCategory]);
 
     useEffect(() => { loadCategory(); }, [loadCategory]);
-
-    const handleNotification = () => setIsNotiOpen(true);
 
     const currentTodos = todos.filter((t) =>
         isSameDay(startOfDay(new Date(t.created_at)), selectedDate)
@@ -187,20 +181,6 @@ export default function Todo() {
         });
         return { highDays: high, midDays: mid, lowDays: low };
     })();
-
-    // 공용 UI: 상단 벨 버튼
-    const NotificationBell = () => (
-        <button
-            onClick={handleNotification}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
-        >
-            <BsFillBellFill className="w-5 h-5 text-white" />
-
-            {notifications.length > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-            )}
-        </button>
-    );
 
     return (
         <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
@@ -388,13 +368,6 @@ export default function Todo() {
                     <span className="text-white text-2xl leading-none">+</span>
                 </button>
             )}
-
-            {/* ─── 모달들 ─── */}
-            <NotificationModal
-                isOpen={isNotiOpen}
-                onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
-            />
             <NewTodoModal
                 isOpen={isNewOpen}
                 onClose={() => setIsNewOpen(false)}
