@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
+    const [isDeleting, setIsDeleting] = useState(false);
 
 
     const login = async (email, password) => {
@@ -69,17 +70,21 @@ export const AuthProvider = ({ children }) => {
     };
 
     const deleteUser = async () => {
+
         try {
             const response = await api.delete("/users/me");
             if (response.status === 200) {
+                setIsDeleting(true);
                 setIsAuthenticated(false);
                 setUser(null);
-                showSuccessAlert({ title: "탈퇴가 완료되었습니다" });
+                await showSuccessAlert({ title: "탈퇴가 완료되었습니다" });
                 navigate("/");
             }
         } catch (error) {
             console.log(error);
             setError(error.response?.data.detail || "회원탈퇴에 실패했습니다");
+        } finally {
+        setIsDeleting(false);
         }
     };
 
@@ -136,7 +141,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider
-            value={{ error, setError, isAuthenticated, login, signup, logout, user, setUser, deleteUser }}
+            value={{ error, setError, isAuthenticated, login, signup, logout, user, setUser, deleteUser, isDeleting }}
         >
             {children}
         </AuthContext.Provider>

@@ -22,12 +22,12 @@ import FriendDetail from "./Pages/FriendDetail/index.jsx";
 import { MusicProvider } from "@/hooks/useMusic.jsx";
 
 const ProtectedRoute = ({ children }) => {
-    const { isAuthenticated, isLoading } = useAuth();
+    const { isAuthenticated, isLoading, isDeleting } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
         // 로딩이 끝났는데 인증이 안 된 경우에만 알림 후 이동
-        if (!isLoading && !isAuthenticated) {
+        if (!isLoading && !isAuthenticated && !isDeleting) {
             Swal.fire({
                 icon: "warning",
                 title: "로그인 필요",
@@ -37,7 +37,7 @@ const ProtectedRoute = ({ children }) => {
                 navigate("/", { replace: true });
             });
         }
-    }, [isAuthenticated, isLoading, navigate]);
+    }, [isAuthenticated, isLoading, isDeleting, navigate]);
 
     if (isLoading) {
         return (
