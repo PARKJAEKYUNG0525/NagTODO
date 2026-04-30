@@ -87,7 +87,7 @@ export default function Home() {
              style={
                  currentBg
                      ? {
-                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
+                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${currentBg.file_url})`,
                      }
                      : undefined
              }>

@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     VECTOR_DIM: int = 384
 
     # 백엔드 API
-    BACKEND_API_URL: str = "https://4760-1-215-146-37.ngrok-free.app"
+    BACKEND_API_URL: str = "https://aa63-1-215-146-37.ngrok-free.app"
 
     # 벡터 스토어
     FAISS_INDEX_PATH: str = "data/index.faiss"
@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     # 리포트 / 클러스터링
     COSINE_THRESHOLD: float = 0.75
     MIN_CLUSTER_SIZE: int = 2
-    TOP_K_SIMILAR: int = 20
+    TOP_K_SIMILAR: int = 50
     MIN_PERSONAL_TODOS: int = 15  # 개인 간섭 파이프라인 최소 todo 수
     MIN_MONTHLY_TASKS: int = 30
     MIN_MONTHLY_FAIL_TASKS: int = 5
