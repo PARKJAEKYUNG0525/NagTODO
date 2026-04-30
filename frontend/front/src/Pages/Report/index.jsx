@@ -8,6 +8,7 @@ import remarkGfm from "remark-gfm";
 import { useAuth } from "@/hooks/useAuth";
 import { useReport } from "@/hooks/useReport";
 import api from "@/utils/api.js";
+import { useImg } from "@/hooks/useImg";
 import { BsFillBellFill } from "react-icons/bs";
 import { useNotification } from "@/hooks/useNotification";
 
@@ -52,6 +53,8 @@ export default function MonthlyReport() {
     const { isLoading, error, reportData, savedReports, fetchReport, fetchSavedReports } = useReport();
     const { notifications } = useNotification();
 
+    const { currentBg, getUserBg } = useImg();
+    useEffect(() => { getUserBg(); }, []);
 
     const [reportMode, setReportMode] = useState("monthly");
     const [analyzed, setAnalyzed] = useState(false);
@@ -170,7 +173,15 @@ export default function MonthlyReport() {
     );
 
     return (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
+             style={
+                 currentBg
+                     ? {
+                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
+                     }
+                     : undefined
+             }
+        >
             {/* 상단 헤더 (알림 벨) */}
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">월간 리포트</h1>
