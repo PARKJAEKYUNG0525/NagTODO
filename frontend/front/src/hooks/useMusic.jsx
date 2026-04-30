@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useRef, useState } from "react";
+import api from "@/utils/api.js";
+import React, {createContext, useCallback, useContext, useRef, useState} from "react";
 import {showWarningAlert} from "@/utils/alertUtils.js";
 
 const MusicContext = createContext(null);
@@ -8,14 +9,27 @@ export function MusicProvider({ children }) {
     const musicRef = useRef(null);
     const [currentMusic, setCurrentMusic] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [musics, setMusics] = useState([]);
+
+    const getAllMusics = useCallback(async () => {
+        try {
+            const response = await api.get("/musics");
+            setMusics(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            showWarningAlert({title:"음악 목록을 불러오는 데 실패했습니다.", text: error.message});
+            setMusics([]);
+        }
+    }, []);
 
     const play = (music) => {
         if (!musicRef.current) return;
         if (currentMusic?.music_id !== music.music_id) {
-            musicRef.current.src = music.file_url;
+            // baseURL + 상대경로
+            // api.defaults.baseURL은 import.meta.env.VITE_API_BASE_URL과 같음;
+            musicRef.current.src = `${api.defaults.baseURL}${music.file_url}`;
             setCurrentMusic(music);
         }
-        musicRef.current.play().catch((error) => console.warn("재생 실패:", error));
+        musicRef.current.play().catch((error) => showWarningAlert({title:"음악 재생에 실패했습니다.", text: error.message}));
         setIsPlaying(true);
     };
 
@@ -29,14 +43,13 @@ export function MusicProvider({ children }) {
         else if (currentMusic) musicRef.current.play()
             .then(() => setIsPlaying(true))
             .catch((error) => {
-                showWarningAlert({title : "음악 재생에 실패했습니다.", message : error.message});
-                // console.warn("재생 실패:", error);
+                showWarningAlert({title : "음악 재생에 실패했습니다.", text : error.message});
                 setIsPlaying(false);
             });
     };
 
     return (
-        <MusicContext.Provider value={{ currentMusic, isPlaying, play, pause, toggle }}>
+        <MusicContext.Provider value={{ currentMusic, isPlaying, play, pause, toggle, musics, getAllMusics }}>
             <audio
                 ref={musicRef}
                 loop

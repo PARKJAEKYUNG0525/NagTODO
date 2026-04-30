@@ -1,5 +1,5 @@
 import {useCallback, useState} from "react";
-import {showErrorAlert} from "../utils/alertUtils.js";
+import {showWarningAlert} from "../utils/alertUtils.js";
 import api from "../utils/api.js";
 
 export const useBoard = () => {
@@ -19,7 +19,7 @@ export const useBoard = () => {
             return [];
         }
         catch (error) {
-            showErrorAlert(error, "게시글을 불러올 수 없습니다.");
+            showWarningAlert(error, "게시글을 불러올 수 없습니다.");
         }
         finally {
             setLoading(false);
@@ -40,7 +40,7 @@ export const useBoard = () => {
             }
         }
         catch (error) {
-            showErrorAlert(error, "게시글을 생성할 수 없습니다.");
+            showWarningAlert(error, "게시글을 생성할 수 없습니다.");
             return null;
         }
         finally {
