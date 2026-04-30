@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import func
+from sqlalchemy import func, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.db.scheme.history import HistoryCreate, HistoryUpdate
@@ -15,12 +15,6 @@ class HistoryCrud:
         db.add(history)
         await db.flush()
         return history
-
-    # R 조회 - todo 존재 확인
-    @staticmethod
-    async def get_todo(db: AsyncSession, todo_id: str) -> Todo | None:
-        result = await db.execute(select(Todo).where(Todo.todo_id == todo_id))
-        return result.scalar_one_or_none()
 
     # R 조회 - 히스토리 단일 조회
     @staticmethod
@@ -39,7 +33,7 @@ class HistoryCrud:
     async def get_all_history(db: AsyncSession) -> list[History]:
         result = await db.execute(select(History))
         return list(result.scalars().all())
-    
+
     # R 조회 - 유저 카테고리별 월간 달성률 (history.archived_at 기준)
     @staticmethod
     async def get_user_category_stats(
@@ -53,13 +47,18 @@ class HistoryCrud:
                 History.category_name.label("category"),
                 func.count().label("total"),
                 func.sum(case((History.todo_status == "완료", 1), else_=0)).label("completed"),
-                )
-                .group_by(History.category_name)
+            )
+            .where(
+                History.user_id == user_id,
+                History.archived_at >= start_dt,
+                History.archived_at <= end_dt,
+            )
+            .group_by(History.category_name)
         )
-        
+
         result = await db.execute(stmt)
         return {
-            row.name: {
+            row.category: {
                 "total": row.total,
                 "completed": row.completed or 0,
                 "rate": round((row.completed or 0) / row.total * 100, 1) if row.total > 0 else 0.0,
@@ -69,7 +68,7 @@ class HistoryCrud:
 
     # U 수정
     @staticmethod
-    async def update_history(db: AsyncSession, history: History, data: HistoryUpdate) -> Todo:
+    async def update_history(db: AsyncSession, history: History, data: HistoryUpdate) -> History:
         update_data = data.model_dump(exclude_unset=True)
         for key, value in update_data.items():
             setattr(history, key, value)

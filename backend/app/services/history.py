@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
-from app.db.crud.history import HistoryCrud 
+from app.db.crud.history import HistoryCrud
 from app.db.scheme.history import HistoryCreate, HistoryUpdate
 from app.db.models.history import History
 
@@ -9,14 +9,6 @@ class HistoryService:
     # C 생성
     @staticmethod
     async def create_history_svc(db: AsyncSession, data: HistoryCreate) -> History:
-        # todo 존재 확인
-        todo = await HistoryCrud.get_todo(db, data.todo_id)
-        if not todo:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"todo_id '{data.todo_id}'에 해당하는 todo가 없습니다."
-            )
-
         try:
             history = await HistoryCrud.create_history(db, data)
             await db.commit()
@@ -44,21 +36,12 @@ class HistoryService:
     # R 조회 - history 목록 조회 (user 기준)
     @staticmethod
     async def get_user_svc(db: AsyncSession, user_id: int) -> list[History]:
-        user = await HistoryCrud.get_user(db, user_id)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
-            )
+        return await HistoryCrud.get_user(db, user_id)
 
-        history = await HistoryCrud.get_user(db, user_id)
-        return history
-    
     # R 조회 - history 전체 조회
     @staticmethod
     async def get_all_history_svc(db: AsyncSession) -> list[History]:
-        history = await HistoryCrud.get_all_history(db)
-        return history
+        return await HistoryCrud.get_all_history(db)
 
     # U 수정
     @staticmethod
@@ -69,14 +52,6 @@ class HistoryService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"history_id '{history_id}'에 해당하는 history가 없습니다."
             )
-
-        if data.todo_id:
-            todo = await HistoryCrud.get_todo(db, data.todo_id)
-            if not todo:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"todo_id '{data.todo_id}'에 해당하는 todo가 없습니다."
-                )
 
         try:
             updated = await HistoryCrud.update_history(db, history, data)
@@ -90,7 +65,7 @@ class HistoryService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="history 수정에 실패했습니다."
             )
-        
+
     # R 조회 - AI 서버 리포트용 월간 로그
     @staticmethod
     async def get_monthly_logs_svc(

@@ -9,7 +9,6 @@ if TYPE_CHECKING:
     from .user import User
     from .category import Category
     from .friend_todo_view import FriendTodoView
-    from .history import History
 
 class Todo(Base):
     __tablename__ = "todo"

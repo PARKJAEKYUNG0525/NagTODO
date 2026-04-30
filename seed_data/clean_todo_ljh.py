@@ -74,7 +74,7 @@ def save_to_csv(data, output_path):
 # 실행
 if __name__ == "__main__":
     input_path = rf"C:\NagTODO\seed_data\todo_{NAME}.txt"
-    output_path = r"C:\NagTODO\seed_data\{NAME}({USERID})_clean.csv"
+    output_path = rf"C:\NagTODO\seed_data\{NAME}({USERID})_clean.csv"
 
     data = parse_txt(input_path)
     save_to_csv(data, output_path)
