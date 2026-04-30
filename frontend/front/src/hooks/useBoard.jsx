@@ -1,5 +1,5 @@
 import {useCallback, useState} from "react";
-import {showErrorAlert, showSuccessAlert} from "../utils/alertUtils.js";
+import {showErrorAlert} from "../utils/alertUtils.js";
 import api from "../utils/api.js";
 
 export const useBoard = () => {
@@ -36,7 +36,6 @@ export const useBoard = () => {
             const response = await api.post("/boards", boardData);
 
             if (response.status === 200 || response.status === 201) {
-                showSuccessAlert({title:"게시글이 생성되었습니다."});
                 return response.data;
             }
         }

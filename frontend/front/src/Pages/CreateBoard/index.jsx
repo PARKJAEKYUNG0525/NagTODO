@@ -64,6 +64,15 @@ const CreateBoard = () => {
                     <p className="text-sm text-slate-500 mt-1">새 글 작성하십시오.</p>
                 </div>
 
+                {/* 분석 품질 안내 배너 */}
+                <div className="mx-8 mt-6 flex items-start gap-3 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
+                    <span className="mt-0.5 text-amber-500 text-base leading-none">💡</span>
+                    <p className="text-sm text-amber-800 leading-snug">
+                        <span className="font-semibold">정밀한 AI 분석을 위해</span> TODO를 구체적으로 작성해 주세요.{" "}
+                        <span className="text-amber-600">예) "운동하기" → "저녁 7시 30분 러닝머신"</span>
+                    </p>
+                </div>
+
                 {/* 폼 부분 */}
                 <form onSubmit={onSubmit} className="p-8 space-y-8">
                     <div className="space-y-6">

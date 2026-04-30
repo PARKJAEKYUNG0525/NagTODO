@@ -81,6 +81,11 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, onSaved, selectedDate = new D
 
     return (
         <ModalLayout isOpen={isOpen} onClose={onClose} title="새 할 일 추가">
+            {/* 분석 품질 안내 */}
+            <div className="mb-1 bg-[#DEE4EA] rounded-xl px-4 py-3 flex items-start gap-2">
+                <span className="text-[#F4D58A] text-sm">💡</span>
+                <p className="text-xs text-[#3D4D5C]">더 정밀한 AI 분석을 위해 TODO를 구체적으로 작성해 주세요.<br />예) "운동하기" → "저녁 7시 러닝머신 30분"</p>
+            </div>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* 제목 */}
                 <label className="flex flex-col gap-1">
