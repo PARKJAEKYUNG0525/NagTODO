@@ -1,14 +1,17 @@
 """
-history 테이블 + FAISS 벡터 스토어 시드 스크립트
+todo 테이블 + FAISS 벡터 스토어 시드 스크립트
 
-실행: python seed_data/seed_history.py  (프로젝트 루트에서)
+실행: python seed_data/seed_todo.py  (프로젝트 루트에서)
 
 seed_data/*_clean.csv 파일을 모두 읽어
-  1. MySQL history 테이블에 삽입 (중복 history_id는 건너뜀)
+  1. MySQL todo 테이블에 삽입 (중복 todo_id는 건너뜀)
   2. FAISS 벡터 스토어에 임베딩 저장 (중복 todo_id는 건너뜀)
 
-사용법 — 프로젝트 루트에서:
-python seed_data/seed_history.py
+CSV 컬럼: history_id, user_id, title, todo_status, archived_at, category_name
+매핑:
+  history_id    → todo_id
+  archived_at   → created_at, updated_at
+  category_name → category_id  (_CATEGORY_MAP 참조)
 """
 
 import csv
@@ -16,19 +19,29 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-# 프로젝트 루트를 경로에 추가 (ai, backend 패키지 임포트)
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 import os
 from dotenv import load_dotenv
-load_dotenv(ROOT / ".env")           # 루트 .env (AI 설정)
-load_dotenv(ROOT / "backend" / ".env")  # backend .env (DB 설정)
+load_dotenv(ROOT / ".env")
+load_dotenv(ROOT / "backend" / ".env")
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 from ai.core.dependencies import get_embedding_model, get_embedding_store
+
+# category_name(한글) → category_id 매핑 (backend/app/db/seed.py 기준)
+_CATEGORY_MAP: dict[str, str] = {
+    "공부": "study",
+    "운동": "workout",
+    "일상": "daily",
+    "약속": "appointment",
+    "업무": "work",
+    "기타": "etc",
+}
+
 
 def _db_url() -> str:
     user     = os.environ["DB_USER"]
@@ -59,29 +72,53 @@ def _seed_db(rows: list[dict]) -> int:
     Session = sessionmaker(bind=engine)
 
     with Session() as session:
-        existing = {r[0] for r in session.execute(text("SELECT history_id FROM history"))}
+        existing = {r[0] for r in session.execute(text("SELECT todo_id FROM todo"))}
+
+        # todo 테이블은 user_id, category_id에 FK 제약이 있으므로 일시 해제
+        session.execute(text("SET FOREIGN_KEY_CHECKS=0"))
 
         inserted = 0
+        skipped = 0
         for row in rows:
-            if row["history_id"] in existing:
+            todo_id = row["history_id"]
+            if todo_id in existing:
+                skipped += 1
                 continue
+
+            category_name = row["category_name"]
+            category_id = _CATEGORY_MAP.get(category_name)
+            if category_id is None:
+                print(f"  경고: 알 수 없는 category_name '{category_name}', 'etc'로 대체")
+                category_id = "etc"
+
+            archived_at = datetime.fromisoformat(row["archived_at"])
+
             session.execute(
                 text("""
-                    INSERT INTO history (history_id, user_id, title, todo_status, archived_at, category_name)
-                    VALUES (:history_id, :user_id, :title, :todo_status, :archived_at, :category_name)
+                    INSERT INTO todo
+                        (todo_id, title, todo_status, detail, visibility,
+                         created_at, updated_at, user_id, category_id)
+                    VALUES
+                        (:todo_id, :title, :todo_status, NULL, '친구공개',
+                         :created_at, :updated_at, :user_id, :category_id)
                 """),
                 {
-                    "history_id":    row["history_id"],
-                    "user_id":       int(row["user_id"]),
-                    "title":         row["title"],
-                    "todo_status":   row["todo_status"],
-                    "archived_at":   datetime.fromisoformat(row["archived_at"]),
-                    "category_name": row["category_name"],
+                    "todo_id":     todo_id,
+                    "title":       row["title"],
+                    "todo_status": row["todo_status"],
+                    "created_at":  archived_at,
+                    "updated_at":  archived_at,
+                    "user_id":     int(row["user_id"]),
+                    "category_id": category_id,
                 },
             )
             inserted += 1
 
+        session.execute(text("SET FOREIGN_KEY_CHECKS=1"))
         session.commit()
+
+    if skipped:
+        print(f"  (중복 {skipped}개 건너뜀)")
     return inserted
 
 
@@ -95,16 +132,19 @@ def _seed_vector_store(rows: list[dict]) -> int:
     added = 0
     total = len(rows)
     for i, row in enumerate(rows, 1):
-        if row["history_id"] in existing:
+        todo_id = row["history_id"]
+        if todo_id in existing:
             continue
+
+        category_id = _CATEGORY_MAP.get(row["category_name"], "etc")
         vec = model.encode_passage(row["title"])
         store.add(
-            todo_id=row["history_id"],
+            todo_id=todo_id,
             vec=vec,
             meta={
                 "user_id":   str(row["user_id"]),
                 "text":      row["title"],
-                "category":  row["category_name"],
+                "category":  category_id,
                 "completed": row["todo_status"] == "완료",
             },
         )
@@ -117,7 +157,7 @@ def _seed_vector_store(rows: list[dict]) -> int:
 
 
 def main() -> None:
-    print("=== history 시드 시작 ===")
+    print("=== todo 시드 시작 ===")
 
     rows = _load_csv_rows()
     print(f"총 {len(rows)}개 레코드\n")
