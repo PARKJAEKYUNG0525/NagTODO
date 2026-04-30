@@ -38,8 +38,7 @@ export function useReport() {
 
             return data;
         } catch (e) {
-            const detail = e.response?.data?.detail;
-            setError(typeof detail === "string" ? detail : "리포트 생성에 실패했습니다");
+            setError(e.response?.data?.detail || "리포트 생성에 실패했습니다");
         } finally {
             setIsLoading(false);
         }
