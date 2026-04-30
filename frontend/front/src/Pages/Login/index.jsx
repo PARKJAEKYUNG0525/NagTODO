@@ -19,9 +19,6 @@ export default function Login({ onSignupClick }) {
             if (success) {
                 navigate("/main");
             }
-            else {
-                showWarningAlert({title:'아이디/비밀번호가 틀립니다.'});
-            }
             setIsLoading(false);
         };
 
