@@ -56,6 +56,7 @@ class UserInDB(UserBase):
     img_id : str | None = None
     music_id : str | None = None
     status_message: str | None = None
+    
 
     class Config:
         from_attributes = True

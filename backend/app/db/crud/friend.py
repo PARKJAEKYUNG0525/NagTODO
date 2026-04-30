@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from app.db.models.friend import Friend
 from app.db.models.user import User
 from app.db.scheme.friend import FriendCreate, FriendUpdate
@@ -46,7 +46,7 @@ class FriendCrud:
     async def get_all_friends(db: AsyncSession, user_id: int) -> list[Friend]:
         result = await db.execute(
             select(Friend)
-            .options(joinedload(Friend.requester), joinedload(Friend.receiver))  # ← 이게 있어야 함
+            .options(joinedload(Friend.requester).selectinload(User.cloths), joinedload(Friend.receiver).selectinload(User.cloths))  # ← 이게 있어야 함
             .where(
                 (Friend.requester_id == user_id) | (Friend.receiver_id == user_id),
                 Friend.status == "수락"
@@ -100,7 +100,9 @@ class FriendCrud:
     async def search_user(db: AsyncSession, query: str) -> User | None:
         # 이메일이 일치하거나, 닉네임이 일치하는 유저 1명 검색
         result = await db.execute(
-            select(User).where(
+            select(User)
+            .options(selectinload(User.cloth_id))
+            .where(
                 or_(User.email == query, User.username == query)
             )
         )
