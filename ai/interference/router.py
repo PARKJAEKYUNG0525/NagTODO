@@ -89,7 +89,7 @@ async def interference(
             similar_failures=[],
         )
 
-    similar = retrieve_similar(req.todo_text, model, store, user_id=req.user_id)
+    similar = retrieve_similar(req.todo_text, model, store)
     stats = compute_stats(similar, req.user_id)
     feedback = await generate_feedback(req.todo_text, stats, ollama)
     _save_embedding(req, model, store)
