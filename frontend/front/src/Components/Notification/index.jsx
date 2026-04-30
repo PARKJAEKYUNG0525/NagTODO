@@ -6,7 +6,7 @@ import { useFriend } from "../../hooks/useFriend";
 import { showSuccessAlert } from "@/utils/alertUtils.js";
 import api from "../../utils/api";
 
-export default function NotificationBell() {
+export default function NotificationBell({ onAccept }) {
     const { notifications, fetchNotifications } = useNotification();
     const { fetchFriends } = useFriend();
     const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +17,7 @@ export default function NotificationBell() {
             await api.patch(`/friends/${friendId}`, { status: "수락" });
             await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
             fetchNotifications();
+            onAccept?.();
             fetchFriends();
             showSuccessAlert({ title: "친구 추가!", text: "친구가 되었어요!" });
         } catch (e) {
