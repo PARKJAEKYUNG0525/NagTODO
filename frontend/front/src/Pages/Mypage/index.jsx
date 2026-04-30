@@ -5,7 +5,6 @@ import { useNotification } from "@/hooks/useNotification";
 import useMypage from "../../hooks/useMypage";
 import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
 import api from "@/utils/api.js";
-import { useImg } from "@/hooks/useImg";
 import { useCloth } from "@/hooks/useCloth";
 import ClothChangeModal from "@/Components/Modal/ClothChangeModal";
 
@@ -16,7 +15,6 @@ import NotificationModal from "@/Components/Modal/NotificationModal/index.jsx";
 export default function MyPage() {
     const { user, setUser, logout, deleteUser } = useAuth();
     const { updateProfile, updatePassword, checkUsername, updateStatusMessage } = useMypage();
-    const { currentBg, getUserBg } = useImg();
     const { currentCloth, getUserCloth, setUserCloth } = useCloth();
     const { getCategory } = useCategory();
     const { notifications } = useNotification();
@@ -52,7 +50,6 @@ export default function MyPage() {
     const [pendingCloth, setPendingCloth] = useState(null);
 
     // mount시 사용자가 선택한 배경화면 불러오기
-    useEffect(() => { getUserBg(); }, []);
     // mount시 사용자가 선택한 프로필 이미지 불러오기
     useEffect(() => { getUserCloth(); }, []);
     // mount시, 카테고리 수정 시 카테고리 목록 불러오기
@@ -590,15 +587,7 @@ export default function MyPage() {
 
     // ====== 렌더: 비관리자 - 마이페이지 메인 ======
     return (
-        <div className="flex-1 min-h-0 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
-             style={
-                 currentBg
-                     ? {
-                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
-                     }
-                     : undefined
-             }
-        >
+        <div className="flex-1 min-h-0 flex flex-col">
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">마이페이지</h1>
                     <NotificationBell />
