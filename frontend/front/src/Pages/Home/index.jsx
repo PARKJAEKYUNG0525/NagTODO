@@ -2,7 +2,9 @@ import React, {useEffect, useRef, useState} from "react";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 import BgChangeModal from "../../Components/Modal/BgChangeModal";
 import { useNotification } from "@/hooks/useNotification";
+import { useImg } from "@/hooks/useImg";
 import { useMusic } from "@/hooks/useMusic";
+import api from "@/utils/api.js";
 
 import {
   BsFillImageFill,
@@ -14,6 +16,7 @@ import {
 } from "react-icons/bs";
 
 export default function Home() {
+    const { getUserBg, currentBg } = useImg();
     const { musics, getAllMusics, play, currentMusic, toggle, isPlaying } = useMusic();
     const { notifications } = useNotification();
 
@@ -24,6 +27,9 @@ export default function Home() {
     const [isBgOpen, setIsBgOpen] = useState(false);
 
     const handleNotification = () => setIsNotiOpen(true);
+
+    // 사진 목록 받아오기
+    useEffect(() => { getUserBg(); }, []);
 
     // 음악 목록 받아오기
     useEffect(() => { getAllMusics(); }, []);
@@ -58,7 +64,14 @@ export default function Home() {
     );
 
     return (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
+             style={
+                 currentBg
+                     ? {
+                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${currentBg.file_url})`,
+                     }
+                     : undefined
+             }>
             {/* 상단 헤더 (알림 벨) */}
             <header className="px-6 pt-6 flex justify-end">
                 <NotificationBell />

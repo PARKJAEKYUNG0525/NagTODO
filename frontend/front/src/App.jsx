@@ -21,8 +21,7 @@ import Report from "./Pages/Report/index.jsx";
 import MyPage from "./Pages/MyPage/index.jsx";
 import FriendDetail from "./Pages/FriendDetail/index.jsx";
 import { MusicProvider } from "@/hooks/useMusic.jsx";
-import { ImgProvider, useImg } from "./hooks/useImg";
-import api from "@/utils/api.js";
+import { ImgProvider } from "./hooks/useImg";
 
 
 const ProtectedRoute = ({ children }) => {
@@ -65,30 +64,6 @@ const RootLayout = () => {
     );
 };
 
-const ProtectedLayout = () => {
-    const { currentBg, getUserBg } = useImg();
-
-    useEffect(() => { getUserBg(); }, []);
-
-    return (
-        <MusicProvider>
-            <div
-                className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
-                style={
-                    currentBg
-                        ? {
-                            backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
-                        }
-                        : undefined
-                }
-            >
-                <Outlet />
-            </div>
-            <Navbar />
-        </MusicProvider>
-    );
-};
-
 const router = createBrowserRouter([
     {
         path: "/",
@@ -114,10 +89,16 @@ const router = createBrowserRouter([
             {
                 element: (
                     <ProtectedRoute>
-                        <ProtectedLayout />
+                        <MusicProvider>
+                            {/*  일단 로그인 -> 쿠키 생성 잘 되면 아래 주석 해제*/}
+                            <Outlet />
+                            <Navbar />
+                            {/* <Notification /> */}
+                        </MusicProvider>
                     </ProtectedRoute>
                 ),
                 children: [
+                    // 일단 로그인 -> 쿠키 생성 잘 되면 아래 주석 해제
                     { path: "main", element: <Home /> },
                     { path: "friend", element: <Friend/>},
                     { path: "friend/:userId", element: <FriendDetail/>},
