@@ -8,24 +8,6 @@ const api = axios.create({
     },
 });
 
-// api.interceptors.request.use((config) => {
-//     const token = localStorage.getItem("access_token");
-//     if (token) {
-//         config.headers.Authorization = `Bearer ${token}`;
-//     }
-//     return config;
-// });
-
-api.interceptors.request.use((config) => {
-    const token = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("access_token="))
-        ?.split("=")[1];
-
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
+// 쿠키는 HttpOnly이므로 withCredentials로 자동 전송됨 (별도 인터셉터 불필요)
 
 export default api;
