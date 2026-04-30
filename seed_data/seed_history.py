@@ -22,7 +22,8 @@ sys.path.insert(0, str(ROOT))
 
 import os
 from dotenv import load_dotenv
-load_dotenv(ROOT / ".env")
+load_dotenv(ROOT / ".env")           # 루트 .env (AI 설정)
+load_dotenv(ROOT / "backend" / ".env")  # backend .env (DB 설정)
 
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
