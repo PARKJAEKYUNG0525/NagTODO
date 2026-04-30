@@ -3,17 +3,14 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { Calendar } from "@/components/ui/calendar";
 import { format, isSameDay, startOfDay, isBefore } from "date-fns";
 import { ko } from "date-fns/locale";
-import NotificationModal from "../../Components/Modal/NotificationModal";
+import NotificationBell from "../../Components/Notification";
 
 import useTodo from "@/hooks/useTodo.jsx";
 import useCategory from "@/hooks/useCategory.jsx";
-import { useNotification } from "../../hooks/useNotification";
 import { useFriend } from "../../hooks/useFriend";
 import { useAuth } from "../../hooks/useAuth";
 import api from "../../utils/api";
 import { showSuccessAlert } from "@/utils/alertUtils.js";
-
-import { BsFillBellFill } from "react-icons/bs";
 import { IoChevronBack } from "react-icons/io5";
 
 // 상태 상수
@@ -39,7 +36,6 @@ export default function FriendDetail() {
 
     const { getAllTodos } = useTodo();
     const { getCategory } = useCategory();
-    const { notifications, fetchNotifications } = useNotification();
     const { fetchFriends } = useFriend();
     const { user: currentUser } = useAuth();
 
@@ -48,7 +44,6 @@ export default function FriendDetail() {
     const [selectedDate, setSelectedDate] = useState(TODAY);
     const [todos, setTodos] = useState([]);
     const [categories, setCategories] = useState([]);
-    const [isNotiOpen, setIsNotiOpen] = useState(false);
 
     // 친구 todo 불러오기 (friendUserId를 파라미터로 전달)
     const loadTodos = useCallback(async () => {
@@ -112,43 +107,6 @@ export default function FriendDetail() {
         if (isPast && todo.todo_status !== STATUS.COMPLETED) return STATUS.FAILED;
         return todo.todo_status;
     };
-
-    // 알림 수락/거절
-    const handleAcceptFriend = async (notification) => {
-        try {
-            const friendId = notification.content.split(":")[1];
-            await api.patch(`/friends/${friendId}`, { status: "수락" });
-            await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
-            fetchNotifications();
-            fetchFriends();
-            showSuccessAlert({ title: "친구 추가!", text: "친구가 되었어요!" });
-        } catch (e) {
-            console.error("수락 실패:", e);
-        }
-    };
-
-    const handleRejectFriend = async (notification) => {
-        try {
-            const friendId = notification.content.split(":")[1];
-            await api.patch(`/friends/${friendId}`, { status: "거절" });
-            await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
-            fetchNotifications();
-        } catch (e) {
-            console.error("거절 실패:", e);
-        }
-    };
-
-    const NotificationBell = () => (
-        <button
-            onClick={() => setIsNotiOpen(true)}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
-        >
-            <BsFillBellFill className="w-5 h-5 text-white" />
-            {notifications.length > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-            )}
-        </button>
-    );
 
     return (
         <>
@@ -268,16 +226,6 @@ export default function FriendDetail() {
                     )}
                 </div>
             </div>
-
-            {/* 알림 모달 */}
-            <NotificationModal
-                isOpen={isNotiOpen}
-                onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
-                onItemClick={(n) => console.log(n)}
-                onAccept={handleAcceptFriend}
-                onReject={handleRejectFriend}
-            />
         </>
     );
 }

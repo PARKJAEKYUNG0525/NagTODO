@@ -1,7 +1,8 @@
 import React, {useState, useEffect, useCallback} from "react";
 import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import { useAuth } from "../../hooks/useAuth";
-import { useNotification } from "@/hooks/useNotification";
+// import { useNotification } from "@/hooks/useNotification";
+import NotificationBell from "../../Components/Notification";
 import useMypage from "../../hooks/useMypage";
 import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
 import api from "@/utils/api.js";
@@ -9,9 +10,9 @@ import { useImg } from "@/hooks/useImg";
 import { useCloth } from "@/hooks/useCloth";
 import ClothChangeModal from "@/Components/Modal/ClothChangeModal";
 
-import { BsFillBellFill } from "react-icons/bs";
+// import { BsFillBellFill } from "react-icons/bs";
 import useCategory from "@/hooks/useCategory.jsx";
-import NotificationModal from "@/Components/Modal/NotificationModal/index.jsx";
+// import NotificationModal from "@/Components/Modal/NotificationModal/index.jsx";
 
 export default function MyPage() {
     const { user, setUser, logout, deleteUser } = useAuth();
@@ -19,7 +20,6 @@ export default function MyPage() {
     const { currentBg, getUserBg } = useImg();
     const { currentCloth, getUserCloth, setUserCloth } = useCloth();
     const { getCategory } = useCategory();
-    const { notifications } = useNotification();
 
     const [isAdmin, setIsAdmin] = useState(false);
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
@@ -41,12 +41,9 @@ export default function MyPage() {
     const [editingValue, setEditingValue] = useState("");
     const [selectedCategoryIds, setSelectedCategoryIds] = useState([]);
     // 관리자 쪽에서 쓰이지만 일단 주석처리
-    // const [categories, setCategories] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [draggedIdx, setDraggedIdx] = useState(null);
-    const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [statusMessage, setStatusMessage] = useState("");
-
-    const handleNotification = () => setIsNotiOpen(true);
 
     const [isClothModalOpen, setIsClothModalOpen] = useState(false);
     const [pendingCloth, setPendingCloth] = useState(null);
@@ -204,18 +201,6 @@ export default function MyPage() {
         setDraggedIdx(null);
     };
     const handleDragEnd = () => setDraggedIdx(null);
-
-    // const NotificationBell = () => (
-    //     <button
-    //         onClick={handleNotification}
-    //         className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
-    //     >
-    //         {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-    //         <span className="w-5 h-5 block" />
-    //         <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-    //     </button>
-    // );
-
     const handleSaveProfile = async () => {
         setError("");
         // 변경 성공 메시지 한 번에 띄우기 위한 리스트
@@ -403,19 +388,6 @@ export default function MyPage() {
             </div>
         );
     }
-
-    const NotificationBell = () => (
-        <button
-            onClick={handleNotification}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
-        >
-            <BsFillBellFill className="w-5 h-5 text-white" />
-            {notifications.length > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-            )}
-        </button>
-    );
-
     // ====== 렌더: 관리자 - 카테고리 설정/수정/삭제 ======
     if (isAdmin) {
         return (
@@ -579,11 +551,6 @@ export default function MyPage() {
                         })}
                     </div>
                 </div>
-                <NotificationModal
-                    isOpen={isNotiOpen}
-                    onClose={() => setIsNotiOpen(false)}
-                    notifications={notifications}
-                />
             </>
         );
     }
@@ -696,12 +663,6 @@ export default function MyPage() {
                     </button>
                 </div>
             </div>
-
-            <NotificationModal
-                isOpen={isNotiOpen}
-                onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
-            />
         </div>
     );
 }

@@ -7,7 +7,6 @@ import {
     useNavigate,
 } from "react-router-dom";
 import Navbar from "./Components/Navbar";
-// import Notification from "./Components/Notification";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import { InterferenceProvider } from "./hooks/useInterference";
 import InterferencePopup from "./Components/Modal/InterferencePopup";
@@ -93,7 +92,6 @@ const router = createBrowserRouter([
                             {/*  일단 로그인 -> 쿠키 생성 잘 되면 아래 주석 해제*/}
                             <Outlet />
                             <Navbar />
-                            {/* <Notification /> */}
                         </MusicProvider>
                     </ProtectedRoute>
                 ),

@@ -2,30 +2,23 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import FriendAddModal from "../../Components/Modal/FriendAddModal";
-import NotificationModal from "../../Components/Modal/NotificationModal";
+import NotificationBell from "../../Components/Notification";
 
 import { useFriend } from "../../hooks/useFriend";
 import { useAuth } from "../../hooks/useAuth";
-import { useNotification } from "../../hooks/useNotification";
 import { useImg } from "@/hooks/useImg";
 
 import api from "../../utils/api";
-
-import { BsFillBellFill } from "react-icons/bs";
 
 export default function Friend() {
     const { searchUser, sendRequest, friends, fetchFriends } = useFriend();
     const { user: currentUser } = useAuth();
     const { currentBg, setCurrentBg, getUserBg } = useImg();
-    const { notifications, fetchNotifications } = useNotification();
 
     const [isAdmin, setIsAdmin] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
     const [isFriendAddOpen, setIsFriendAddOpen] = useState(false);
-    const [isNotiOpen, setIsNotiOpen] = useState(false);
-
-    const handleNotification = () => setIsNotiOpen(true);
     const navigate = useNavigate();
 
     // friendName을 state로 함께 넘김
@@ -51,42 +44,6 @@ export default function Friend() {
             setIsFriendAddOpen(false);
         }
     };
-
-    const handleAcceptFriend = async (notification) => {
-        try {
-            const friendId = notification.content.split(":")[1];
-            await api.patch(`/friends/${friendId}`, { status: "수락" });
-            await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
-            fetchNotifications();
-            fetchFriends();
-            showSuccessAlert({ title: "친구 추가!", text: "친구가 되었어요!" });
-        } catch (e) {
-            console.error("수락 실패:", e);
-        }
-    };
-
-    const handleRejectFriend = async (notification) => {
-        try {
-            const friendId = notification.content.split(":")[1];
-            await api.delete(`/friends/${friendId}`, { status: "거절" });
-            await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
-            fetchNotifications();
-        } catch (e) {
-            console.error("거절 실패:", e);
-        }
-    };
-
-    const NotificationBell = () => (
-        <button
-            onClick={handleNotification}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
-        >
-            <BsFillBellFill className="w-5 h-5 text-white" />
-            {notifications.length > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-            )}
-        </button>
-    );
 
     // ====== 관리자 뷰 ======
     if (isAdmin) {
@@ -148,15 +105,6 @@ export default function Friend() {
                         )}
                     </div>
                 </div>
-
-                <NotificationModal
-                    isOpen={isNotiOpen}
-                    onClose={() => setIsNotiOpen(false)}
-                    notifications={notifications}
-                    onItemClick={(n) => console.log(n)}
-                    onAccept={handleAcceptFriend}
-                    onReject={handleRejectFriend}
-                />
                 <FriendAddModal
                     isOpen={isFriendAddOpen}
                     onClose={() => setIsFriendAddOpen(false)}
@@ -273,15 +221,6 @@ return (
                     <line x1="22" y1="11" x2="16" y2="11" />
                 </svg>
             </button>
-
-            <NotificationModal
-                isOpen={isNotiOpen}
-                onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
-                onItemClick={(n) => console.log(n)}
-                onAccept={handleAcceptFriend}
-                onReject={handleRejectFriend}
-            />
             <FriendAddModal
                 isOpen={isFriendAddOpen}
                 onClose={() => setIsFriendAddOpen(false)}

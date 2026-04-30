@@ -1,7 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
-import NotificationModal from "../../Components/Modal/NotificationModal";
 import BgChangeModal from "../../Components/Modal/BgChangeModal";
-import { useNotification } from "@/hooks/useNotification";
+import NotificationBell from "../../Components/Notification";
+
 import { useImg } from "@/hooks/useImg";
 import { useMusic } from "@/hooks/useMusic";
 import api from "@/utils/api.js";
@@ -10,7 +10,6 @@ import {
   BsFillImageFill,
   BsFillSquareFill,
   BsChevronDown,
-  BsFillBellFill,
   BsPlayFill,
   BsPauseFill
 } from "react-icons/bs";
@@ -18,15 +17,10 @@ import {
 export default function Home() {
     const { getUserBg, currentBg } = useImg();
     const { musics, getAllMusics, play, currentMusic, toggle, isPlaying } = useMusic();
-    const { notifications } = useNotification();
 
     const [isMusicListOpen, setIsMusicListOpen] = useState(false);
     const playerRef = useRef(null);
-
-    const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isBgOpen, setIsBgOpen] = useState(false);
-
-    const handleNotification = () => setIsNotiOpen(true);
 
     // 사진 목록 받아오기
     useEffect(() => { getUserBg(); }, []);
@@ -48,20 +42,6 @@ export default function Home() {
 
     // 음악 재생/중지
     const handlePlayToggle = () => toggle();
-
-    // 공용 UI: 상단 벨 버튼
-    const NotificationBell = () => (
-        <button
-            onClick={handleNotification}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
-        >
-            <BsFillBellFill className="w-5 h-5 text-white" />
-
-            {notifications.length > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-            )}
-        </button>
-    );
 
     return (
         <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
@@ -123,8 +103,8 @@ export default function Home() {
                             size={18}
                             className={`shrink-0 transition-transform duration-300 ${
                                 isMusicListOpen ? "rotate-180" : "rotate-0"
-                            } text-[#3D4D5C]`} // 색상을 텍스트와 같은 남색으로 변경
-                            strokeWidth={1} // 조금 더 뚜렷하게 보이도록 설정 (선택 사항)
+                            } text-[#3D4D5C]`} 
+                            strokeWidth={1} 
                         />
                     </button>
 
@@ -175,14 +155,6 @@ export default function Home() {
                     <BsFillImageFill className="text-white" size={20} />
                 </button>
             </section>
-
-            {/* ─── 모달들 ─── */}
-            <NotificationModal
-                isOpen={isNotiOpen}
-                onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
-                onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
-            />
             <BgChangeModal
                 isOpen={isBgOpen}
                 onClose={() => setIsBgOpen(false)}

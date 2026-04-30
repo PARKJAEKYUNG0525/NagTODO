@@ -15,7 +15,6 @@ from app.routers.category import router as category_router
 from app.routers.cloth import router as cloth_router
 from app.routers.friend_todo_view import router as friend_todo_view_router
 from app.routers.friend import router as friend_router
-# from app.routers.history import router as history_router  # history 테이블 제거
 from app.routers.img import router as img_router
 from app.routers.music import router as music_router
 from app.routers.pw_history import router as pw_history_router
@@ -62,7 +61,6 @@ app.include_router(category_router)
 app.include_router(cloth_router)
 app.include_router(friend_todo_view_router)
 app.include_router(friend_router)
-# app.include_router(history_router)  # history 테이블 제거
 app.include_router(img_router)
 
 app.include_router(music_router)
