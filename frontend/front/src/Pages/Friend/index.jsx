@@ -207,6 +207,11 @@ export default function Friend() {
                                     ? friend.receiver_username
                                     : friend.requester_username;
 
+                            const friendStatus =
+                                friend.requester_id === currentUser?.user_id
+                                    ? friend.receiver_status_message
+                                    : friend.requester_status_message;
+
                             return (
                                 <button
                                     key={friend.friend_id}
@@ -214,11 +219,17 @@ export default function Friend() {
                                     className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left"
                                 >
                                     <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
-                                    <div className="flex-1">
-                                        <p className="text-sm font-bold text-[#3D4D5C]">{friendName}</p>
-                                        <p className="text-xs text-[#8B9BAA] mt-1">
-                                            {friend.status === "수락" ? "친구" : friend.status}
-                                        </p>
+                                    
+                                    <div className="flex flex-col">
+                                            {/* 이름 */}
+                                            <span className="text-sm font-bold text-[#3D4D5C]">
+                                            {friendName}
+                                            </span>
+                                            
+                                            {/* 상태메시지 (질문하신 부분) */}
+                                            <span className="text-xs text-[#8B9BAA]">
+                                            {friendStatus || friend.status_message || "상태메시지"}
+                                            </span>
                                     </div>
                                 </button>
                             );

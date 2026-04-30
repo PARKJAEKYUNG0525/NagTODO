@@ -251,8 +251,8 @@ export default function MyPage() {
     };
 
     const handleSaveStatusMessage = async () => {
-        if (statusMessage.length > 50) {
-            alert("50자 이하로 입력하세요");
+        if (statusMessage.length > 30) {
+            alert("30자 이하로 입력하세요");
             return;
         }
 
@@ -541,7 +541,6 @@ export default function MyPage() {
             </header>
 
             <div className="flex-1 px-6 pb-8 flex flex-col">
-                
                 {/* 프로필 카드 */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm relative shrink-0">
                     <button onClick={logout} className="absolute top-4 right-5 text-[10px] text-[#8B9BAA]">
@@ -551,7 +550,6 @@ export default function MyPage() {
                         <p className="text-base font-bold text-[#3D4D5C]">{user?.username}</p>
                         <div className="mt-2 w-14 h-14 rounded-full bg-[#A8C8D8] shadow-inner" />
                         <p className="mt-2 text-[11px] text-[#3D4D5C]">{user?.email}</p>
-                        
                         <p className="mt-1 text-[10px] text-[#8B9BAA]">
                             함께한 지 <span className="font-semibold text-[#A8C8D8]">40일째</span>
                         </p>
@@ -569,13 +567,18 @@ export default function MyPage() {
                 <div className="mt-5 shrink-0">
                     <div className="flex justify-between items-end mb-2 px-1">
                         <h2 className="text-[13px] font-bold text-[#3D4D5C]">상태메세지</h2>
-                        <span className="text-[10px] text-[#8B9BAA]">{statusMessage?.length || 0}/50</span>
+                        <span className="text-[10px] text-[#8B9BAA]">{statusMessage?.length || 0}/30</span>
                     </div>
                     <div className="bg-white rounded-xl p-3 shadow-sm flex gap-2 items-center border border-transparent focus-within:border-[#A8C8D8]">
                         <input
                             type="text"
                             value={statusMessage}
-                            onChange={(e) => setStatusMessage(e.target.value)}
+                            onChange={(e) => {
+                                if (e.target.value.length <= 30) {
+                                    setStatusMessage(e.target.value);
+                                }
+                            }}
+                            maxLength={50}
                             placeholder="상태를 입력하세요"
                             className="flex-1 px-3 py-2 text-xs bg-[#F1F3F5] rounded-lg text-[#3D4D5C] outline-none placeholder:text-[#ADB5BD]"
                         />
@@ -590,9 +593,7 @@ export default function MyPage() {
 
                 {/* 모드 변경 */}
                 <div className="mt-6 flex-1 flex flex-col min-h-0">
-
                     <h2 className="text-base font-bold text-[#3D4D5C] mb-3 px-1">모드 변경</h2>
-                    
                     <div className="flex-1 flex flex-col gap-4 mb-4">
                         {/* 엄격하게 버튼 */}
                         <button
