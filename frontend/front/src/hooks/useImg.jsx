@@ -17,8 +17,7 @@ export const ImgProvider = ({children}) => {
             }
             return [];
         } catch (error) {
-            await showWarningAlert({title : "이미지를 불러오는 데 실패했습니다.", message : error.message});
-            // console.error("이미지 목록 불러오기 실패:", error);
+            await showWarningAlert({title : "이미지를 불러오는 데 실패했습니다.", text : error.message});
             return [];
         } finally {
             setImgLoading(false);
@@ -34,7 +33,7 @@ export const ImgProvider = ({children}) => {
                 if (userImg) setCurrentBg(userImg);
             }
         } catch (error) {
-            await showWarningAlert({title: "배경 불러오기 실패", message: error.message});
+            await showWarningAlert({title: "배경 불러오기 실패", text: error.message});
         }
     }, [getAllImgs]);
 

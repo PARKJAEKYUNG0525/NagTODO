@@ -11,15 +11,20 @@ router = APIRouter(prefix="/cloths", tags=["Cloth"])
 async def create_todo(data: ClothCreate, db: Session = Depends(get_db)):
     return await cloth_svc.create_cloth_svc(db, data)
 
+# R 전체 조회
+@router.get("/", response_model=list[ClothRead])
+async def get_all_cloths(db: Session = Depends(get_db)):
+    return await cloth_svc.get_all_cloth_svc(db)
+
 # R 단일 조회
 @router.get("/{cloth_id}", response_model=ClothRead)
 async def get_todo(cloth_id: str, db: Session = Depends(get_db)):
     return await cloth_svc.get_cloth_svc(db, cloth_id)
 
 # R 전체 조회 - 유저별
-@router.get("/user/{user_id}", response_model=list[ClothRead])
-async def get_cloths_by_user(user_id: int, db: Session = Depends(get_db)):
-    return await cloth_svc.get_all_cloths_svc(db, user_id)
+# @router.get("/user/{user_id}", response_model=ClothRead)
+# async def get_cloths_by_user(user_id: int, db: Session = Depends(get_db)):
+#     return await cloth_svc.get_cloth_by_user_svc(db, user_id)
 
 # U 수정
 @router.patch("/{cloth_id}", response_model=ClothRead)

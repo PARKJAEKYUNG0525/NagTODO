@@ -58,7 +58,7 @@ export default function Todo() {
     const TODAY = startOfDay(new Date());
 
     const { getAllTodos } = useTodo();
-    const { getCategory} = useCategory();
+    const { getCategory } = useCategory();
     const { currentBg, setCurrentBg, getUserBg } = useImg();
 
     const [selectedDate, setSelectedDate] = useState(TODAY);

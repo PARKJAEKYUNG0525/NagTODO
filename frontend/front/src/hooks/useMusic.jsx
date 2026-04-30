@@ -13,10 +13,10 @@ export function MusicProvider({ children }) {
 
     const getAllMusics = useCallback(async () => {
         try {
-            const res = await api.get("/musics");
-            setMusics(Array.isArray(res.data) ? res.data : []);
-        } catch (err) {
-            console.error("음악 목록 불러오기 실패:", err);
+            const response = await api.get("/musics");
+            setMusics(Array.isArray(response.data) ? response.data : []);
+        } catch (error) {
+            showWarningAlert({title:"음악 목록을 불러오는 데 실패했습니다.", text: error.message});
             setMusics([]);
         }
     }, []);
@@ -29,7 +29,7 @@ export function MusicProvider({ children }) {
             musicRef.current.src = `${api.defaults.baseURL}${music.file_url}`;
             setCurrentMusic(music);
         }
-        musicRef.current.play().catch((error) => console.warn("재생 실패:", error));
+        musicRef.current.play().catch((error) => showWarningAlert({title:"음악 재생에 실패했습니다.", text: error.message}));
         setIsPlaying(true);
     };
 
@@ -43,8 +43,7 @@ export function MusicProvider({ children }) {
         else if (currentMusic) musicRef.current.play()
             .then(() => setIsPlaying(true))
             .catch((error) => {
-                showWarningAlert({title : "음악 재생에 실패했습니다.", message : error.message});
-                // console.warn("재생 실패:", error);
+                showWarningAlert({title : "음악 재생에 실패했습니다.", text : error.message});
                 setIsPlaying(false);
             });
     };

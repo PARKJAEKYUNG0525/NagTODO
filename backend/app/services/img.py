@@ -11,12 +11,12 @@ class ImgService:
     @staticmethod
     async def create_img_svc(db: AsyncSession, data: ImgCreate) -> Img:
         # homepage 존재 확인
-        homepage = await ImgCrud.get_homepage(db, data.homepage_id)
-        if not homepage:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"homepage_id '{data.homepage_id}'에 해당하는 homepage가 없습니다."
-            )
+        # homepage = await ImgCrud.get_homepage(db, data.homepage_id)
+        # if not homepage:
+        #     raise HTTPException(
+        #         status_code=status.HTTP_404_NOT_FOUND,
+        #         detail=f"homepage_id '{data.homepage_id}'에 해당하는 homepage가 없습니다."
+        #     )
 
         try:
             img = await ImgCrud.create_img(db, data)

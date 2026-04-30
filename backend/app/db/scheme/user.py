@@ -39,6 +39,7 @@ class UserUpdate(BaseModel):
     username : str | None = None
     userimage_url : str | None = None
     birthday : date | None = None
+    cloth_id: str | None = None
     img_id : str | None = None
     music_id : str | None = None
 
@@ -50,6 +51,7 @@ class UserInDB(UserBase):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     birthday: date
+    cloth_id: str | None = None
     img_id : str | None = None
     music_id : str | None = None
 

@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, useCallback} from "react";
 import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import { useAuth } from "../../hooks/useAuth";
 import useMypage from "../../hooks/useMypage";
 import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
 import api from "@/utils/api.js";
 import useImg from "@/hooks/useImg.jsx";
+import useCloth from "@/hooks/useCloth.jsx";
+import ClothChangeModal from "@/Components/Modal/ClothChangeModal";
 
 import { BsFillBellFill } from "react-icons/bs";
+import useCategory from "@/hooks/useCategory.jsx";
 
 
 /**
@@ -26,8 +29,13 @@ import { BsFillBellFill } from "react-icons/bs";
  */
 export default function MyPage() {
     const { user, setUser, logout } = useAuth();
-    const [isAdmin, setIsAdmin] = useState(false);
     const { updateProfile, updatePassword, checkUsername } = useMypage();
+    const { currentBg, getUserBg } = useImg();
+    const { currentCloth, getUserCloth, setUserCloth } = useCloth();
+    const { getCategory } = useCategory();
+
+    const [isAdmin, setIsAdmin] = useState(false);
+
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
     const [view, setView] = useState("main"); // "main" | "edit-profile"
     const [error, setError] = useState("");
@@ -46,20 +54,23 @@ export default function MyPage() {
     const [editingCategoryId, setEditingCategoryId] = useState(null);
     const [editingValue, setEditingValue] = useState("");
     const [selectedCategoryIds, setSelectedCategoryIds] = useState([]);
-    const [categories, setCategories] = useState([
-        { id: 1, name: "공부" },
-        { id: 2, name: "업무" },
-        { id: 3, name: "운동" },
-        { id: 4, name: "일상" },
-        { id: 5, name: "약속" },
-        { id: 6, name: "기타" },
-    ]);
+    // 관리자 쪽에서 쓰이지만 일단 주석처리
+    // const [categories, setCategories] = useState([]);
     const [draggedIdx, setDraggedIdx] = useState(null);
     const [isNotiOpen, setIsNotiOpen] = useState(false);
 
-    const { currentBg, getUserBg } = useImg();
+    const [isClothModalOpen, setIsClothModalOpen] = useState(false);
+    const [pendingCloth, setPendingCloth] = useState(null);
 
+    // mount시 사용자가 선택한 배경화면 불러오기
     useEffect(() => { getUserBg(); }, []);
+    // mount시 사용자가 선택한 프로필 이미지 불러오기
+    useEffect(() => { getUserCloth(); }, []);
+    // mount시, 카테고리 수정 시 카테고리 목록 불러오기
+    // 관리자 쪽에서 쓰이지만 일단 주석처리
+    // useEffect(() => {
+    //     loadCategory();
+    // }, [loadCategory]);
 
     useEffect(() => {
         const checkAdmin = () => false;
@@ -86,6 +97,17 @@ export default function MyPage() {
         }
     }, [user]);
 
+    // 에러 메시지 띄운 후, 한 글자라도 수정하면 에러 메시지 즉시 내리기
+    useEffect(() => {
+        if (error) setError("");
+    }, [form.username, form.currentPassword, form.password, form.confirmPassword]);
+
+    // 관리자 쪽에서 쓰이지만 일단 주석처리
+    // const loadCategory = useCallback(async () => {
+    //     const db_category = await getCategory();
+    //     if (db_category) setCategories(db_category);
+    // }, [getCategory]);
+
     // const handleNotification = () => alert("알림 아이콘 클릭");
 
     const handleWithdraw = () => alert("회원탈퇴 안내");
@@ -96,11 +118,20 @@ export default function MyPage() {
             password: "",
             confirmPassword: "",
         }));
+        setPendingCloth(currentCloth);
         setView("edit-profile");
     };
-    const handleCancelEditProfile = () => setView("main");
+    const handleCancelEditProfile = () => {
+        setPendingCloth(null);
+        setView("main");
+    };
 
-    const handleChangeProfileImage = () => alert("프로필 사진 변경");
+    const handleChangeProfileImage = () => setIsClothModalOpen(true);
+
+    const handleApplyCloth = (cloth) => {
+        setPendingCloth(cloth);
+    };
+
     const handleSelectStrictMode = (mode) => {
         setStrictMode(mode);
         alert(`모드 변경: ${mode === "strict" ? "엄격하게" : "덜 엄격하게"}`);
@@ -192,9 +223,13 @@ export default function MyPage() {
 
     const handleSaveProfile = async () => {
         setError("");
+        // 변경 성공 메시지 한 번에 띄우기 위한 리스트
+        const message = [];
         const isChangingUsername = form.username.trim() !== user?.username;
         const isChangingPassword = form.currentPassword || form.password || form.confirmPassword;
-        if (!isChangingUsername && !isChangingPassword) {
+        const isChangingCloth = pendingCloth?.cloth_id !== currentCloth?.cloth_id;
+
+        if (!isChangingUsername && !isChangingPassword && !isChangingCloth) {
             setError("(Mypage/index)변경된 내용이 없습니다.");
             return;
         }
@@ -228,7 +263,7 @@ export default function MyPage() {
             if (isChangingUsername) {
                 const profileOk = await updateProfile({ username: form.username.trim() });
                 if (!profileOk) return;
-                showSuccessAlert({title:"닉네임이 변경되었습니다."});
+                message.push("닉네임");
             }
 
             if (isChangingPassword) {
@@ -241,18 +276,29 @@ export default function MyPage() {
                     setError("(Mypage/index)비밀번호를 다시 확인해주세요.");
                     return;   
                 }
-                showSuccessAlert({title:"비밀번호가 변경되었습니다."});
+                message.push("비밀번호");
             }
+
+            if (isChangingCloth) {
+                await setUserCloth(pendingCloth);
+                message.push("프로필 사진");
+            }
+
+            // 성공 메시지 한 번에 출력
+            if (message.length > 0) {
+                await showSuccessAlert({title: `${message.join(", ")}이(가) 변경되었습니다.`});
+            }
+
             setForm(prev => ({
                     ...prev,
                     currentPassword: "",
                     password: "",
                     confirmPassword: "",
             }));
-
+            setPendingCloth(null);
             setView("main");
-        } catch (e) {
-            console.error(e);
+        } catch (error) {
+            console.error(error);
             setError("(Mypage/index)저장 중 오류가 발생했습니다.");
         }
     };
@@ -264,8 +310,12 @@ export default function MyPage() {
                 <h1 className="text-xl font-bold text-[#3D4D5C]">내 정보 수정</h1>
 
                 <div className="mt-6 flex flex-col items-center">
-                    <div className="w-24 h-24 rounded-full bg-[#A8C8D8]">
-                        {/* 아이콘 위치: 프로필 이미지 (bi-person-fill) */}
+                    <div className="w-24 h-24 rounded-full overflow-hidden bg-[#A8C8D8]">
+                        {pendingCloth && (
+                            <img src={`${api.defaults.baseURL}${pendingCloth.file_url}`}
+                                 alt={pendingCloth.title} className="w-full h-full object-cover"
+                            />
+                        )}
                     </div>
                     <button
                         onClick={handleChangeProfileImage}
@@ -322,6 +372,13 @@ export default function MyPage() {
                         저장
                     </button>
                 </div>
+                {/* 프로필 변경 모달 추가 */}
+                <ClothChangeModal
+                    isOpen={isClothModalOpen}
+                    onClose={() => setIsClothModalOpen(false)}
+                    currentClothId={pendingCloth?.cloth_id}
+                    onApply={handleApplyCloth}
+                />
             </div>
         );
     }
@@ -528,8 +585,14 @@ export default function MyPage() {
 
                     <div className="flex flex-col items-center">
                         <p className="text-lg font-bold text-[#3D4D5C]">{user?.username || ""}</p>
-                        <div className="mt-3 w-20 h-20 rounded-full bg-[#A8C8D8]">
-                            {/* 아이콘 위치: 프로필 이미지 (bi-person-fill) */}
+                        <div className="mt-3 w-20 h-20 rounded-full overflow-hidden bg-[#A8C8D8]">
+                            {currentCloth && (
+                                <img
+                                    src={`${api.defaults.baseURL}${currentCloth.file_url}`}
+                                    alt={currentCloth.title}
+                                    className="w-full h-full object-cover"
+                                />
+                            )}
                         </div>
                         <p className="mt-4 text-xs text-[#3D4D5C]">{user?.email || ""}</p>
                         <p className="mt-1 text-xs text-[#8B9BAA]">

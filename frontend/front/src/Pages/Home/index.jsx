@@ -25,7 +25,7 @@ import {
  */
 export default function Home() {
     const { getUserBg, currentBg } = useImg();
-    const { musics, getAllMusics, play, currentMusic, toggle } = useMusic();
+    const { musics, getAllMusics, play, currentMusic, toggle, isPlaying } = useMusic();
     const [isMusicListOpen, setIsMusicListOpen] = useState(false);
     const playerRef = useRef(null);
 
