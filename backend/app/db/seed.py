@@ -74,17 +74,21 @@ async def seed_cloths(session: AsyncSession) -> None:
             ))
 
 async def seed_imgs(session: AsyncSession):
-    result = await session.execute(select(Img.img_id))
-    existing = set(result.scalars().all())
+    result = await session.execute(select(Img))
+    existing = {i.img_id: i for i in result.scalars().all()}
 
     for i in _DEFAULT_IMGS:
-        if i["img_id"] not in existing:
+        if i["img_id"] in existing:
+            existing[i["img_id"]].file_url = i["file_url"]
+        else:
             session.add(Img(**i))
 
 async def seed_musics(session: AsyncSession):
-    result = await session.execute(select(Music.music_id))
-    existing = set(result.scalars().all())
+    result = await session.execute(select(Music))
+    existing = {m.music_id: m for m in result.scalars().all()}
 
     for m in _DEFAULT_MUSICS:
-        if m["music_id"] not in existing:
+        if m["music_id"] in existing:
+            existing[m["music_id"]].file_url = m["file_url"]
+        else:
             session.add(Music(**m))

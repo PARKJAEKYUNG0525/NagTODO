@@ -68,7 +68,7 @@ export default function Friend() {
     const handleRejectFriend = async (notification) => {
         try {
             const friendId = notification.content.split(":")[1];
-            await api.patch(`/friends/${friendId}`, { status: "거절" });
+            await api.delete(`/friends/${friendId}`, { status: "거절" });
             await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
             fetchNotifications();
         } catch (e) {

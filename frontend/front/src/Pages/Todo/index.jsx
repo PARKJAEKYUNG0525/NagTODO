@@ -398,10 +398,22 @@ export default function Todo() {
             <NewTodoModal
                 isOpen={isNewOpen}
                 onClose={() => setIsNewOpen(false)}
-                onSubmit={() => {
-                    setIsNewOpen(false);
-                    loadTodos();
+                onSubmit={(snapshot) => {
+                    // 모달 닫힌 직후 임시 todo를 목록에 추가 (낙관적 업데이트)
+                    setTodos((prev) => [
+                        ...prev,
+                        {
+                            todo_id: `temp-${Date.now()}`,
+                            title: snapshot.title,
+                            detail: snapshot.memo,
+                            category_id: snapshot.category,
+                            todo_status: STATUS.PENDING,
+                            created_at: format(selectedDate, "yyyy-MM-dd'T'HH:mm:ss"),
+                            visibility: snapshot.isPublic ? "친구공개" : "비공개",
+                        },
+                    ]);
                 }}
+                onSaved={loadTodos}
                 selectedDate={selectedDate}
             />
             <TodoDetailModal

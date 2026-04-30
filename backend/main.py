@@ -1,4 +1,5 @@
 import uvicorn
+from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -54,7 +55,7 @@ app.add_middleware(
 
 app.add_middleware(RefreshTokenMiddleware)
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
 
 app.include_router(user_router)
 app.include_router(category_router)

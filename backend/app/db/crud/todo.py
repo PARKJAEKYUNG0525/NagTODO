@@ -4,7 +4,6 @@ from sqlalchemy import func, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.db.models.todo import Todo
-from app.db.models.category import Category
 from app.db.models.history import History
 from app.db.scheme.todo import TodoCreate, TodoUpdate
 
@@ -29,39 +28,6 @@ class TodoCrud:
     async def get_todos_by_user(db: AsyncSession, user_id: int) -> list[Todo]:
         result = await db.execute(select(Todo).where(Todo.user_id == user_id))
         return list(result.scalars().all())
-
-    # R 조회 - 유저 카테고리별 월간 달성률 (history.archived_at 기준)
-    @staticmethod
-    async def get_user_category_stats(
-        db: AsyncSession, user_id: int, month_start: str, month_end: str
-    ) -> dict[str, dict]:
-        start_dt = datetime.strptime(month_start, "%Y-%m-%d")
-        end_dt = datetime.strptime(month_end, "%Y-%m-%d").replace(hour=23, minute=59, second=59)
-
-        stmt = (
-            select(
-                Category.name,
-                func.count().label("total"),
-                func.sum(case((History.todo_status == "완료", 1), else_=0)).label("completed"),
-            )
-            .join(Todo, History.todo_id == Todo.todo_id)
-            .join(Category, Todo.category_id == Category.category_id)
-            .where(
-                History.user_id == user_id,
-                History.archived_at >= start_dt,
-                History.archived_at <= end_dt,
-            )
-            .group_by(Category.name)
-        )
-        result = await db.execute(stmt)
-        return {
-            row.name: {
-                "total": row.total,
-                "completed": row.completed or 0,
-                "rate": round((row.completed or 0) / row.total * 100, 1) if row.total > 0 else 0.0,
-            }
-            for row in result.all()
-        }
 
     # R 조회 - 전체 사용자 월간 성공률 (history.archived_at 기준)
     @staticmethod
