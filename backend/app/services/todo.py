@@ -148,6 +148,14 @@ class TodoService:
             category_stats=category_stats,
         )
 
+    # R 조회 - AI 서버 리포트용 월간 로그
+    @staticmethod
+    async def get_monthly_logs_svc(
+        db: AsyncSession, user_id: int, month_start: str, month_end: str
+    ) -> list[dict]:
+        await _require_user(db, user_id)
+        return await TodoCrud.get_monthly_logs(db, user_id, month_start, month_end)
+
     # D 삭제
     @staticmethod
     async def delete_todo_svc(db: AsyncSession, todo_id: str) -> dict:

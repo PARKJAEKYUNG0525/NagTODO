@@ -1,5 +1,5 @@
 import api from "../utils/api.js";
-import {showWarningAlert, showSuccessAlert} from "../utils/alertUtils.js";
+import {showWarningAlert} from "../utils/alertUtils.js";
 
 import { useAuth } from "@/hooks/useAuth.jsx";
 import React, { useCallback, useState } from 'react';
@@ -16,7 +16,6 @@ export const useTodo = () => {
         try {
             // axios는 2xx 응답을 resolve로 처리하므로 별도 status 체크 불필요
             const response = await api.post("/todos", newTodo);
-            showSuccessAlert({title: "게시글이 생성되었습니다."});
             return response.data;
         }
         catch (error) {

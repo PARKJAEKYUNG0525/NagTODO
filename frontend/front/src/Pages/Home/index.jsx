@@ -2,56 +2,37 @@ import React, {useEffect, useRef, useState} from "react";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 import BgChangeModal from "../../Components/Modal/BgChangeModal";
 import { useNotification } from "@/hooks/useNotification";
-import { useMusic } from "@/hooks/useMusic.jsx";
+import { useImg } from "@/hooks/useImg";
+import { useMusic } from "@/hooks/useMusic";
 import api from "@/utils/api.js";
 
-import { 
-  BsFillImageFill, 
-  BsFillSquareFill, 
-  BsChevronDown, 
-  BsFillBellFill, 
-  BsPlayFill, 
-  BsPauseFill 
+import {
+  BsFillImageFill,
+  BsFillSquareFill,
+  BsChevronDown,
+  BsFillBellFill,
+  BsPlayFill,
+  BsPauseFill
 } from "react-icons/bs";
 
 export default function Home() {
-    const { isPlaying, play, currentMusic, toggle } = useMusic();
+    const { getUserBg, currentBg } = useImg();
+    const { musics, getAllMusics, play, currentMusic, toggle, isPlaying } = useMusic();
     const { notifications } = useNotification();
 
-    const [musics, setMusics] = useState([]);
     const [isMusicListOpen, setIsMusicListOpen] = useState(false);
     const playerRef = useRef(null);
 
     const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isBgOpen, setIsBgOpen] = useState(false);
-    const [currentBg, setCurrentBg] = useState(null);
 
     const handleNotification = () => setIsNotiOpen(true);
 
     // 사진 목록 받아오기
-    useEffect(() => {
-        api.get("/users/me").then((res) => {
-            if (res.data.img_id) {
-                // imgs 목록에서 찾아서 currentBg에 셋
-                api.get("/imgs").then((imgsRes) => {
-                    const userImg = imgsRes.data.find(i => i.img_id === res.data.img_id);
-                    if (userImg) setCurrentBg(userImg);
-                });
-            }
-        });
-    }, []);
+    useEffect(() => { getUserBg(); }, []);
 
     // 음악 목록 받아오기
-    useEffect(() => {
-        api.get("/musics")
-            .then((res) => {
-                setMusics(Array.isArray(res.data) ? res.data : []);
-            })
-            .catch((err) => {
-                console.error("음악 목록 불러오기 실패:", err);
-                setMusics([]);
-            });
-    }, []);
+    useEffect(() => { getAllMusics(); }, []);
 
     // 바깥 클릭 시 드롭다운 닫기
     useEffect(() => {
@@ -87,7 +68,7 @@ export default function Home() {
              style={
                  currentBg
                      ? {
-                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
+                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${currentBg.file_url})`,
                      }
                      : undefined
              }>
@@ -130,16 +111,16 @@ export default function Home() {
                     <button
                         type="button"
                         onClick={() => setIsMusicListOpen((v) => !v)}
-                        className="flex-1 flex items-center justify-between overflow-hidden" 
+                        className="flex-1 flex items-center justify-between overflow-hidden"
                         aria-haspopup="listbox"
                         aria-expanded={isMusicListOpen}
                     >
                         <span className="text-sm font-semibold text-[#3D4D5C] truncate pr-2">
                             {currentMusic?.title ?? "음악 선택"}
                         </span>
-                        
-                        <BsChevronDown 
-                            size={18} 
+
+                        <BsChevronDown
+                            size={18}
                             className={`shrink-0 transition-transform duration-300 ${
                                 isMusicListOpen ? "rotate-180" : "rotate-0"
                             } text-[#3D4D5C]`} // 색상을 텍스트와 같은 남색으로 변경
@@ -152,7 +133,6 @@ export default function Home() {
                         <ul
                             role="listbox"
                             className="absolute left-0 right-0 bottom-full mt-2 bg-white rounded-2xl shadow-lg z-10 max-h-60 overflow-y-auto py-2"
-
                         >
                             {musics.length === 0 ? (
                                 <li className="px-4 py-2 text-sm text-[#8B9BAA]">
@@ -206,12 +186,6 @@ export default function Home() {
             <BgChangeModal
                 isOpen={isBgOpen}
                 onClose={() => setIsBgOpen(false)}
-                currentBg={currentBg?.img_id}
-                onApply={(img) => {
-                    setCurrentBg(img);
-                    api.patch("/users/me", { img_id: img.img_id })
-                        .catch(err => console.warn("배경 저장 실패:", err));
-                }}
             />
         </div>
     );

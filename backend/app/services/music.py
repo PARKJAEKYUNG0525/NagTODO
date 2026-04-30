@@ -11,12 +11,12 @@ class MusicService:
     async def create_music_svc(db: AsyncSession, data: MusicCreate) -> Music:
 
         # homepage 존재 확인
-        homepage = await MusicCrud.get_homepage(db, data.homepage_id)
-        if not homepage:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"homepage_id '{data.homepage_id}'에 해당하는 homepage가 없습니다."
-            )
+        # homepage = await MusicCrud.get_homepage(db, data.homepage_id)
+        # if not homepage:
+        #     raise HTTPException(
+        #         status_code=status.HTTP_404_NOT_FOUND,
+        #         detail=f"homepage_id '{data.homepage_id}'에 해당하는 homepage가 없습니다."
+        #     )
 
         try:
             music = await MusicCrud.create_music(db, data)

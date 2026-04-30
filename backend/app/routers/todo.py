@@ -1,6 +1,4 @@
-import calendar
-
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.db.scheme.todo import TodoCreate, TodoUpdate, TodoRead, TodoCreateResponse, MonthlyStatsResponse
@@ -12,6 +10,16 @@ router = APIRouter(prefix="/todos", tags=["Todo"])
 @router.post("/", response_model=TodoCreateResponse, status_code=201)
 async def create_todo(data: TodoCreate, db: AsyncSession = Depends(get_db)):
     return await todo_svc.create_todo_svc(db, data)
+
+# R 조회 - AI 서버 리포트용 월간 로그 (구 GET /history/monthly-logs)
+@router.get("/monthly-logs", response_model=list[dict])
+async def get_monthly_logs(
+    user_id: int = Query(...),
+    month_start: str = Query(..., description="YYYY-MM-DD"),
+    month_end: str = Query(..., description="YYYY-MM-DD"),
+    db: AsyncSession = Depends(get_db),
+):
+    return await todo_svc.get_monthly_logs_svc(db, user_id, month_start, month_end)
 
 # R 월간 통계 조회 (유저 성공률, 전체 사용자 성공률, 카테고리별 달성률)
 @router.get("/stats", response_model=MonthlyStatsResponse)

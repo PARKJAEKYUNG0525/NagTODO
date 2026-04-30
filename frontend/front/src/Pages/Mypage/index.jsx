@@ -1,18 +1,27 @@
-import React, { useState, useEffect } from "react";
-import NotificationModal from "../../Components/Modal/NotificationModal";
+import React, {useState, useEffect, useCallback} from "react";
 import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import { useAuth } from "../../hooks/useAuth";
 import { useNotification } from "@/hooks/useNotification";
 import useMypage from "../../hooks/useMypage";
 import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
+import api from "@/utils/api.js";
+import { useImg } from "@/hooks/useImg";
+import { useCloth } from "@/hooks/useCloth";
+import ClothChangeModal from "@/Components/Modal/ClothChangeModal";
 
 import { BsFillBellFill } from "react-icons/bs";
+import useCategory from "@/hooks/useCategory.jsx";
+import NotificationModal from "@/Components/Modal/NotificationModal/index.jsx";
 
 export default function MyPage() {
     const { user, setUser, logout, deleteUser } = useAuth();
-    const { notifications } = useNotification();
-    const [isAdmin, setIsAdmin] = useState(false);
     const { updateProfile, updatePassword, checkUsername, updateStatusMessage } = useMypage();
+    const { currentBg, getUserBg } = useImg();
+    const { currentCloth, getUserCloth, setUserCloth } = useCloth();
+    const { getCategory } = useCategory();
+    const { notifications } = useNotification();
+
+    const [isAdmin, setIsAdmin] = useState(false);
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
     const [view, setView] = useState("main"); // "main" | "edit-profile"
     const [error, setError] = useState("");
@@ -27,24 +36,30 @@ export default function MyPage() {
         birthDay: ""  
         });
 
-
     const [adminMode, setAdminMode] = useState("default"); // "default" | "edit" | "delete"
     const [editingCategoryId, setEditingCategoryId] = useState(null);
     const [editingValue, setEditingValue] = useState("");
     const [selectedCategoryIds, setSelectedCategoryIds] = useState([]);
-    const [categories, setCategories] = useState([
-        { id: 1, name: "공부" },
-        { id: 2, name: "업무" },
-        { id: 3, name: "운동" },
-        { id: 4, name: "일상" },
-        { id: 5, name: "약속" },
-        { id: 6, name: "기타" },
-    ]);
+    // 관리자 쪽에서 쓰이지만 일단 주석처리
+    // const [categories, setCategories] = useState([]);
     const [draggedIdx, setDraggedIdx] = useState(null);
     const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [statusMessage, setStatusMessage] = useState("");
 
     const handleNotification = () => setIsNotiOpen(true);
+
+    const [isClothModalOpen, setIsClothModalOpen] = useState(false);
+    const [pendingCloth, setPendingCloth] = useState(null);
+
+    // mount시 사용자가 선택한 배경화면 불러오기
+    useEffect(() => { getUserBg(); }, []);
+    // mount시 사용자가 선택한 프로필 이미지 불러오기
+    useEffect(() => { getUserCloth(); }, []);
+    // mount시, 카테고리 수정 시 카테고리 목록 불러오기
+    // 관리자 쪽에서 쓰이지만 일단 주석처리
+    // useEffect(() => {
+    //     loadCategory();
+    // }, [loadCategory]);
 
     useEffect(() => {
         const checkAdmin = () => false;
@@ -77,6 +92,17 @@ export default function MyPage() {
     }
     }, [user]);
 
+    // 에러 메시지 띄운 후, 한 글자라도 수정하면 에러 메시지 즉시 내리기
+    useEffect(() => {
+        if (error) setError("");
+    }, [form.username, form.currentPassword, form.password, form.confirmPassword]);
+
+    // 관리자 쪽에서 쓰이지만 일단 주석처리
+    // const loadCategory = useCallback(async () => {
+    //     const db_category = await getCategory();
+    //     if (db_category) setCategories(db_category);
+    // }, [getCategory]);
+
     // const handleNotification = () => alert("알림 아이콘 클릭");
 
     // const handleWithdraw = () => alert("회원탈퇴 안내");
@@ -87,11 +113,20 @@ export default function MyPage() {
             password: "",
             confirmPassword: "",
         }));
+        setPendingCloth(currentCloth);
         setView("edit-profile");
     };
-    const handleCancelEditProfile = () => setView("main");
+    const handleCancelEditProfile = () => {
+        setPendingCloth(null);
+        setView("main");
+    };
 
-    const handleChangeProfileImage = () => alert("프로필 사진 변경");
+    const handleChangeProfileImage = () => setIsClothModalOpen(true);
+
+    const handleApplyCloth = (cloth) => {
+        setPendingCloth(cloth);
+    };
+
     const handleSelectStrictMode = (mode) => {
         setStrictMode(mode);
         alert(`모드 변경: ${mode === "strict" ? "엄격하게" : "덜 엄격하게"}`);
@@ -183,9 +218,13 @@ export default function MyPage() {
 
     const handleSaveProfile = async () => {
         setError("");
+        // 변경 성공 메시지 한 번에 띄우기 위한 리스트
+        const message = [];
         const isChangingUsername = form.username.trim() !== user?.username;
         const isChangingPassword = form.currentPassword || form.password || form.confirmPassword;
-        if (!isChangingUsername && !isChangingPassword) {
+        const isChangingCloth = pendingCloth?.cloth_id !== currentCloth?.cloth_id;
+
+        if (!isChangingUsername && !isChangingPassword && !isChangingCloth) {
             setError("(Mypage/index)변경된 내용이 없습니다.");
             return;
         }
@@ -219,7 +258,7 @@ export default function MyPage() {
             if (isChangingUsername) {
                 const profileOk = await updateProfile({ username: form.username.trim() });
                 if (!profileOk) return;
-                showSuccessAlert({title:"닉네임이 변경되었습니다."});
+                message.push("닉네임");
             }
 
             if (isChangingPassword) {
@@ -232,8 +271,17 @@ export default function MyPage() {
                     setError("(Mypage/index)비밀번호를 다시 확인해주세요.");
                     return;   
                 }
-                showSuccessAlert({title:"비밀번호가 변경되었습니다."});
+                message.push("비밀번호");
+            }
 
+            if (isChangingCloth) {
+                await setUserCloth(pendingCloth);
+                message.push("프로필 사진");
+            }
+
+            // 성공 메시지 한 번에 출력
+            if (message.length > 0) {
+                await showSuccessAlert({title: `${message.join(", ")}이(가) 변경되었습니다.`});
             }
 
             setForm(prev => ({
@@ -242,10 +290,9 @@ export default function MyPage() {
                     password: "",
                     confirmPassword: "",
             }));
-
+            setPendingCloth(null);
             setView("main");
-        } catch (e) {
-            console.error(e);
+        } catch (error) {
             setError("(Mypage/index)저장 중 오류가 발생했습니다.");
         }
     };
@@ -262,22 +309,20 @@ export default function MyPage() {
             if (success) {
                 showSuccessAlert({ title: "상태메세지가 저장되었습니다." });
             } else {
-                showWarningDialog({ 
-                    title: "저장 실패", 
-                    text: error || "다시 시도해주세요." 
+                showWarningDialog({
+                    title: "저장 실패",
+                    text: error || "다시 시도해주세요."
                 });
             }
 
         } catch (e) {
             console.error("상태메시지 저장 중 에러 발생:", e);
-            showWarningDialog({ 
-                title: "시스템 오류", 
-                text: "서버와 통신하는 중 문제가 발생했습니다." 
+            showWarningDialog({
+                title: "시스템 오류",
+                text: "서버와 통신하는 중 문제가 발생했습니다."
             });
         }
     };
-
-
 
     // ====== 렌더: 비관리자 - 내 정보 수정 ======
     if (!isAdmin && view === "edit-profile") {
@@ -286,8 +331,12 @@ export default function MyPage() {
                 <h1 className="text-xl font-bold text-[#3D4D5C]">내 정보 수정</h1>
 
                 <div className="mt-6 flex flex-col items-center">
-                    <div className="w-24 h-24 rounded-full bg-[#A8C8D8]">
-                        {/* 아이콘 위치: 프로필 이미지 (bi-person-fill) */}
+                    <div className="w-24 h-24 rounded-full overflow-hidden bg-[#A8C8D8]">
+                        {pendingCloth && (
+                            <img src={`${api.defaults.baseURL}${pendingCloth.file_url}`}
+                                 alt={pendingCloth.title} className="w-full h-full object-cover"
+                            />
+                        )}
                     </div>
                     <button
                         onClick={handleChangeProfileImage}
@@ -344,6 +393,13 @@ export default function MyPage() {
                         저장
                     </button>
                 </div>
+                {/* 프로필 변경 모달 추가 */}
+                <ClothChangeModal
+                    isOpen={isClothModalOpen}
+                    onClose={() => setIsClothModalOpen(false)}
+                    currentClothId={pendingCloth?.cloth_id}
+                    onApply={handleApplyCloth}
+                />
             </div>
         );
     }
@@ -444,10 +500,10 @@ export default function MyPage() {
                                     onDrop={() => handleDrop(idx)}
                                     onDragEnd={handleDragEnd}
                                     className={`
-                    flex items-center py-2 px-1
-                    ${adminMode === "default" ? "cursor-move" : ""}
-                    ${draggedIdx === idx ? "opacity-50" : ""}
-                  `}
+                                    flex items-center py-2 px-1
+                                    ${adminMode === "default" ? "cursor-move" : ""}
+                                    ${draggedIdx === idx ? "opacity-50" : ""}
+                                    `}
                                 >
                                     <div className="w-6 flex flex-col gap-0.5 shrink-0">
                                         {/* 아이콘 위치: 드래그 핸들 (bi-list) */}
@@ -480,11 +536,11 @@ export default function MyPage() {
                                             disabled={isOtherEditing}
                                             className="flex-1 text-left"
                                         >
-                      <span
-                          className={`inline-block px-4 py-1.5 rounded-full text-xs font-semibold ${pillClass}`}
-                      >
-                        {cat.name}
-                      </span>
+                                            <span
+                                                className={`inline-block px-4 py-1.5 rounded-full text-xs font-semibold ${pillClass}`}
+                                            >
+                                                {cat.name}
+                                            </span>
                                         </button>
                                     )}
 
@@ -534,13 +590,21 @@ export default function MyPage() {
 
     // ====== 렌더: 비관리자 - 마이페이지 메인 ======
     return (
-        <>
+        <div className="flex-1 min-h-0 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
+             style={
+                 currentBg
+                     ? {
+                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
+                     }
+                     : undefined
+             }
+        >
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">마이페이지</h1>
                     <NotificationBell />
             </header>
 
-            <div className="flex-1 px-6 pb-8 flex flex-col">
+            <div className="flex-1 overflow-y-auto px-6 pb-8 flex flex-col gap-5">
                 {/* 프로필 카드 */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm relative shrink-0">
                     <button onClick={logout} className="absolute top-4 right-5 text-[10px] text-[#8B9BAA]">
@@ -548,15 +612,22 @@ export default function MyPage() {
                     </button>
                     <div className="flex flex-col items-center">
                         <p className="text-base font-bold text-[#3D4D5C]">{user?.username}</p>
-                        <div className="mt-2 w-14 h-14 rounded-full bg-[#A8C8D8] shadow-inner" />
-                        <p className="mt-2 text-[11px] text-[#3D4D5C]">{user?.email}</p>
-                        <p className="mt-1 text-[10px] text-[#8B9BAA]">
-                            함께한 지 <span className="font-semibold text-[#A8C8D8]">40일째</span>
+                        <div className="mt-3 w-20 h-20 rounded-full overflow-hidden bg-[#A8C8D8]">
+                            {currentCloth && (
+                                <img
+                                    src={`${api.defaults.baseURL}${currentCloth.file_url}`}
+                                    alt={currentCloth.title}
+                                    className="w-full h-full object-cover"
+                                />
+                            )}
+                        </div>
+                        <p className="mt-4 text-xs text-[#3D4D5C]">{user?.email || ""}</p>
+                        <p className="mt-1 text-xs text-[#8B9BAA]">
+                            함께한 지 <span className="font-semibold">40</span>일째
                         </p>
-
                         <button
                             onClick={handleEditProfile}
-                            className="mt-4 w-full max-w-[140px] py-2.5 rounded-xl bg-[#EEF2F5] text-[12px] font-bold text-[#3D4D5C] active:bg-[#E2E8ED] transition-colors"
+                            className="mt-4 w-full max-w-35 py-2.5 rounded-xl bg-[#EEF2F5] text-[12px] font-bold text-[#3D4D5C] active:bg-[#E2E8ED] transition-colors"
                         >
                             내 정보 수정
                         </button>
@@ -564,8 +635,8 @@ export default function MyPage() {
                 </div>
 
                 {/* 상태메세지 */}
-                <div className="mt-5 shrink-0">
-                    <div className="flex justify-between items-end mb-2 px-1">
+                <div className="shrink-0">
+                    <div className="flex justify-between items-end mb-3 px-1">
                         <h2 className="text-[13px] font-bold text-[#3D4D5C]">상태메세지</h2>
                         <span className="text-[10px] text-[#8B9BAA]">{statusMessage?.length || 0}/30</span>
                     </div>
@@ -592,34 +663,28 @@ export default function MyPage() {
                 </div>
 
                 {/* 모드 변경 */}
-                <div className="mt-6 flex-1 flex flex-col min-h-0">
+                <div className="flex flex-col">
                     <h2 className="text-base font-bold text-[#3D4D5C] mb-3 px-1">모드 변경</h2>
                     <div className="flex-1 flex flex-col gap-4 mb-4">
                         {/* 엄격하게 버튼 */}
                         <button
                             onClick={() => handleSelectStrictMode("strict")}
-                            className={`flex-1 flex flex-col items-center justify-center rounded-2xl shadow-sm border-2 transition-all ${
-                                strictMode === "strict" ? "bg-white border-[#A8C8D8]" : "bg-white/60 border-transparent"
-                            }`}
+                            className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left
+                            ${strictMode === "strict" ? "ring-2 ring-[#A8C8D8]" : ""}
+                            `}
                         >
-                            <p className={`text-sm font-medium mb-3 ${strictMode === "strict" ? "text-[#3D4D5C]" : "text-[#8B9BAA]"}`}>
-                                엄격하게
-                            </p>
-
-                            <div className={`w-3/4 h-12 rounded-xl transition-colors ${strictMode === "strict" ? "bg-[#E9ECEF]" : "bg-[#F1F3F5]"}`} />
+                            <p className="text-center text-sm font-bold text-[#3D4D5C]">엄격하게</p>
+                            <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
                         </button>
 
-                        {/* 덜 엄격하게 버튼 */}
                         <button
                             onClick={() => handleSelectStrictMode("less")}
-                            className={`flex-1 flex flex-col items-center justify-center rounded-2xl shadow-sm border-2 transition-all ${
-                                strictMode === "less" ? "bg-white border-[#A8C8D8]" : "bg-white/60 border-transparent"
-                            }`}
+                            className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left
+                            ${strictMode === "less" ? "ring-2 ring-[#A8C8D8]" : ""}
+                            `}
                         >
-                            <p className={`text-sm font-medium mb-3 ${strictMode === "less" ? "text-[#3D4D5C]" : "text-[#8B9BAA]"}`}>
-                                덜 엄격하게
-                            </p>
-                            <div className={`w-3/4 h-12 rounded-xl transition-colors ${strictMode === "less" ? "bg-[#E9ECEF]" : "bg-[#F1F3F5]"}`} />
+                            <p className="text-center text-sm text-[#8B9BAA]">덜 엄격하게</p>
+                            <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
                         </button>
                     </div>
                 </div>
@@ -637,7 +702,7 @@ export default function MyPage() {
                 onClose={() => setIsNotiOpen(false)}
                 notifications={notifications}
             />
-        </>
+        </div>
     );
 }
 

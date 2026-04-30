@@ -2,7 +2,7 @@ from .category import CategoryCrud
 from .cloth import ClothCrud
 from .friend_todo_view import FriendTodoViewCrud
 # from .friend import FriendCrud
-from .history import HistoryCrud
+# from .history import HistoryCrud  # history 테이블 제거
 # from .homepage import HomepageCrud
 from .img import ImgCrud
 from .music import MusicCrud

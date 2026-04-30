@@ -30,6 +30,11 @@ class ClothService:
                 detail="cloth 생성에 실패했습니다."
             )
 
+    # R 조회 - 전체 조회
+    @staticmethod
+    async def get_all_cloth_svc(db: AsyncSession) -> list[Cloth]:
+        return await cloth_crud.get_all_cloths(db)
+
     # R 조회 - cloth 단일 조회
     @staticmethod
     async def get_cloth_svc(db: AsyncSession, cloth_id: str) -> Cloth:
@@ -41,18 +46,18 @@ class ClothService:
             )
         return cloth
 
-    # R 조회 - cloth 전체 조회 (user 기준)
-    @staticmethod
-    async def get_all_cloths_svc(db: AsyncSession, user_id: int) -> list[Cloth]:
-        user = await cloth_crud.get_user(db, user_id)
-        if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"user_id '{user_id}'에 해당하는 유저가 없습니다."
-            )
-
-        cloths = await cloth_crud.get_all_cloths(db, user_id)
-        return cloths
+    # R 조회 - cloth 조회 (user 기준)
+    # @staticmethod
+    # async def get_cloth_by_user_svc(db: AsyncSession, user_id: int) -> Cloth:
+    #     user = await cloth_crud.get_user(db, user_id)
+    #     if not user:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_404_NOT_FOUND,
+    #             detail=f"user_id '{user_id}'에 해당하는 유저가 없습니다."
+    #         )
+    #
+    #     cloths = await cloth_crud.get_cloth_by_user(db, user_id)
+    #     return cloths
 
     # U 수정
     @staticmethod

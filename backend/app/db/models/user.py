@@ -31,7 +31,11 @@ class User(Base):
     refresh_token:   Mapped[Optional[str]]      = mapped_column(String(255), nullable=True)
     status_message:  Mapped[Optional[str]]      = mapped_column(String(500), nullable=True)
 
-    # 마지막에 선택한 음악/이미지 (FK)
+    cloth_id: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        ForeignKey("cloth.cloth_id"),
+        nullable=True
+    )
     music_id: Mapped[Optional[str]] = mapped_column(
         String(100),
         ForeignKey("music.music_id"),
@@ -43,6 +47,7 @@ class User(Base):
         nullable=True
     )
 
+    cloths:           Mapped[Optional["Cloth"]]      = relationship("Cloth")
     music:            Mapped[Optional["Music"]]      = relationship("Music")
     img:              Mapped[Optional["Img"]]        = relationship("Img")
 
@@ -52,5 +57,4 @@ class User(Base):
     friend_todo_views:Mapped[List["FriendTodoView"]] = relationship("FriendTodoView", back_populates="user", cascade="all, delete-orphan")
     recommends:       Mapped[List["Recommend"]]      = relationship("Recommend", back_populates="user", cascade="all, delete-orphan")
     pw_histories:     Mapped[List["PwHistory"]]      = relationship("PwHistory", back_populates="user", cascade="all, delete-orphan")
-    cloths:           Mapped[List["Cloth"]]          = relationship("Cloth", back_populates="user", cascade="all, delete-orphan")
     notifications:    Mapped[List["Notification"]]   = relationship("Notification", back_populates="user")

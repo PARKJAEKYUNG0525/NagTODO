@@ -1,5 +1,5 @@
 import {useCallback, useState} from "react";
-import {showErrorAlert, showSuccessAlert} from "../utils/alertUtils.js";
+import {showWarningAlert} from "../utils/alertUtils.js";
 import api from "../utils/api.js";
 
 export const useBoard = () => {
@@ -19,7 +19,7 @@ export const useBoard = () => {
             return [];
         }
         catch (error) {
-            showErrorAlert(error, "게시글을 불러올 수 없습니다.");
+            showWarningAlert(error, "게시글을 불러올 수 없습니다.");
         }
         finally {
             setLoading(false);
@@ -36,12 +36,11 @@ export const useBoard = () => {
             const response = await api.post("/boards", boardData);
 
             if (response.status === 200 || response.status === 201) {
-                showSuccessAlert({title:"게시글이 생성되었습니다."});
                 return response.data;
             }
         }
         catch (error) {
-            showErrorAlert(error, "게시글을 생성할 수 없습니다.");
+            showWarningAlert(error, "게시글을 생성할 수 없습니다.");
             return null;
         }
         finally {
