@@ -72,6 +72,23 @@ export default function Todo() {
 
     useEffect(() => { loadCategory(); }, [loadCategory]);
 
+    useEffect(() => {
+        if (todos.length === 0) return;
+
+        const failedTodos = todos.filter((t) => {
+            const todoDay = startOfDay(new Date(t.created_at));
+            const isPast = isBefore(todoDay, TODAY);
+            return isPast && t.todo_status !== STATUS.COMPLETED && t.todo_status !== STATUS.FAILED;
+        });
+
+        if (failedTodos.length === 0) return;
+
+        Promise.all(
+            failedTodos.map((t) => updateTodo(t.todo_id, { todo_status: "실패" }))
+        ).then(() => loadTodos());
+
+    }, [todos]);
+
     const currentTodos = todos.filter((t) =>
         isSameDay(startOfDay(new Date(t.created_at)), selectedDate)
     );

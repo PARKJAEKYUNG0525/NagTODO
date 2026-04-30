@@ -59,7 +59,7 @@ export default function Friend() {
             <>
                 <header className="px-6 pt-6 flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-[#3D4D5C]">회원 관리</h1>
-                    <NotificationBell />
+                    <NotificationBell onAccept={fetchFriends} />
                 </header>
 
                 <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
@@ -138,7 +138,7 @@ return (
     >
         <header className="px-6 pt-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-[#3D4D5C]">친구</h1>
-            <NotificationBell />
+            <NotificationBell onAccept={fetchFriends} />
         </header>
 
             <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
