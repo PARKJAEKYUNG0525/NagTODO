@@ -70,6 +70,15 @@ def _save(store: EmbeddingStore) -> None:
         raise HTTPException(status_code=500, detail=f"디스크 저장 실패: {e}")
 
 
+@router.post("/ai/embeddings/reload")
+def reload_embeddings(
+    store: EmbeddingStore = Depends(get_embedding_store),
+):
+    """디스크의 최신 index.faiss + metadata.json을 in-memory 스토어로 다시 로드."""
+    store.load()
+    return {"reloaded": True, "total": store._index.ntotal}
+
+
 @router.post("/ai/embeddings/clear")
 def clear_embeddings(
     store: EmbeddingStore = Depends(get_embedding_store),

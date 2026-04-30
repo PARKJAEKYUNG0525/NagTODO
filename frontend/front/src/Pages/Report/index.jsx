@@ -192,7 +192,7 @@ export default function MonthlyReport() {
                 </div>
 
                 {/* 월 단위 뷰 */}
-                {reportMode === "monthly" && (
+                {reportMode === "monthly" && !analyzed && (
                     <>
                         <p className="mt-5 text-xs text-[#3D4D5C]">
                             분석할 <span className="text-[#E89B9B] font-semibold">년/월</span>을 선택하세요
@@ -297,7 +297,7 @@ export default function MonthlyReport() {
                 )}
 
                 {/* 최근 30일 뷰 */}
-                {reportMode === "30days" && (
+                {reportMode === "30days" && !analyzed && (
                     <>
                         <p className="mt-5 text-xs text-[#3D4D5C]">
                             30일 기준의 <span className="text-[#E89B9B] font-semibold">마지막 날짜</span>를 선택하세요
@@ -329,13 +329,13 @@ export default function MonthlyReport() {
                 )}
 
                 {/* 분석하기 버튼 */}
-                {reportMode !== "history" && (
+                {reportMode !== "history" && !analyzed && (
                     <button
                         onClick={handleAnalyze}
                         disabled={isLoading}
                         className="mt-6 w-full py-4 rounded-2xl bg-[#B4D0DB] text-white font-bold text-sm disabled:opacity-60"
                     >
-                        {isLoading ? "분석 중..." : "분석하기"}
+                        분석하기
                     </button>
                 )}
 

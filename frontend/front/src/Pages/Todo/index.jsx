@@ -11,7 +11,8 @@ import { useImg } from "@/hooks/useImg";
 import api from "@/utils/api.js";
 
 import { useAuth } from "../../hooks/useAuth";
-
+import { useNotification } from "@/hooks/useNotification";
+import { BsFillBellFill } from "react-icons/bs";
 // 달성률에 따른 도트 색
 const RATE_COLOR = {
     HIGH:  "#A8D5B4", // 100% — 초록
