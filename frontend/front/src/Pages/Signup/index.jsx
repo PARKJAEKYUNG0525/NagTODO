@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect  } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
 export default function Signup({ onLoginClick }) {
     const navigate = useNavigate();
     const { signup, error, setError } = useAuth();
+    useEffect(() => {
+        setError("");
+    }, []);
 
     const [form, setForm] = useState({
         username: "",
