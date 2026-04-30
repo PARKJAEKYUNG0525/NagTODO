@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from .todo import Todo
     from .friend import Friend
     from .friend_todo_view import FriendTodoView
-    from .recommend import Recommend
+    # from .recommend import Recommend
     from .pw_history import PwHistory
     # from .homepage import Homepage
     from .cloth import Cloth
@@ -55,6 +55,5 @@ class User(Base):
     friends_sent:     Mapped[List["Friend"]]         = relationship("Friend", foreign_keys="Friend.requester_id", back_populates="requester", cascade="all, delete-orphan")
     friends_received: Mapped[List["Friend"]]         = relationship("Friend", foreign_keys="Friend.receiver_id", back_populates="receiver", cascade="all, delete-orphan")
     friend_todo_views:Mapped[List["FriendTodoView"]] = relationship("FriendTodoView", back_populates="user", cascade="all, delete-orphan")
-    recommends:       Mapped[List["Recommend"]]      = relationship("Recommend", back_populates="user", cascade="all, delete-orphan")
     pw_histories:     Mapped[List["PwHistory"]]      = relationship("PwHistory", back_populates="user", cascade="all, delete-orphan")
     notifications:    Mapped[List["Notification"]]   = relationship("Notification", back_populates="user")
