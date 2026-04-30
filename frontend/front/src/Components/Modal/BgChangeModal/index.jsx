@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import ModalLayout from "../ModalLayout";
-import api from "@/utils/api.js";
 import useImg from "@/hooks/useImg.jsx";
 
 /**
@@ -66,7 +65,7 @@ const BgChangeModal = ({ isOpen, onClose, currentBg, onApply }) => {
                             >
                                 <div className="w-full aspect-square rounded-xl shadow-inner overflow-hidden bg-[#F5F8FA]">
                                     <img
-                                        src={`${api.defaults.baseURL}${img.file_url}`}
+                                        src={img.file_url}
                                         alt={img.title}
                                         className="w-full h-full object-cover"
                                         loading="lazy"
