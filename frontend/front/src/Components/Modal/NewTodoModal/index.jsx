@@ -14,11 +14,12 @@ import useCategory from "../../../hooks/useCategory";
  * props:
  *   - isOpen        : boolean
  *   - onClose       : ()=>void
- *   - onSubmit      : (todo)=>void  — 부모의 목록 갱신용 콜백 (선택)
- *   - selectedDate  : Date          — 캘린더에서 선택한 날짜 (기본값: 오늘)
+ *   - onSubmit      : (snapshot)=>void  — 모달 닫힌 직후 낙관적 업데이트용 콜백 (선택)
+ *   - onSaved       : ()=>void          — API 완료 후 실제 목록 동기화용 콜백 (선택)
+ *   - selectedDate  : Date              — 캘린더에서 선택한 날짜 (기본값: 오늘)
  */
 
-const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) => {
+const NewTodoModal = ({ isOpen, onClose, onSubmit, onSaved, selectedDate = new Date() }) => {
     const { user } = useAuth();
     const { showFeedback } = useInterference();
     const { createTodo } = useTodo();
@@ -55,6 +56,9 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) 
         onClose?.();
         setSubmitting(true);
 
+        // 낙관적 업데이트: 모달 닫힌 직후 부모에 스냅샷 전달
+        onSubmit?.(snapshot);
+
         // AI 잔소리 생성은 백그라운드에서 처리 — 완료되면 팝업으로 알림
         // createTodo 내부에서 에러를 흡수하고 null을 반환하므로 .catch 불필요
         createTodo({
@@ -67,10 +71,11 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, selectedDate = new Date() }) 
         }).then((data) => {
             if (data) {
                 showFeedback(snapshot.title, data.interference);
-                onSubmit?.(snapshot);
             }
         }).finally(() => {
             setSubmitting(false);
+            // 성공/실패 무관하게 실제 DB 상태로 목록 동기화
+            onSaved?.();
         });
     };
 
