@@ -97,15 +97,12 @@ class EmbeddingStore:
             self._metadata.append(row)
 
     # todo 삭제 (soft delete) — 동일 todo_id의 모든 active 항목 처리
+    # 존재하지 않는 todo_id는 멱등적으로 조용히 통과 (DELETE 멱등성 보장)
     def delete(self, todo_id: str) -> None:
         with self._lock:
-            deleted = False
             for row in self._metadata:
                 if row["todo_id"] == todo_id and not row["is_deleted"]:
                     row["is_deleted"] = True
-                    deleted = True
-            if not deleted:
-                raise ValueError(f"todo_id '{todo_id}' 존재하지 않음")
 
     # todo 수정 : 기존 항목 삭제 후 새 벡터/메타데이터 추가
     def update(self, todo_id: str, new_vec: np.ndarray, new_meta: dict) -> None:
@@ -216,6 +213,9 @@ class EmbeddingStore:
                 cpu_index = faiss.read_index(str(idx_path))
                 self._index = self._to_gpu(cpu_index)
                 self._metadata = json.loads(meta_path.read_text(encoding="utf-8"))
+                # 재시작 시 soft-deleted 항목 물리 제거 후 디스크 반영
+                self.rebuild()
+                self.save()
             else:
                 self._index = self._to_gpu(faiss.IndexFlatIP(_VECTOR_DIM))
                 self._metadata = []

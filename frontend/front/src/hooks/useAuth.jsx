@@ -37,12 +37,12 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await api.post("/users/", { email, username, pw: password, birthday })
             if (response.status === 201) {
-                showSuccessAlert({title:"(useAuth)회원가입이 완료되었습니다"});
+                showSuccessAlert({title:"회원가입이 완료되었습니다"});
                 return true;
             }
         } catch (error) {
             console.log(error);
-            setError(error.response?.data.detail || "(useAuth)회원가입에 실패했습니다");
+            setError(error.response?.data.detail || "회원가입에 실패했습니다");
         }
     };
 
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
             setUser(null);
 
             if (response.status === 200) {
-                showSuccessAlert({title:"로그아웃 되었습니다"});
+                showSuccessAlert({title:"로그아웃 되었습니다" });
                 navigate("/");
             }
         }
@@ -67,6 +67,36 @@ export const AuthProvider = ({ children }) => {
             navigate("/");
         }
     };
+
+    const deleteUser = async () => {
+        try {
+            const response = await api.delete("/users/me");
+            if (response.status === 200) {
+                setIsAuthenticated(false);
+                setUser(null);
+                showSuccessAlert({ title: "탈퇴가 완료되었습니다" });
+                navigate("/");
+            }
+        } catch (error) {
+            console.log(error);
+            setError(error.response?.data.detail || "회원탈퇴에 실패했습니다");
+        }
+    };
+
+    // const deleteAccount = async () => {
+    //     try {
+    //         const response = await api.patch("/users/me/state");
+    //         if (response.status === 200) {
+    //             setIsAuthenticated(false);
+    //             setUser(null);
+    //             showSuccessAlert({ title: "탈퇴가 완료되었습니다" });
+    //             navigate("/");
+    //         }
+    //     } catch (error) {
+    //         console.log(error);
+    //         setError(error.response?.data.detail || "회원탈퇴에 실패했습니다");
+    //     }
+    // };
 
     // JWT 토큰 검증 + 사용자 상태 관리 함수
     // 현재 로그인한 사용자인지 확인하기 위함
@@ -106,18 +136,17 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider
-            value={{ error, setError, isAuthenticated, login, signup, logout, user, setUser }}
+            value={{ error, setError, isAuthenticated, login, signup, logout, user, setUser, deleteUser }}
         >
             {children}
         </AuthContext.Provider>
     );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {
-        throw new Error("useAuth 사용하기 위해 AuthProvider로 감싸야 합니다");
+        throw new Error("useAuth 사용하기 위해 AuthProvider로 감싸야한다");
     }
     return context;
 };

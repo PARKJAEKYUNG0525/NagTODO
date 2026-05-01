@@ -5,10 +5,14 @@ import { ko } from "date-fns/locale";
 import NewTodoModal from "../../Components/Modal/NewTodoModal";
 import NotificationModal from "../../Components/Modal/NotificationModal";
 import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
-import { useAuth } from "../../hooks/useAuth";
-import api from "../../utils/api";
 import useTodo from "@/hooks/useTodo.jsx";
 import useCategory from "@/hooks/useCategory.jsx";
+
+import { useAuth } from "../../hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
+
+
+import { BsFillBellFill } from "react-icons/bs";
 
 /**
  * TodoMain 화면 (통합본)
@@ -53,8 +57,9 @@ const STATUS = {
 
 export default function Todo() {
     const { user } = useAuth();
-    const { todoLoading, getAllTodos, createTodo } = useTodo();
+    const { todoLoading, getAllTodos, createTodo, updateTodo, deleteTodo } = useTodo();
     const { ctLoading, getCategory} = useCategory();
+    const { notifications } = useNotification(); 
 
     // ====== 상수/상태 ======
     const TODAY = startOfDay(new Date());
@@ -69,6 +74,8 @@ export default function Todo() {
     const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isNewOpen, setIsNewOpen] = useState(false);
     const [detailTodo, setDetailTodo] = useState(null);
+
+    const handleNotification = () => setIsNotiOpen(true);    
 
     // db에서 todo 불러오기
     const loadTodos = useCallback(async () => {
@@ -100,23 +107,6 @@ export default function Todo() {
     const isToday = isSameDay(selectedDate, TODAY);
     const formattedSelected = format(selectedDate, "M월 d일", { locale: ko });
 
-    const notifications = [
-        {
-            id: 1,
-            title: "오늘의 할 일 알림",
-            body: "'React 복습하기' 가 아직 미완료 상태예요.",
-            time: "5분 전",
-            read: false,
-        },
-        {
-            id: 2,
-            title: "연속 3일째 목표 달성!",
-            body: "운동 카테고리를 3일 연속으로 완료했어요. 대단해요 👏",
-            time: "2시간 전",
-            read: true,
-        },
-    ];
-
     // ====== 핸들러 ======
     const handleToday = () => {
         setSelectedDate(TODAY);
@@ -141,8 +131,13 @@ export default function Todo() {
     const handleSelectAll = () => {
         setSelectedTodoIds(currentTodos.map((t) => t.todo_id));
     };
-    const handleDeleteSelected = () =>
-        alert(`선택한 ${selectedTodoIds.length}개의 할 일 삭제`);
+    const handleDeleteSelected = async () => {
+        if (selectedTodoIds.length === 0) return;
+        await Promise.all(selectedTodoIds.map((id) => deleteTodo(id)));
+        setSelectedTodoIds([]);
+        setIsDeleteMode(false);
+        loadTodos();
+    };
 
     const handleTodoClick = (todo) => {
         if (isDeleteMode) {
@@ -173,20 +168,20 @@ export default function Todo() {
         const prevStatus = todo.todo_status;
         const nextStatus = getNextStatus(prevStatus);
 
+        // 낙관적 업데이트 — 서버 응답 전에 UI를 먼저 갱신한다
         setTodos((prev) =>
             prev.map((t) =>
                 t.todo_id === todo.todo_id ? { ...t, todo_status: nextStatus } : t
             )
         );
-        try {
-            await api.patch(`/todos/${todo.todo_id}`, { todo_status: nextStatus });
-        } catch (err) {
+        const result = await updateTodo(todo.todo_id, { todo_status: nextStatus });
+        if (!result) {
+            // 요청 실패 시 이전 상태로 롤백
             setTodos((prev) =>
                 prev.map((t) =>
                     t.todo_id === todo.todo_id ? { ...t, todo_status: prevStatus } : t
                 )
             );
-            alert("상태 변경에 실패했어요.");
         }
     };
 
@@ -213,21 +208,25 @@ export default function Todo() {
         return { highDays: high, midDays: mid, lowDays: low };
     })();
 
+    // 공용 UI: 상단 벨 버튼
+    const NotificationBell = () => (
+        <button
+            onClick={handleNotification}
+            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+        >
+            <BsFillBellFill className="w-5 h-5 text-white" />
+
+            {notifications.length > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+            )}
+        </button>
+    );
+
     return (
         <>
             {/* 상단 헤더 */}
-            <header className="px-6 pt-6 flex items-center justify-between">
-                <h1 className="text-2xl font-bold text-[#3D4D5C]">
-                    {format(selectedDate, "M월", { locale: ko })}
-                </h1>
-                <button
-                    className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
-                    onClick={() => setIsNotiOpen(true)}
-                >
-                    {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-                    <span className="w-5 h-5 block" />
-                    <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-                </button>
+            <header className="px-6 pt-6 flex justify-end">
+                <NotificationBell />
             </header>
 
             {/* 스크롤 영역 */}
@@ -404,7 +403,6 @@ export default function Todo() {
                 isOpen={isNotiOpen}
                 onClose={() => setIsNotiOpen(false)}
                 notifications={notifications}
-                onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
             />
             <NewTodoModal
                 isOpen={isNewOpen}
@@ -420,22 +418,23 @@ export default function Todo() {
                 onClose={() => setDetailTodo(null)}
                 todo={detailTodo}
                 onSave={async (updated) => {
-                    try {
-                        await api.patch(`/todos/${updated.todo_id}`, {
-                            title:       updated.title,
-                            detail:      updated.detail,
-                            category_id: updated.category_id,
-                            todo_status: updated.todo_status,
-                            visibility:  updated.visibility,
-                        });
+                    const result = await updateTodo(updated.todo_id, {
+                        title:       updated.title,
+                        detail:      updated.detail,
+                        category_id: updated.category_id,
+                        todo_status: updated.todo_status,
+                        visibility:  updated.visibility,
+                    });
+                    if (result) {
                         setDetailTodo(null);
                         loadTodos();
-                    } catch (err) {
-                        console.error("todo 수정 실패", JSON.stringify(err?.response?.data ?? err?.message ?? err));
-                        alert(err?.response?.data?.detail ?? "저장에 실패했어요. 다시 시도해 주세요.");
                     }
                 }}
-                onDelete={(id) => alert(`id=${id} 삭제`)}
+                onDelete={async (id) => {
+                    await deleteTodo(id);
+                    setDetailTodo(null);
+                    loadTodos();
+                }}
             />
         </>
     );

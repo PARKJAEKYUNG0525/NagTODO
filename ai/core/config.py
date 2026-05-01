@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     VECTOR_DIM: int = 384
 
     # 백엔드 API
-    BACKEND_API_URL: str = "https://fdb2-1-215-146-37.ngrok-free.app"
+    BACKEND_API_URL: str = "https://4760-1-215-146-37.ngrok-free.app"
 
     # 벡터 스토어
     FAISS_INDEX_PATH: str = "data/index.faiss"

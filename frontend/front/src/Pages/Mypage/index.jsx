@@ -1,28 +1,18 @@
 import React, { useState, useEffect } from "react";
+import NotificationModal from "../../Components/Modal/NotificationModal";
 import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import { useAuth } from "../../hooks/useAuth";
+import { useNotification } from "@/hooks/useNotification";
 import useMypage from "../../hooks/useMypage";
 import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
 
-/**
- * Mypage 화면 (통합본)
- * isAdmin 여부에 따라 완전히 다른 UX.
- *
- * ───── 비관리자 ─────
- *  [1] 기본: 프로필 카드 + 모드 변경 (엄격하게 / 덜 엄격하게)
- *  [2] 내 정보 수정
- *
- * ───── 관리자 ─────
- *  [A] 카테고리 설정
- *  [B] 카테고리 수정 (인라인)
- *  [C] 카테고리 삭제 (체크 모드 + alertUtils.showWarningDialog)
- *
- * ※ 9:16 프레임 / 하단 Navbar 는 App.jsx 담당.
- */
+import { BsFillBellFill } from "react-icons/bs";
+
 export default function MyPage() {
-    const { user, setUser, logout } = useAuth();
+    const { user, setUser, logout, deleteUser } = useAuth();
+    const { notifications } = useNotification();
     const [isAdmin, setIsAdmin] = useState(false);
-    const { updateProfile, updatePassword, checkUsername } = useMypage();
+    const { updateProfile, updatePassword, checkUsername, updateStatusMessage } = useMypage();
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
     const [view, setView] = useState("main"); // "main" | "edit-profile"
     const [error, setError] = useState("");
@@ -51,6 +41,10 @@ export default function MyPage() {
         { id: 6, name: "기타" },
     ]);
     const [draggedIdx, setDraggedIdx] = useState(null);
+    const [isNotiOpen, setIsNotiOpen] = useState(false);
+    const [statusMessage, setStatusMessage] = useState("");
+
+    const handleNotification = () => setIsNotiOpen(true);
 
     useEffect(() => {
         const checkAdmin = () => false;
@@ -77,9 +71,15 @@ export default function MyPage() {
         }
     }, [user]);
 
-    const handleNotification = () => alert("알림 아이콘 클릭");
+    useEffect(() => {
+    if (user?.status_message) {
+        setStatusMessage(user.status_message);
+    }
+    }, [user]);
 
-    const handleWithdraw = () => alert("회원탈퇴 안내");
+    // const handleNotification = () => alert("알림 아이콘 클릭");
+
+    // const handleWithdraw = () => alert("회원탈퇴 안내");
     const handleEditProfile = () => {
         setForm(prev => ({
             ...prev,
@@ -170,16 +170,16 @@ export default function MyPage() {
     };
     const handleDragEnd = () => setDraggedIdx(null);
 
-    const NotificationBell = () => (
-        <button
-            onClick={handleNotification}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
-        >
-            {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-            <span className="w-5 h-5 block" />
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-        </button>
-    );
+    // const NotificationBell = () => (
+    //     <button
+    //         onClick={handleNotification}
+    //         className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+    //     >
+    //         {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
+    //         <span className="w-5 h-5 block" />
+    //         <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+    //     </button>
+    // );
 
     const handleSaveProfile = async () => {
         setError("");
@@ -250,6 +250,35 @@ export default function MyPage() {
         }
     };
 
+    const handleSaveStatusMessage = async () => {
+        if (statusMessage.length > 50) {
+            alert("50자 이하로 입력하세요");
+            return;
+        }
+
+        try {
+            const success = await updateStatusMessage(statusMessage);
+
+            if (success) {
+                showSuccessAlert({ title: "상태메세지가 저장되었습니다." });
+            } else {
+                showWarningDialog({ 
+                    title: "저장 실패", 
+                    text: error || "다시 시도해주세요." 
+                });
+            }
+
+        } catch (e) {
+            console.error("상태메시지 저장 중 에러 발생:", e);
+            showWarningDialog({ 
+                title: "시스템 오류", 
+                text: "서버와 통신하는 중 문제가 발생했습니다." 
+            });
+        }
+    };
+
+
+
     // ====== 렌더: 비관리자 - 내 정보 수정 ======
     if (!isAdmin && view === "edit-profile") {
         return (
@@ -274,12 +303,12 @@ export default function MyPage() {
 
                     <Field label="닉네임" value={form.username} onChange={(e) => setForm({...form, username: e.target.value})} />
                     <Field label="이메일" value={form.email} readOnly />
-                    <Field label="현재 비밀번호" type="password" value={form.currentPassword} onChange={(e) => setForm({...form, currentPassword: e.target.value})} placeholder={"********"}/>
-                    <Field label="새 비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} placeholder={"********"}/>
+                    <Field label="현재 비밀번호" type="password" value={form.currentPassword} onChange={(e) => setForm({...form, currentPassword: e.target.value})} placeholder={"••••••••"}/>
+                    <Field label="새 비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} placeholder={"••••••••"}/>
                     <Field label="새 비밀번호 확인"
                         type="password"
                         value={form.confirmPassword} onChange={(e) => setForm({...form, confirmPassword: e.target.value})}
-                        placeholder={"********"}
+                        placeholder={"••••••••"}
                     />
 
                     <div>
@@ -318,6 +347,18 @@ export default function MyPage() {
             </div>
         );
     }
+
+    const NotificationBell = () => (
+        <button
+            onClick={handleNotification}
+            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+        >
+            <BsFillBellFill className="w-5 h-5 text-white" />
+            {notifications.length > 0 && (
+                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
+            )}
+        </button>
+    );
 
     // ====== 렌더: 관리자 - 카테고리 설정/수정/삭제 ======
     if (isAdmin) {
@@ -482,80 +523,116 @@ export default function MyPage() {
                         })}
                     </div>
                 </div>
+                <NotificationModal
+                    isOpen={isNotiOpen}
+                    onClose={() => setIsNotiOpen(false)}
+                    notifications={notifications}
+                />
             </>
         );
     }
 
     // ====== 렌더: 비관리자 - 마이페이지 메인 ======
     return (
-        <>
-            <header className="px-6 pt-6 flex items-center justify-between">
+        
+        <div className="h-screen flex flex-col bg-[#F8F9FA] overflow-hidden font-sans">
+            <header className="px-6 pt-6 pb-4 flex items-center justify-between shrink-0">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">마이페이지</h1>
                 <NotificationBell />
             </header>
 
-            <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
-                <div className="bg-white rounded-2xl p-6 shadow-sm relative">
-                    <button
-                        onClick={logout}
-                        className="absolute top-4 right-5 text-[11px] text-[#8B9BAA]"
-                    >
+            <div className="flex-1 px-6 pb-8 flex flex-col min-h-0">
+                
+                <div className="bg-white rounded-2xl p-5 shadow-sm relative shrink-0 mt-2">
+                    <button onClick={logout} className="absolute top-4 right-5 text-[10px] text-[#8B9BAA]">
                         로그아웃
                     </button>
-
                     <div className="flex flex-col items-center">
-                        <p className="text-lg font-bold text-[#3D4D5C]">{user?.username || ""}</p>
-                        <div className="mt-3 w-20 h-20 rounded-full bg-[#A8C8D8]">
-                            {/* 아이콘 위치: 프로필 이미지 (bi-person-fill) */}
-                        </div>
-                        <p className="mt-4 text-xs text-[#3D4D5C]">{user?.email || ""}</p>
-                        <p className="mt-1 text-xs text-[#8B9BAA]">
-                            함께한 지 <span className="font-semibold">40일째</span>
+                        <p className="text-base font-bold text-[#3D4D5C]">{user?.username}</p>
+                        <div className="mt-2 w-14 h-14 rounded-full bg-[#A8C8D8] shadow-inner" />
+                        <p className="mt-2 text-[11px] text-[#3D4D5C]">{user?.email}</p>
+                        
+                        <p className="mt-1 text-[10px] text-[#8B9BAA]">
+                            함께한 지 <span className="font-semibold text-[#A8C8D8]">40일째</span>
                         </p>
+
                         <button
                             onClick={handleEditProfile}
-                            className="mt-3 px-4 py-1.5 rounded-full bg-[#EEF2F5] text-xs font-semibold text-[#3D4D5C]"
+                            className="mt-4 w-full max-w-[140px] py-2.5 rounded-xl bg-[#EEF2F5] text-[12px] font-bold text-[#3D4D5C] active:bg-[#E2E8ED] transition-colors"
                         >
                             내 정보 수정
                         </button>
                     </div>
                 </div>
 
-                <h2 className="mt-6 text-base font-bold text-[#3D4D5C]">모드 변경</h2>
+                {/* 상태메세지 */}
+                <div className="mt-6 shrink-0">
+                    <div className="flex justify-between items-end mb-2 px-1">
+                        <h2 className="text-[13px] font-bold text-[#3D4D5C]">상태메세지</h2>
+                        <span className="text-[10px] text-[#8B9BAA]">{statusMessage?.length || 0}/50</span>
+                    </div>
+                    <div className="bg-white rounded-xl p-3 shadow-sm flex gap-2 items-center border border-transparent focus-within:border-[#A8C8D8]">
+                        <input
+                            type="text"
+                            value={statusMessage}
+                            onChange={(e) => setStatusMessage(e.target.value)}
+                            placeholder="상태를 입력하세요"
+                            className="flex-1 px-3 py-2 text-xs bg-[#F1F3F5] rounded-lg text-[#3D4D5C] outline-none placeholder:text-[#ADB5BD]"
+                        />
+                        <button
+                            onClick={handleSaveStatusMessage}
+                            className="px-4 py-2 rounded-lg bg-[#A8C8D8] text-white text-[12px] font-bold shrink-0"
+                        >
+                            저장
+                        </button>
+                    </div>
+                </div>
 
-                <button
-                    onClick={() => handleSelectStrictMode("strict")}
-                    className={`
-            mt-3 w-full bg-white rounded-2xl p-5 shadow-sm block text-left
-            ${strictMode === "strict" ? "ring-2 ring-[#A8C8D8]" : ""}
-          `}
-                >
-                    <p className="text-center text-sm font-bold text-[#3D4D5C]">
-                        엄격하게
-                    </p>
-                    <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
-                </button>
+                {/* 모드 변경 */}
+                <div className="mt-6 flex-1 flex flex-col min-h-0">
+                    <h2 className="text-base font-bold text-[#3D4D5C] mb-3 px-1">모드 변경</h2>
+                    
+                    <div className="flex-1 flex flex-col gap-4 mb-4">
+                        <button
+                            onClick={() => handleSelectStrictMode("strict")}
+                            className={`flex-1 flex flex-col items-center justify-center rounded-2xl shadow-sm border-2 transition-all ${
+                                strictMode === "strict" ? "bg-white border-[#A8C8D8]" : "bg-white/60 border-transparent"
+                            }`}
+                        >
+                            <p className={`text-sm font-medium mb-3 ${strictMode === "strict" ? "text-[#3D4D5C]" : "text-[#8B9BAA]"}`}>
+                                엄격하게
+                            </p>
+                            <div className={`w-3/4 h-12 rounded-xl transition-colors ${strictMode === "strict" ? "bg-[#E9ECEF]" : "bg-[#F1F3F5]"}`} />
+                        </button>
 
-                <button
-                    onClick={() => handleSelectStrictMode("less")}
-                    className={`
-            mt-3 w-full bg-white rounded-2xl p-5 shadow-sm block text-left
-            ${strictMode === "less" ? "ring-2 ring-[#A8C8D8]" : ""}
-          `}
-                >
-                    <p className="text-center text-sm text-[#8B9BAA]">덜 엄격하게</p>
-                    <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
-                </button>
-                <div className="flex flex-col items-center">
-                    <button
-                        onClick={handleWithdraw}
-                        className="mt-3 px-4 py-1.5 text-xs text-[#3D4D5C]"
-                    >
+                        <button
+                            onClick={() => handleSelectStrictMode("less")}
+                            className={`flex-1 flex flex-col items-center justify-center rounded-2xl shadow-sm border-2 transition-all ${
+                                strictMode === "less" ? "bg-white border-[#A8C8D8]" : "bg-white/60 border-transparent"
+                            }`}
+                        >
+                            <p className={`text-sm font-medium mb-3 ${strictMode === "less" ? "text-[#3D4D5C]" : "text-[#8B9BAA]"}`}>
+                                덜 엄격하게
+                            </p>
+                            <div className={`w-3/4 h-12 rounded-xl transition-colors ${strictMode === "less" ? "bg-[#E9ECEF]" : "bg-[#F1F3F5]"}`} />
+                        </button>
+                    </div>
+                </div>
+
+                {/* 탈퇴 버튼 */}
+                <div className="flex justify-center shrink-0">
+                    <button onClick={deleteUser} className="text-[10px] text-[#8B9BAA] border-b border-[#8B9BAA] pb-0.5">
                         회원 탈퇴
                     </button>
                 </div>
             </div>
-        </>
+
+            <NotificationModal
+                isOpen={isNotiOpen}
+                onClose={() => setIsNotiOpen(false)}
+                notifications={notifications}
+            />
+        </div>
     );
 }
 

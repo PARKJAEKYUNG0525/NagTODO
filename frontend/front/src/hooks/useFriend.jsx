@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import api from "../utils/api";
- import { showSuccessAlert, showWarningAlert } from "../utils/alertUtils.js";
+import { showSuccessAlert, showWarningAlert } from "../utils/alertUtils.js";
+import { useAuth } from "./useAuth";
 
 export const useFriend = () => {
     const [friends, setFriends] = useState([]);          // 수락된 친구 목록
@@ -9,7 +10,9 @@ export const useFriend = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSearching, setIsSearching] = useState(false); // 검색 전용 로딩 상태 추가
 
-    // // 1. 받은 신청 목록 조회 (R)
+    const { user: currentUser } = useAuth(); 
+
+    // 받은 신청 목록 조회
     const fetchReceivedRequests = useCallback(async () => {
         setIsLoading(true);
         try {
@@ -27,7 +30,7 @@ export const useFriend = () => {
         }
     }, []);
 
-    // 2. 이메일 또는 닉네임으로 유저 검색 (Search)
+    // 이메일 또는 닉네임으로 유저 검색 (Search)
     const searchUser = useCallback(async (query) => {
         if (!query.trim()) return [];
         
@@ -49,15 +52,19 @@ export const useFriend = () => {
         }
     }, []);
 
-    // 3. 친구 신청 보내기 (C)
-    const sendRequest = async (receiverId) => {
+    // 친구 신청 보내기
+    const sendRequest = async (receiverId, username) => { // ← username 추가
         try {
             setError("");
-            // Router: @router.post("/") -> FriendUpdate { "receiver_id": int }
             const response = await api.post("/friends/", { receiver_id: receiverId });
             
             if (response.status === 201) {
-                showSuccessAlert({title:"신청 완료", text:"성공적으로 요청을 보냈습니다."});
+                await api.post("/notifications/", {
+                    user_id: receiverId,
+                    title: "새 친구 요청",
+                    content: `friend_request:${response.data.friend_id}:${currentUser.username}`, // ← 닉네임 저장
+                });
+                showSuccessAlert({ title: "신청 완료", text: "성공적으로 요청을 보냈습니다." });
                 return true;
             }
         } catch (error) {
@@ -73,16 +80,31 @@ export const useFriend = () => {
         fetchReceivedRequests();
     }, [fetchReceivedRequests]);
 
+    // 수락된 친구 목록 조회
+    const fetchFriends = useCallback(async () => {
+        try {
+            const res = await api.get("/friends/accepted"); // 백엔드 엔드포인트
+            setFriends(res.data || []);
+        } catch (e) {
+            console.error("친구 목록 조회 실패:", e);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchFriends();
+    }, [fetchFriends]);    
+
     // 외부로 노출할 객체
     return {
         friends,
         receivedRequests,
+        fetchFriends,
         error,
         setError,
         isLoading,
         isSearching,
         searchUser,
-        // sendRequest,
-        // fetchReceivedRequests
+        sendRequest,
+        fetchReceivedRequests
     };
 };

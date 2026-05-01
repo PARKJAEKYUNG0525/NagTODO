@@ -1,7 +1,12 @@
 import React from "react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+<<<<<<< HEAD
 import { BsListCheck, BsPeople, BsClipboardData, BsPerson } from 'react-icons/bs';
+=======
+import { BsListCheck, BsPeople, BsClipboardData, BsPerson, BsHouse } from 'react-icons/bs';
+
+>>>>>>> 82ed0cd0d4c7e1edde2cda85f68a2f8cd8b66ad4
 /**
  * 하단 탭 네비게이션 바 (5 탭)
  *
@@ -20,12 +25,17 @@ import { BsListCheck, BsPeople, BsClipboardData, BsPerson } from 'react-icons/bs
  */
 
 const TABS = [
+<<<<<<< HEAD
     { key: "main",   label: "홈",      path: "/main"},
+=======
+    { key: "main",   label: "홈",      path: "/main", Icon: BsHouse },
+>>>>>>> 82ed0cd0d4c7e1edde2cda85f68a2f8cd8b66ad4
     { key: "friend", label: "친구",    path: "/friend", Icon: BsPeople },
     { key: "todo",   label: "todo",    path: "/todo" , Icon: BsListCheck},
     { key: "report", label: "월간리포트", path: "/report", Icon: BsClipboardData },
     { key: "mypage", label: "마이페이지", path: "/mypage", Icon: BsPerson },
 ];
+
 
 const Navbar = () => {
     const { pathname } = useLocation();
@@ -44,12 +54,21 @@ const Navbar = () => {
                         }`}
                     >
                         {/* 아이콘 위치: 탭별 Bootstrap Icon */}
-                        <span
-                            className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                                active ? "bg-[#A8C8D8] text-white" : "bg-[#EEF2F5]"
+                        <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center mb-1 ${
+                                active ? "bg-[#A8C8D8] text-white" : "bg-[#EEF2F5] text-[#8B9BAA]"
                             }`}
+<<<<<<< HEAD
                         />
                         <tab.Icon size={18} />
+=======
+                        >
+                            {/* 탭별 아이콘 렌더링 */}
+                            {tab.Icon && <tab.Icon size={20} />}
+                        </div>
+
+                        {/* 원 아래 텍스트 */}
+>>>>>>> 82ed0cd0d4c7e1edde2cda85f68a2f8cd8b66ad4
                         <span>{tab.label}</span>
                     </button>
                 );
