@@ -4,6 +4,15 @@ import BgChangeModal from "../../Components/Modal/BgChangeModal";
 import {useAudio} from "@/hooks/useAudio.jsx";
 import api from "@/utils/api.js";
 
+import { 
+  BsFillImageFill, 
+  BsFillSquareFill, 
+  BsChevronDown, 
+  BsFillBellFill, 
+  BsPlayFill, 
+  BsPauseFill 
+} from "react-icons/bs";
+
 /**
  * Home 화면
  * - 상단 우측 알림 벨 → NotificationModal
@@ -83,7 +92,7 @@ export default function Home() {
                     className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm"
                 >
                     {/* 아이콘 위치: 알림 벨 (bi-bell-fill) */}
-                    <span className="w-5 h-5 block" />
+                    <BsFillBellFill className="text-white" size={20} />
                     {/* 알림 도트 */}
                     <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
                 </button>
@@ -111,7 +120,7 @@ export default function Home() {
                         className="w-8 h-8 rounded-xl bg-[#A8C8D8] flex items-center justify-center shrink-0"
                         aria-label="재생/정지"
                     >
-                        <span className="w-4 h-4 block" />
+                        <BsFillSquareFill size={14} />
                     </button>
 
                     {/* 재생 버튼을 제외한 나머지 영역 — 클릭 시 드롭다운 토글 */}
@@ -123,6 +132,7 @@ export default function Home() {
                         aria-expanded={isMusicListOpen}
                     >
                         {currentMusic?.title ?? "음악 선택"}
+                        <BsChevronDown size={16} className="ml-2" />
                     </button>
 
                     {/* 드롭다운 리스트 — absolute로 컨테이너 아래에 띄움 */}
@@ -169,7 +179,7 @@ export default function Home() {
                     className="w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
                     aria-label="배경 이미지 변경"
                 >
-                    <span className="w-5 h-5 block" />
+                    <BsFillImageFill size={24} />
                 </button>
             </section>
 

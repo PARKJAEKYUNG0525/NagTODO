@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-
+import { BsListCheck, BsPeople, BsClipboardData, BsPerson } from 'react-icons/bs';
 /**
  * 하단 탭 네비게이션 바 (5 탭)
  *
@@ -20,11 +20,11 @@ import { useLocation, useNavigate } from "react-router-dom";
  */
 
 const TABS = [
-    { key: "main",   label: "홈",      path: "/main" },
-    { key: "friend", label: "친구",    path: "/friend" },
-    { key: "todo",   label: "todo",    path: "/todo" },
-    { key: "report", label: "월간리포트", path: "/report" },
-    { key: "mypage", label: "마이페이지", path: "/mypage" },
+    { key: "main",   label: "홈",      path: "/main"},
+    { key: "friend", label: "친구",    path: "/friend", Icon: BsPeople },
+    { key: "todo",   label: "todo",    path: "/todo" , Icon: BsListCheck},
+    { key: "report", label: "월간리포트", path: "/report", Icon: BsClipboardData },
+    { key: "mypage", label: "마이페이지", path: "/mypage", Icon: BsPerson },
 ];
 
 const Navbar = () => {
@@ -49,6 +49,7 @@ const Navbar = () => {
                                 active ? "bg-[#A8C8D8] text-white" : "bg-[#EEF2F5]"
                             }`}
                         />
+                        <tab.Icon size={18} />
                         <span>{tab.label}</span>
                     </button>
                 );
