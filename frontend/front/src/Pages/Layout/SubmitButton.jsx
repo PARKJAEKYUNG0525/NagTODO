@@ -21,6 +21,7 @@ const SubmitButton = ({ label }) => {
           focus:ring-2
           focus:ring-slate-900
           focus:ring-offset-2
+          cursor-pointer
         "
             >
                 {label}

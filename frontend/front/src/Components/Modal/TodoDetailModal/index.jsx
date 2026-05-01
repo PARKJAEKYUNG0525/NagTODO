@@ -75,7 +75,7 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8]"
+            className="px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8] cursor-text"
           />
         </label>
 
@@ -85,7 +85,7 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
             rows={3}
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
-            className="px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8] resize-none"
+            className="px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8] resize-none cursor-text"
           />
         </label>
 
@@ -100,7 +100,7 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
                   key={cat.category_id}
                   type="button"
                   onClick={() => setSelectedCategoryId(cat.category_id)}
-                  className={`px-3 py-2 rounded-full text-xs font-medium transition ${
+                  className={`px-3 py-2 rounded-full text-xs font-medium transition cursor-pointer ${
                     active ? "bg-[#3D4D5C] text-white" : "bg-[#F5F8FA] text-[#8B9BAA]"
                   }`}
                 >
@@ -119,7 +119,7 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
             role="switch"
             aria-checked={isPublic}
             onClick={() => setIsPublic((v) => !v)}
-            className={`relative w-12 h-7 rounded-full transition-colors ${
+            className={`relative w-12 h-7 rounded-full transition-colors cursor-pointer ${
               isPublic ? "bg-[#A8C8D8]" : "bg-[#D9DFE4]"
             }`}
           >
@@ -135,13 +135,13 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
           <button
             type="button"
             onClick={handleDelete}
-            className="flex-1 py-3 rounded-xl bg-[#FCEAEA] text-[#E89B9B] font-semibold text-sm"
+            className="flex-1 py-3 rounded-xl bg-[#FCEAEA] text-[#E89B9B] font-semibold text-sm cursor-pointer"
           >
             삭제
           </button>
           <button
             type="submit"
-            className="flex-1 py-3 rounded-xl bg-[#A8C8D8] text-white font-semibold text-sm hover:bg-[#97BAC9]"
+            className="flex-1 py-3 rounded-xl bg-[#A8C8D8] text-white font-semibold text-sm hover:bg-[#97BAC9] cursor-pointer"
           >
             저장하기
           </button>

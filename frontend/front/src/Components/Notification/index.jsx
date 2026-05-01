@@ -6,7 +6,7 @@ import { useFriend } from "../../hooks/useFriend";
 import { showSuccessAlert } from "@/utils/alertUtils.js";
 import api from "../../utils/api";
 
-export default function NotificationBell() {
+export default function NotificationBell({ onAccept }) {
     const { notifications, fetchNotifications } = useNotification();
     const { fetchFriends } = useFriend();
     const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +17,7 @@ export default function NotificationBell() {
             await api.patch(`/friends/${friendId}`, { status: "수락" });
             await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
             fetchNotifications();
+            onAccept?.();
             fetchFriends();
             showSuccessAlert({ title: "친구 추가!", text: "친구가 되었어요!" });
         } catch (e) {
@@ -39,7 +40,7 @@ export default function NotificationBell() {
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+                className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0 cursor-pointer"
             >
                 <BsFillBellFill className="w-5 h-5 text-white" />
                 {notifications.length > 0 && (

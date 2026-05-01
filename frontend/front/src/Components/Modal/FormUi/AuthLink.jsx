@@ -7,7 +7,7 @@ const AuthLink = ({ message, buttonText, onClick }) => {
             <button
                 type="button"
                 onClick={onClick}
-                className="ml-1 text-gray-900 hover:text-black font-semibold underline underline-offset-4 decoration-gray-300 hover:decoration-black transition-all duration-200"
+                className="ml-1 text-gray-900 hover:text-black font-semibold underline underline-offset-4 decoration-gray-300 hover:decoration-black transition-all duration-200 cursor-pointer "
             >
                 {buttonText}
             </button>

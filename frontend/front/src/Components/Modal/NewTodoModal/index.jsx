@@ -95,7 +95,7 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, onSaved, selectedDate = new D
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         placeholder="예: React 복습하기"
-                        className="px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8]"
+                        className="px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8] cursor-text"
                     />
                 </label>
 
@@ -107,7 +107,7 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, onSaved, selectedDate = new D
                         value={memo}
                         onChange={(e) => setMemo(e.target.value)}
                         placeholder="간단한 메모 (선택)"
-                        className="px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8] resize-none"
+                        className="px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8] resize-none cursor-text"
                     />
                 </label>
 
@@ -122,7 +122,7 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, onSaved, selectedDate = new D
                                     key={cat.category_id}
                                     type="button"
                                     onClick={() => setCategory(cat.category_id)}
-                                    className={`px-3 py-2 rounded-full text-xs font-medium transition ${
+                                    className={`px-3 py-2 rounded-full text-xs font-medium transition cursor-pointer ${
                                         active
                                             ? "bg-[#3D4D5C] text-white"
                                             : "bg-[#F5F8FA] text-[#8B9BAA]"
@@ -143,7 +143,7 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, onSaved, selectedDate = new D
                         role="switch"
                         aria-checked={isPublic}
                         onClick={() => setIsPublic((v) => !v)}
-                        className={`relative w-12 h-7 rounded-full transition-colors ${
+                        className={`relative w-12 h-7 rounded-full transition-colors cursor-pointer ${
                             isPublic ? "bg-[#A8C8D8]" : "bg-[#D9DFE4]"
                         }`}
                     >
@@ -158,7 +158,7 @@ const NewTodoModal = ({ isOpen, onClose, onSubmit, onSaved, selectedDate = new D
                 {/* 제출 */}
                 <button
                     type="submit"
-                    className="mt-2 w-full py-3 rounded-xl bg-[#A8C8D8] text-white font-semibold text-sm hover:bg-[#97BAC9] disabled:opacity-60"
+                    className="mt-2 w-full py-3 rounded-xl bg-[#A8C8D8] text-white font-semibold text-sm hover:bg-[#97BAC9] cursor-pointer disabled:opacity-60"
                     disabled={!title.trim() || submitting}
                 >
                     저장하기

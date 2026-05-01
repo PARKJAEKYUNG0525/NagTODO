@@ -91,7 +91,7 @@ const FriendAddModal = ({ isOpen, onClose, onSearch, onRequest }) => {
             onCompositionStart={handleCompositionStart}
             onCompositionEnd={handleCompositionEnd}
             placeholder="닉네임 또는 이메일로 검색"
-            className="w-full pl-10 px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8]"
+            className="w-full pl-10 px-4 py-3 rounded-xl bg-[#F5F8FA] text-sm text-[#3D4D5C] outline-none focus:ring-2 focus:ring-[#A8C8D8] cursor-text"
           />
         </div>
 
@@ -135,7 +135,7 @@ const FriendAddModal = ({ isOpen, onClose, onSearch, onRequest }) => {
                   </div>
                   <button
                     onClick={() => onRequest?.(user)}
-                    className="px-4 py-1.5 rounded-xl bg-[#A8C8D8] text-white text-xs font-bold hover:bg-[#8BB5C8] active:scale-95 transition-all"
+                    className="px-4 py-1.5 rounded-xl bg-[#A8C8D8] text-white text-xs font-bold hover:bg-[#8BB5C8] active:scale-95 transition-all cursor-pointer"
                   >
                     요청
                   </button>

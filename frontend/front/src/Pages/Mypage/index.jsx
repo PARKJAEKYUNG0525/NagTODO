@@ -3,7 +3,7 @@ import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import { useAuth } from "../../hooks/useAuth";
 // import { useNotification } from "@/hooks/useNotification";
 import NotificationBell from "../../Components/Notification";
-import useMypage from "../../hooks/useMypage";
+import useMypage  from "../../hooks/useMypage";
 import ErrorMessage from "../../Components/Modal/FormUi/ErrorMessage";
 import api from "@/utils/api.js";
 import { useImg } from "@/hooks/useImg";
@@ -15,8 +15,8 @@ import useCategory from "@/hooks/useCategory.jsx";
 // import NotificationModal from "@/Components/Modal/NotificationModal/index.jsx";
 
 export default function MyPage() {
-    const { user, setUser, logout, deleteUser } = useAuth();
-    const { updateProfile, updatePassword, checkUsername, updateStatusMessage } = useMypage();
+    const { user, setUser, logout } = useAuth();
+    const { updateProfile, updatePassword, checkUsername, updateStatusMessage, deleteUser } = useMypage();
     const { currentBg, getUserBg } = useImg();
     const { currentCloth, getUserCloth, setUserCloth } = useCloth();
     const { getCategory } = useCategory();
@@ -325,7 +325,7 @@ export default function MyPage() {
                     </div>
                     <button
                         onClick={handleChangeProfileImage}
-                        className="mt-2 text-xs text-[#8B9BAA]"
+                        className="mt-2 text-xs text-[#8B9BAA] cursor-pointer"
                     >
                         프로필 사진 변경
                     </button>
@@ -367,13 +367,13 @@ export default function MyPage() {
                 <div className="mt-8 flex gap-3">
                     <button
                         onClick={handleCancelEditProfile}
-                        className="flex-1 py-4 rounded-2xl bg-[#4A5C6E] text-white font-bold text-sm"
+                        className="flex-1 py-4 rounded-2xl bg-[#4A5C6E] text-white font-bold text-sm cursor-pointer"
                     >
                         취소
                     </button>
                     <button
                         onClick={handleSaveProfile}
-                        className="flex-1 py-4 rounded-2xl bg-[#B4D0DB] text-white font-bold text-sm"
+                        className="flex-1 py-4 rounded-2xl bg-[#B4D0DB] text-white font-bold text-sm cursor-pointer"
                     >
                         저장
                     </button>
@@ -409,7 +409,7 @@ export default function MyPage() {
                         </p>
                         <button
                             onClick={handleEditAdmin}
-                            className="mt-3 px-4 py-1.5 rounded-full bg-[#EEF2F5] text-xs font-semibold text-[#3D4D5C]"
+                            className="mt-3 px-4 py-1.5 rounded-full bg-[#EEF2F5] text-xs font-semibold text-[#3D4D5C] cursor-pointer"
                         >
                             관리자 수정
                         </button>
@@ -426,7 +426,7 @@ export default function MyPage() {
                         {adminMode === "default" && (
                             <button
                                 onClick={handleEnterDeleteMode}
-                                className="text-xs text-[#8B9BAA]"
+                                className="text-xs text-[#8B9BAA] cursor-pointer"
                             >
                                 삭제
                             </button>
@@ -435,13 +435,13 @@ export default function MyPage() {
                             <div className="flex items-center gap-3 text-xs">
                                 <button
                                     onClick={handleCancelDeleteMode}
-                                    className="text-[#8B9BAA]"
+                                    className="text-[#8B9BAA] cursor-pointer"
                                 >
                                     취소
                                 </button>
                                 <button
                                     onClick={handleDeleteSelected}
-                                    className="text-[#3D4D5C] font-semibold"
+                                    className="text-[#3D4D5C] font-semibold cursor-pointer"
                                 >
                                     선택한 카테고리 삭제
                                 </button>
@@ -492,7 +492,7 @@ export default function MyPage() {
                                                     autoFocus
                                                     value={editingValue}
                                                     onChange={(e) => setEditingValue(e.target.value)}
-                                                    className="bg-transparent text-xs font-semibold text-white outline-none w-20"
+                                                    className="bg-transparent text-xs font-semibold text-white outline-none w-20 cursor-pointer"
                                                 />
                                             </div>
                                         </div>
@@ -506,7 +506,7 @@ export default function MyPage() {
                                                 }
                                             }}
                                             disabled={isOtherEditing}
-                                            className="flex-1 text-left"
+                                            className="flex-1 text-left cursor-pointer"
                                         >
                                             <span
                                                 className={`inline-block px-4 py-1.5 rounded-full text-xs font-semibold ${pillClass}`}
@@ -520,7 +520,7 @@ export default function MyPage() {
                                         {adminMode === "default" && (
                                             <button
                                                 onClick={() => handleStartEdit(cat)}
-                                                className="text-[#8B9BAA]"
+                                                className="text-[#8B9BAA] cursor-pointer"
                                             >
                                                 수정
                                             </button>
@@ -529,13 +529,13 @@ export default function MyPage() {
                                             <div className="flex items-center gap-3">
                                                 <button
                                                     onClick={handleCancelEdit}
-                                                    className="text-[#8B9BAA]"
+                                                    className="text-[#8B9BAA] cursor-pointer"
                                                 >
                                                     취소
                                                 </button>
                                                 <button
                                                     onClick={handleConfirmEdit}
-                                                    className="text-[#3D4D5C] font-semibold"
+                                                    className="text-[#3D4D5C] font-semibold cursor-pointer"
                                                 >
                                                     확인
                                                 </button>
@@ -574,7 +574,7 @@ export default function MyPage() {
             <div className="flex-1 overflow-y-auto px-6 pb-8 flex flex-col gap-5">
                 {/* 프로필 카드 */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm relative shrink-0">
-                    <button onClick={logout} className="absolute top-4 right-5 text-[10px] text-[#8B9BAA]">
+                    <button onClick={logout} className="absolute top-4 right-5 text-[10px] text-[#8B9BAA] cursor-pointer">
                         로그아웃
                     </button>
                     <div className="flex flex-col items-center">
@@ -594,7 +594,7 @@ export default function MyPage() {
                         </p>
                         <button
                             onClick={handleEditProfile}
-                            className="mt-4 w-full max-w-35 py-2.5 rounded-xl bg-[#EEF2F5] text-[12px] font-bold text-[#3D4D5C] active:bg-[#E2E8ED] transition-colors"
+                            className="mt-4 w-full max-w-35 py-2.5 rounded-xl bg-[#EEF2F5] text-[12px] font-bold text-[#3D4D5C] active:bg-[#E2E8ED] transition-colors cursor-pointer"
                         >
                             내 정보 수정
                         </button>
@@ -618,11 +618,11 @@ export default function MyPage() {
                             }}
                             maxLength={50}
                             placeholder="상태를 입력하세요"
-                            className="flex-1 px-3 py-2 text-xs bg-[#F1F3F5] rounded-lg text-[#3D4D5C] outline-none placeholder:text-[#ADB5BD]"
+                            className="flex-1 px-3 py-2 text-xs bg-[#F1F3F5] rounded-lg text-[#3D4D5C] outline-none placeholder:text-[#ADB5BD] cursor-text"
                         />
                         <button
                             onClick={handleSaveStatusMessage}
-                            className="px-4 py-2 rounded-lg bg-[#A8C8D8] text-white text-[12px] font-bold shrink-0"
+                            className="px-4 py-2 rounded-lg bg-[#A8C8D8] text-white text-[12px] font-bold shrink-0 cursor-pointer"
                         >
                             저장
                         </button>
@@ -636,7 +636,7 @@ export default function MyPage() {
                         {/* 엄격하게 버튼 */}
                         <button
                             onClick={() => handleSelectStrictMode("strict")}
-                            className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left
+                            className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left cursor-pointer
                             ${strictMode === "strict" ? "ring-2 ring-[#A8C8D8]" : ""}
                             `}
                         >
@@ -646,7 +646,7 @@ export default function MyPage() {
 
                         <button
                             onClick={() => handleSelectStrictMode("less")}
-                            className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left
+                            className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left cursor-pointer
                             ${strictMode === "less" ? "ring-2 ring-[#A8C8D8]" : ""}
                             `}
                         >
@@ -658,7 +658,7 @@ export default function MyPage() {
 
                 {/* 탈퇴 버튼 */}
                 <div className="flex justify-center shrink-0">
-                    <button onClick={deleteUser} className="text-[10px] text-[#8B9BAA] border-b border-[#8B9BAA] pb-0.5">
+                    <button onClick={deleteUser} className="text-[10px] text-[#8B9BAA] border-b border-[#8B9BAA] pb-0.5 cursor-pointer">
                         회원 탈퇴
                     </button>
                 </div>
@@ -678,7 +678,7 @@ function Field({ label, type = "text", value, onChange, placeholder, readOnly })
                 onChange={onChange}
                 placeholder={placeholder}
                 readOnly={readOnly}
-                className={`w-full px-4 py-3 rounded-xl text-sm shadow-sm focus:outline-none
+                className={`w-full px-4 py-3 rounded-xl text-sm shadow-sm focus:outline-none cursor-text
                         ${readOnly
                             ? "bg-[#F2F4F6] text-[#B5BEC7] cursor-not-allowed"
                             : "bg-white text-[#3D4D5C] placeholder-[#B5BEC7] focus:ring-2 focus:ring-[#A8C8D8]"

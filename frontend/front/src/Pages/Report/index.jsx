@@ -172,20 +172,20 @@ export default function MonthlyReport() {
                     <div className="flex gap-2">
                         <button
                             onClick={() => handleTabChange("monthly")}
-                            className={`flex-1 px-4 py-2 rounded-full text-xs whitespace-nowrap ${reportMode === "monthly" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
+                            className={`flex-1 px-4 py-2 rounded-full text-xs whitespace-nowrap cursor-pointer ${reportMode === "monthly" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
                         >
                             월 단위 리포트 보기
                         </button>
                         <button
                             onClick={() => handleTabChange("30days")}
-                            className={`flex-1 px-4 py-2 rounded-full text-xs whitespace-nowrap ${reportMode === "30days" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
+                            className={`flex-1 px-4 py-2 rounded-full text-xs whitespace-nowrap cursor-pointer ${reportMode === "30days" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
                         >
                             최근 30일 리포트 보기
                         </button>
                     </div>
                     <button
                         onClick={() => handleTabChange("history")}
-                        className={`w-full py-2 rounded-full text-xs ${reportMode === "history" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
+                        className={`w-full py-2 rounded-full text-xs cursor-pointer ${reportMode === "history" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
                     >
                         발행했던 리포트 보기
                     </button>
@@ -203,7 +203,7 @@ export default function MonthlyReport() {
                                 <button
                                     type="button"
                                     onClick={() => { setIsYearDropdownOpen((v) => !v); setIsMonthDropdownOpen(false); }}
-                                    className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
+                                    className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm cursor-pointer"
                                 >
                                     <span>{selectedYear}년</span>
                                     <span className="text-[#8B9BAA] text-xs">▼</span>
@@ -215,7 +215,7 @@ export default function MonthlyReport() {
                                                 <button
                                                     type="button"
                                                     onClick={() => { setSelectedYear(y); setAnalyzed(false); setIsYearDropdownOpen(false); }}
-                                                    className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] text-[#3D4D5C] ${selectedYear === y ? "bg-[#EEF2F5] font-semibold" : ""}`}
+                                                    className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] text-[#3D4D5C] cursor-pointer ${selectedYear === y ? "bg-[#EEF2F5] font-semibold" : ""}`}
                                                 >
                                                     {y}년
                                                 </button>
@@ -229,7 +229,7 @@ export default function MonthlyReport() {
                                 <button
                                     type="button"
                                     onClick={() => { setIsMonthDropdownOpen((v) => !v); setIsYearDropdownOpen(false); }}
-                                    className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
+                                    className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm cursor-pointer"
                                 >
                                     <span>{selectedMonth}월</span>
                                     <span className="text-[#8B9BAA] text-xs">▼</span>
@@ -241,7 +241,7 @@ export default function MonthlyReport() {
                                                 <button
                                                     type="button"
                                                     onClick={() => { setSelectedMonth(i + 1); setAnalyzed(false); setIsMonthDropdownOpen(false); }}
-                                                    className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] text-[#3D4D5C] ${selectedMonth === i + 1 ? "bg-[#EEF2F5] font-semibold" : ""}`}
+                                                    className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] text-[#3D4D5C] cursor-pointer ${selectedMonth === i + 1 ? "bg-[#EEF2F5] font-semibold" : ""}`}
                                                 >
                                                     {m}
                                                 </button>
@@ -268,7 +268,7 @@ export default function MonthlyReport() {
                             <button
                                 type="button"
                                 onClick={() => setIsReportDropdownOpen((v) => !v)}
-                                className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm shadow-sm"
+                                className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm shadow-sm cursor-pointer"
                             >
                                 <span className={selectedReport ? "text-[#3D4D5C]" : "text-[#8B9BAA]"}>
                                     {selectedReport
@@ -284,7 +284,7 @@ export default function MonthlyReport() {
                                             <button
                                                 type="button"
                                                 onClick={() => handlePastReportSelect(report)}
-                                                className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] ${selectedReport?.report_id === report.report_id ? "bg-[#EEF2F5] font-semibold" : ""} text-[#3D4D5C]`}
+                                                className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] cursor-pointer ${selectedReport?.report_id === report.report_id ? "bg-[#EEF2F5] font-semibold" : ""} text-[#3D4D5C]`}
                                             >
                                                 {formatDateRange(report.month_start, report.month_end)}
                                             </button>
@@ -333,7 +333,7 @@ export default function MonthlyReport() {
                     <button
                         onClick={handleAnalyze}
                         disabled={isLoading}
-                        className="mt-6 w-full py-4 rounded-2xl bg-[#B4D0DB] text-white font-bold text-sm disabled:opacity-60"
+                        className="mt-6 w-full py-4 rounded-2xl bg-[#B4D0DB] text-white font-bold text-sm cursor-pointer disabled:opacity-60"
                     >
                         분석하기
                     </button>
@@ -346,7 +346,7 @@ export default function MonthlyReport() {
                             <h2 className="text-sm font-bold text-[#3D4D5C]">{resultRange}</h2>
                             <button
                                 onClick={handleReselect}
-                                className="px-3 py-1.5 rounded-full bg-[#4A5C6E] text-[11px] text-white font-medium"
+                                className="px-3 py-1.5 rounded-full bg-[#4A5C6E] text-[11px] text-white font-medium cursor-pointer"
                             >
                                 다시 선택
                             </button>

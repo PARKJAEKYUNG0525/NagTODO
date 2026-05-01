@@ -59,7 +59,7 @@ export default function Login({ onSignupClick }) {
                             placeholder="user@user.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA]"
+                            className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 cursor-text focus:border-[#9ECFDA]"
                         />
                     </div>
 
@@ -70,14 +70,14 @@ export default function Login({ onSignupClick }) {
                             placeholder="••••••••"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 focus:border-[#9ECFDA]"
+                            className="px-4 py-3.5 rounded-xl border-2 border-white bg-white text-[15px] text-[#2D3748] outline-none shadow-sm transition-colors duration-200 cursor-text focus:border-[#9ECFDA]"
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className="mt-2 py-4 rounded-xl bg-[#9ECFDA] text-white text-base font-semibold tracking-wide transition-colors duration-200 hover:bg-[#7BBFCD] disabled:opacity-70 cursor-pointer"
+                        className="mt-2 py-4 rounded-xl bg-[#9ECFDA] text-white text-base font-semibold tracking-wide transition-colors duration-200 hover:bg-[#7BBFCD] cursor-pointer disabled:opacity-70"
                     >
                         {isLoading ? "로그인 중..." : "로그인"}
                     </button>

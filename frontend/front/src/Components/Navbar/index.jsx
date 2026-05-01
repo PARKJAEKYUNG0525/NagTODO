@@ -41,7 +41,7 @@ const Navbar = () => {
                     <button
                         key={tab.key}
                         onClick={() => navigate(tab.path)}
-                        className={`flex flex-col items-center gap-1 px-3 py-1 text-[11px] ${
+                        className={`flex flex-col items-center gap-1 px-3 py-1 text-[11px] cursor-pointer ${
                             active ? "text-[#3D4D5C] font-semibold" : "text-[#8B9BAA]"
                         }`}
                     >

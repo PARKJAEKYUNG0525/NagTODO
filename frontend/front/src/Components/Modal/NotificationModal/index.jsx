@@ -43,13 +43,13 @@ const NotificationModal = ({
                     <div className="flex gap-2 mt-2">
                       <button
                         onClick={() => onAccept?.(n)}
-                        className="flex-1 py-1.5 rounded-xl bg-[#A8C8D8] text-white text-xs font-bold"
+                        className="flex-1 py-1.5 rounded-xl bg-[#A8C8D8] text-white text-xs font-bold cursor-pointer"
                       >
                         수락
                       </button>
                       <button
                         onClick={() => onReject?.(n)}
-                        className="flex-1 py-1.5 rounded-xl bg-[#E89B9B] text-white text-xs font-bold"
+                        className="flex-1 py-1.5 rounded-xl bg-[#E89B9B] text-white text-xs font-bold cursor-pointer"
                       >
                         거절
                       </button>

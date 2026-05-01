@@ -60,7 +60,7 @@ const ClothChangeModal = ({ isOpen, onClose, currentClothId, onApply }) => {
                             key={tab.key}
                             type="button"
                             onClick={() => setActiveTab(tab.key)}
-                            className={`pb-2 px-4 text-sm font-semibold transition ${
+                            className={`pb-2 px-4 text-sm font-semibold transition cursor-pointer ${
                                 active
                                     ? "text-[#3D4D5C] border-b-2 border-[#A8C8D8]"
                                     : "text-[#8B9BAA] border-b-2 border-transparent hover:text-[#3D4D5C]"
@@ -95,7 +95,7 @@ const ClothChangeModal = ({ isOpen, onClose, currentClothId, onApply }) => {
                                 disabled={!unlocked}
                                 aria-disabled={!unlocked}
                                 title={unlocked ? cloth.title : "출석 보상으로 해금 예정"}
-                                className={`relative flex flex-col items-center gap-2 p-2 rounded-xl transition ${
+                                className={`relative flex flex-col items-center gap-2 p-2 rounded-xl transition cursor-pointer ${
                                     active ? "ring-2 ring-[#A8C8D8]" : ""
                                 } ${
                                     !unlocked ? "cursor-not-allowed" : "hover:bg-[#F5F8FA]"
@@ -135,7 +135,7 @@ const ClothChangeModal = ({ isOpen, onClose, currentClothId, onApply }) => {
                 type="button"
                 onClick={handleApply}
                 disabled={!selected || !isUnlocked(selected)}
-                className="mt-5 w-full py-3 rounded-xl bg-[#A8C8D8] text-white font-semibold text-sm hover:bg-[#97BAC9] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="mt-5 w-full py-3 rounded-xl bg-[#A8C8D8] text-white font-semibold text-sm hover:bg-[#97BAC9] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 적용하기
             </button>

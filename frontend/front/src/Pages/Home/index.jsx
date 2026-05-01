@@ -76,7 +76,7 @@ export default function Home() {
                     {/* 재생/정지 버튼 — 자기만의 onClick */}
                     <button
                         onClick={handlePlayToggle}
-                        className="w-8 h-8 rounded-full bg-[#A8C8D8] flex items-center justify-center shrink-0 mr-3 transition-colors duration-200 hover:bg-[#97b7c7]"
+                        className="w-8 h-8 rounded-full bg-[#A8C8D8] flex items-center justify-center shrink-0 mr-3 transition-colors duration-200 hover:bg-[#97b7c7] cursor-pointer"
                         aria-label={isPlaying ? "정지" : "재생"}
                     >
                         {/* play가 true면 네모(정지), false면 세모(재생) */}
@@ -91,7 +91,7 @@ export default function Home() {
                     <button
                         type="button"
                         onClick={() => setIsMusicListOpen((v) => !v)}
-                        className="flex-1 flex items-center justify-between overflow-hidden"
+                        className="flex-1 flex items-center justify-between overflow-hidden cursor-pointer"
                         aria-haspopup="listbox"
                         aria-expanded={isMusicListOpen}
                     >
@@ -131,7 +131,7 @@ export default function Home() {
                                                     play(m);
                                                     setIsMusicListOpen(false);
                                                 }}
-                                                className={`w-full text-left px-4 py-2 text-sm transition ${
+                                                className={`w-full text-left px-4 py-2 text-sm transition cursor-pointer ${
                                                     isActive
                                                         ? "bg-[#F5F8FA] text-[#3D4D5C] font-bold"
                                                         : "text-[#3D4D5C] hover:bg-[#F5F8FA]"
@@ -149,7 +149,7 @@ export default function Home() {
 
                 <button
                     onClick={() => setIsBgOpen(true)}
-                    className="w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+                    className="w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0 cursor-pointer"
                     aria-label="배경 이미지 변경"
                 >
                     <BsFillImageFill className="text-white" size={20} />

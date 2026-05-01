@@ -59,7 +59,7 @@ export default function Friend() {
             <>
                 <header className="px-6 pt-6 flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-[#3D4D5C]">회원 관리</h1>
-                    <NotificationBell />
+                    <NotificationBell onAccept={fetchFriends} />
                 </header>
 
                 <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
@@ -71,7 +71,7 @@ export default function Friend() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="회원 검색"
-                                className="flex-1 text-sm text-[#3D4D5C] placeholder-[#B5BEC7] focus:outline-none"
+                                className="flex-1 text-sm text-[#3D4D5C] placeholder-[#B5BEC7] cursor-text focus:outline-none"
                             />
                         </div>
                     </div>
@@ -138,7 +138,7 @@ return (
     >
         <header className="px-6 pt-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-[#3D4D5C]">친구</h1>
-            <NotificationBell />
+            <NotificationBell onAccept={fetchFriends} />
         </header>
 
             <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
@@ -150,7 +150,7 @@ return (
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="친구 검색"
-                            className="flex-1 text-sm text-[#3D4D5C] placeholder-[#B5BEC7] focus:outline-none"
+                            className="flex-1 text-sm text-[#3D4D5C] placeholder-[#B5BEC7] cursor-text focus:outline-none"
                         />
                     </div>
                 </div>
@@ -180,7 +180,7 @@ return (
                                 <button
                                     key={friend.friend_id}
                                     onClick={() => handleFriendClick(friend)}
-                                    className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left"
+                                    className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left cursor-pointer"
                                 >
                                     <div className="w-12 h-12 rounded-full bg-[#F5F8FA] shrink-0 overflow-hidden border border-[#E4E9EE] flex items-center justify-center">
                                         {friendFileUrl ? (
@@ -216,7 +216,7 @@ return (
             {/* 플로팅 친구 추가 버튼 */}
             <button
                 onClick={handleAddFriend}
-                className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg"
+                className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg cursor-pointer"
                 aria-label="친구 추가"
             >
                 <svg

@@ -65,7 +65,7 @@ const BgChangeModal = ({ isOpen, onClose }) => {
                                 key={img.img_id}
                                 type="button"
                                 onClick={() => setSelected(img.img_id)}
-                                className={`flex flex-col items-center gap-2 p-2 rounded-xl transition ${
+                                className={`flex flex-col items-center gap-2 p-2 rounded-xl cursor-pointer transition ${
                                     active ? "ring-2 ring-[#A8C8D8]" : ""
                                 }`}
                             >
@@ -90,14 +90,14 @@ const BgChangeModal = ({ isOpen, onClose }) => {
                 type="button"
                 onClick={handleApply}
                 disabled={!selected}
-                className="mt-5 w-full py-3 rounded-xl bg-[#A8C8D8] text-white font-semibold text-sm hover:bg-[#97BAC9] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="mt-5 w-full py-3 rounded-xl bg-[#A8C8D8] text-white font-semibold text-sm hover:bg-[#97BAC9] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed "
             >
                 적용하기
             </button>
             <div className="flex flex-col items-center">
                 <button
                     onClick={handleReset}
-                    className="mt-3 px-4 py-1.5 text-xs text-[#F4A6A6]"
+                    className="mt-3 px-4 py-1.5 text-xs text-[#F4A6A6] cursor-pointer"
                 >
                     초기화
                 </button>

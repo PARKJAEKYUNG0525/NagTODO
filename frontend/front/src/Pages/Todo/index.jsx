@@ -72,6 +72,23 @@ export default function Todo() {
 
     useEffect(() => { loadCategory(); }, [loadCategory]);
 
+    useEffect(() => {
+        if (todos.length === 0) return;
+
+        const failedTodos = todos.filter((t) => {
+            const todoDay = startOfDay(new Date(t.created_at));
+            const isPast = isBefore(todoDay, TODAY);
+            return isPast && t.todo_status !== STATUS.COMPLETED && t.todo_status !== STATUS.FAILED;
+        });
+
+        if (failedTodos.length === 0) return;
+
+        Promise.all(
+            failedTodos.map((t) => updateTodo(t.todo_id, { todo_status: "실패" }))
+        ).then(() => loadTodos());
+
+    }, [todos]);
+
     const currentTodos = todos.filter((t) =>
         isSameDay(startOfDay(new Date(t.created_at)), selectedDate)
     );
@@ -208,7 +225,7 @@ export default function Todo() {
                     <div className="flex items-center justify-end px-1 mb-1">
                         <button
                             onClick={handleToday}
-                            className="text-xs text-[#87B4C4] font-medium"
+                            className="text-xs text-[#87B4C4] font-medium cursor-pointer"
                         >
                         </button>
                     </div>
@@ -228,7 +245,7 @@ export default function Todo() {
                             mid:  "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#F4D58A]",
                             low:  "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E89B9B]",
                         }}
-                        className="w-full"
+                        className="w-full [&_button]:cursor-pointer"
                     />
                 </div>
 
@@ -245,18 +262,18 @@ export default function Todo() {
 
                     {isDeleteMode ? (
                         <div className="flex items-center gap-3 text-xs">
-                            <button onClick={handleSelectAll} className="text-[#8B9BAA]">
+                            <button onClick={handleSelectAll} className="text-[#8B9BAA] cursor-pointer">
                                 전체 선택
                             </button>
                             <button
                                 onClick={handleDeleteSelected}
-                                className="text-[#3D4D5C] font-semibold"
+                                className="text-[#3D4D5C] font-semibold cursor-pointer"
                             >
                                 선택한 할 일 삭제
                             </button>
                             <button
                                 onClick={handleCancelDeleteMode}
-                                className="text-[#8B9BAA]"
+                                className="text-[#8B9BAA] cursor-pointer"
                             >
                                 취소
                             </button>
@@ -264,7 +281,7 @@ export default function Todo() {
                     ) : (
                         <button
                             onClick={handleEnterDeleteMode}
-                            className="text-xs text-[#8B9BAA]"
+                            className="text-xs text-[#8B9BAA] cursor-pointer"
                         >
                             할 일 삭제
                         </button>
@@ -320,7 +337,7 @@ export default function Todo() {
                                                     e.stopPropagation();
                                                     handleToggleStatus(todo);
                                                 }}
-                                                className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center border-2 transition"
+                                                className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center border-2 transition cursor-pointer"
                                                 style={{ borderColor: radioBorder }}
                                             >
                                                 {displayStatus === STATUS.COMPLETED && (
@@ -362,7 +379,7 @@ export default function Todo() {
             {!isDeleteMode && (
                 <button
                     onClick={() => setIsNewOpen(true)}
-                    className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg"
+                    className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg cursor-pointer"
                     aria-label="새 할 일 추가"
                 >
                     {/* 아이콘 위치: 플러스 (bi-plus-lg) */}
