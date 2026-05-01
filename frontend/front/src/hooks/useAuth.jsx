@@ -9,6 +9,8 @@ export const AuthProvider = ({ children }) => {
     const [error, setError] = useState("");
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
@@ -17,6 +19,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await api.post("/users/login", { email, pw: password })
             if (response.status === 200) {
+                setIsLoggingOut(false);
                 setUser(response.data.user);
                 setIsAuthenticated(true);
                 await verifyJWT();
@@ -52,24 +55,20 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = async () => {
-        try {
-            const response = await api.post("/users/logout");
-            setIsAuthenticated(false);
-            setUser(null);
+        setIsLoggingOut(true);
 
-            if (response.status === 200) {
-                showSuccessAlert({title:"로그아웃 되었습니다" });
-                navigate("/");
-            }
-        }
-        catch (error) {
-            console.log(error);
-            setError(error.response?.data.detail || "로그아웃에 실패하였습니다")
-        }
-        finally {
+        try {
+            await api.post("/users/logout");
+            showSuccessAlert({ title: "로그아웃 되었습니다" });
+
+        } catch (error) {
+            console.log("로그아웃 API 에러:", error);
+
+        } finally {
             setIsAuthenticated(false);
             setUser(null);
             navigate("/");
+            // setIsLoggingOut(false);
         }
     };
 
@@ -111,7 +110,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider
-            value={{ error, setError, isAuthenticated, login, signup, logout, user, setUser }}
+            value={{ error, setError, isAuthenticated, login, signup, logout, user, setUser, isDeleting, isLoggingOut }}
         >
             {children}
         </AuthContext.Provider>
