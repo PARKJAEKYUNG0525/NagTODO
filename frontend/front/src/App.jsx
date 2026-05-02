@@ -22,7 +22,7 @@ import MyPage from "./Pages/MyPage/index.jsx";
 import FriendDetail from "./Pages/FriendDetail/index.jsx";
 import { MusicProvider } from "@/hooks/useMusic.jsx";
 import { ImgProvider, useImg } from "./hooks/useImg";
-import api from "@/utils/api.js";
+import api, { buildFileUrl } from "@/utils/api.js";
 
 
 const ProtectedRoute = ({ children }) => {
@@ -77,7 +77,7 @@ const ProtectedLayout = () => {
                 style={
                     currentBg
                         ? {
-                            backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
+                            backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${buildFileUrl(currentBg.file_url)})`,
                         }
                         : undefined
                 }

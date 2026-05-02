@@ -1,4 +1,4 @@
-import api from "@/utils/api.js";
+import api, { buildFileUrl } from "@/utils/api.js";
 import React, {createContext, useCallback, useContext, useRef, useState} from "react";
 import {showWarningAlert} from "@/utils/alertUtils.js";
 
@@ -26,7 +26,7 @@ export function MusicProvider({ children }) {
         if (currentMusic?.music_id !== music.music_id) {
             // baseURL + 상대경로
             // api.defaults.baseURL은 import.meta.env.VITE_API_BASE_URL과 같음;
-            musicRef.current.src = `${api.defaults.baseURL}${music.file_url}`;
+            musicRef.current.src = buildFileUrl(music.file_url);
             setCurrentMusic(music);
         }
         musicRef.current.play().catch((error) => showWarningAlert({title:"음악 재생에 실패했습니다.", text: error.message}));
