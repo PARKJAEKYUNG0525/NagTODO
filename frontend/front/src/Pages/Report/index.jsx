@@ -8,7 +8,6 @@ import remarkGfm from "remark-gfm";
 import { useAuth } from "@/hooks/useAuth";
 import { useReport } from "@/hooks/useReport";
 import api from "@/utils/api.js";
-import { useImg } from "@/hooks/useImg";
 import { BsFillBellFill } from "react-icons/bs";
 import { useNotification } from "@/hooks/useNotification";
 
@@ -53,8 +52,6 @@ export default function MonthlyReport() {
     const { isLoading, error, reportData, savedReports, fetchReport, fetchSavedReports } = useReport();
     const { notifications } = useNotification();
 
-    const { currentBg, getUserBg } = useImg();
-    useEffect(() => { getUserBg(); }, []);
 
     const [reportMode, setReportMode] = useState("monthly");
     const [analyzed, setAnalyzed] = useState(false);
@@ -173,15 +170,7 @@ export default function MonthlyReport() {
     );
 
     return (
-        <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
-             style={
-                 currentBg
-                     ? {
-                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
-                     }
-                     : undefined
-             }
-        >
+        <div className="flex-1 flex flex-col">
             {/* 상단 헤더 (알림 벨) */}
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">월간 리포트</h1>
@@ -214,7 +203,7 @@ export default function MonthlyReport() {
                 </div>
 
                 {/* 월 단위 뷰 */}
-                {reportMode === "monthly" && (
+                {reportMode === "monthly" && !analyzed && (
                     <>
                         <p className="mt-5 text-xs text-[#3D4D5C]">
                             분석할 <span className="text-[#E89B9B] font-semibold">년/월</span>을 선택하세요
@@ -319,7 +308,7 @@ export default function MonthlyReport() {
                 )}
 
                 {/* 최근 30일 뷰 */}
-                {reportMode === "30days" && (
+                {reportMode === "30days" && !analyzed && (
                     <>
                         <p className="mt-5 text-xs text-[#3D4D5C]">
                             30일 기준의 <span className="text-[#E89B9B] font-semibold">마지막 날짜</span>를 선택하세요
@@ -351,13 +340,13 @@ export default function MonthlyReport() {
                 )}
 
                 {/* 분석하기 버튼 */}
-                {reportMode !== "history" && (
+                {reportMode !== "history" && !analyzed && (
                     <button
                         onClick={handleAnalyze}
                         disabled={isLoading}
                         className="mt-6 w-full py-4 rounded-2xl bg-[#B4D0DB] text-white font-bold text-sm disabled:opacity-60"
                     >
-                        {isLoading ? "분석 중..." : "분석하기"}
+                        분석하기
                     </button>
                 )}
 
