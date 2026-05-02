@@ -3,17 +3,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, isSameDay, startOfDay, isBefore } from "date-fns";
 import { ko } from "date-fns/locale";
 import NewTodoModal from "../../Components/Modal/NewTodoModal";
-import NotificationModal from "../../Components/Modal/NotificationModal";
+import NotificationBell from "../../Components/Notification";
 import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
 import useTodo from "@/hooks/useTodo.jsx";
 import useCategory from "@/hooks/useCategory.jsx";
 
 import { useAuth } from "../../hooks/useAuth";
-import api from "@/utils/api";
 import { useNotification } from "@/hooks/useNotification";
-
 import { BsFillBellFill } from "react-icons/bs";
-
 // 달성률에 따른 도트 색
 const RATE_COLOR = {
     HIGH:  "#A8D5B4", // 100% — 초록
@@ -51,7 +48,6 @@ export default function Todo() {
     const [categories, setCategories] = useState([]);
 
     // 모달 상태
-    const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isNewOpen, setIsNewOpen] = useState(false);
     const [detailTodo, setDetailTodo] = useState(null);
 
@@ -71,7 +67,22 @@ export default function Todo() {
 
     useEffect(() => { loadCategory(); }, [loadCategory]);
 
-    const handleNotification = () => setIsNotiOpen(true);
+    useEffect(() => {
+        if (todos.length === 0) return;
+
+        const failedTodos = todos.filter((t) => {
+            const todoDay = startOfDay(new Date(t.created_at));
+            const isPast = isBefore(todoDay, TODAY);
+            return isPast && t.todo_status !== STATUS.COMPLETED && t.todo_status !== STATUS.FAILED;
+        });
+
+        if (failedTodos.length === 0) return;
+
+        Promise.all(
+            failedTodos.map((t) => updateTodo(t.todo_id, { todo_status: "실패" }))
+        ).then(() => loadTodos());
+
+    }, [todos]);
 
     const currentTodos = todos.filter((t) =>
         isSameDay(startOfDay(new Date(t.created_at)), selectedDate)
@@ -184,20 +195,6 @@ export default function Todo() {
         return { highDays: high, midDays: mid, lowDays: low };
     })();
 
-    // 공용 UI: 상단 벨 버튼
-    const NotificationBell = () => (
-        <button
-            onClick={handleNotification}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
-        >
-            <BsFillBellFill className="w-5 h-5 text-white" />
-
-            {notifications.length > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-            )}
-        </button>
-    );
-
     return (
         <div className="flex-1 flex flex-col"
         >
@@ -216,7 +213,7 @@ export default function Todo() {
                     <div className="flex items-center justify-end px-1 mb-1">
                         <button
                             onClick={handleToday}
-                            className="text-xs text-[#87B4C4] font-medium"
+                            className="text-xs text-[#87B4C4] font-medium cursor-pointer"
                         >
                         </button>
                     </div>
@@ -236,7 +233,7 @@ export default function Todo() {
                             mid:  "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#F4D58A]",
                             low:  "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E89B9B]",
                         }}
-                        className="w-full"
+                        className="w-full [&_button]:cursor-pointer"
                     />
                 </div>
 
@@ -253,18 +250,18 @@ export default function Todo() {
 
                     {isDeleteMode ? (
                         <div className="flex items-center gap-3 text-xs">
-                            <button onClick={handleSelectAll} className="text-[#8B9BAA]">
+                            <button onClick={handleSelectAll} className="text-[#8B9BAA] cursor-pointer">
                                 전체 선택
                             </button>
                             <button
                                 onClick={handleDeleteSelected}
-                                className="text-[#3D4D5C] font-semibold"
+                                className="text-[#3D4D5C] font-semibold cursor-pointer"
                             >
                                 선택한 할 일 삭제
                             </button>
                             <button
                                 onClick={handleCancelDeleteMode}
-                                className="text-[#8B9BAA]"
+                                className="text-[#8B9BAA] cursor-pointer"
                             >
                                 취소
                             </button>
@@ -272,7 +269,7 @@ export default function Todo() {
                     ) : (
                         <button
                             onClick={handleEnterDeleteMode}
-                            className="text-xs text-[#8B9BAA]"
+                            className="text-xs text-[#8B9BAA] cursor-pointer"
                         >
                             할 일 삭제
                         </button>
@@ -328,7 +325,7 @@ export default function Todo() {
                                                     e.stopPropagation();
                                                     handleToggleStatus(todo);
                                                 }}
-                                                className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center border-2 transition"
+                                                className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center border-2 transition cursor-pointer"
                                                 style={{ borderColor: radioBorder }}
                                             >
                                                 {displayStatus === STATUS.COMPLETED && (
@@ -370,20 +367,13 @@ export default function Todo() {
             {!isDeleteMode && (
                 <button
                     onClick={() => setIsNewOpen(true)}
-                    className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg"
+                    className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg cursor-pointer"
                     aria-label="새 할 일 추가"
                 >
                     {/* 아이콘 위치: 플러스 (bi-plus-lg) */}
                     <span className="text-white text-2xl leading-none">+</span>
                 </button>
             )}
-
-            {/* ─── 모달들 ─── */}
-            <NotificationModal
-                isOpen={isNotiOpen}
-                onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
-            />
             <NewTodoModal
                 isOpen={isNewOpen}
                 onClose={() => setIsNewOpen(false)}

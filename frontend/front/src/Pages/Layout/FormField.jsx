@@ -19,6 +19,7 @@ const FormField = ({
     placeholder:text-slate-400 
     transition-all 
     duration-200
+    cursor-text
     focus:outline-none 
     focus:border-slate-900 
     focus:ring-1 focus:ring-slate-900

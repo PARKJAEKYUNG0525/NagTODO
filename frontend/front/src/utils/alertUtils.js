@@ -33,9 +33,9 @@ export async function showWarningDialog({
         showCancelButton: true,
         confirmButtonText: confirmText,
         cancelButtonText: cancelText,
-        confirmButtonColor: "#E89B9B",
-        cancelButtonColor: "#EEF2F5",
-        reverseButtons: true,
+        confirmButtonColor: "#EEF2F5",
+        cancelButtonColor: "#E89B9B",
+        reverseButtons: false,
         customClass: sharedCustomClass,
     });
     return result.isConfirmed;
@@ -74,3 +74,10 @@ export function showWarningAlert({ title, text } = {}) {
         customClass: sharedCustomClass,
     });
 }
+
+// export const parseApiError = (error, fallback = "오류가 발생했습니다") => {
+//     const detail = error.response?.data.detail;
+//     return Array.isArray(detail)
+//         ? detail.map(d => d.msg).join(", ")
+//         : detail || fallback;
+// };

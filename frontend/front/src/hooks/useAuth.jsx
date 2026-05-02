@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
         }
         catch (error) {
             console.log(error);
-            setError(error.response?.data.detail || "로그인에 실패했습니다.");
+            showWarningAlert({title:'아이디/비밀번호가 틀립니다.'});
             setIsAuthenticated(false);
             return false;
         }
@@ -42,7 +42,12 @@ export const AuthProvider = ({ children }) => {
             }
         } catch (error) {
             console.log(error);
-            setError(error.response?.data.detail || "회원가입에 실패했습니다");
+            const detail = error.response?.data.detail;
+            setError(
+                Array.isArray(detail)
+                    ? detail.map(d => d.msg).join(", ")
+                    : detail || "회원가입에 실패했습니다"
+            );
         }
     };
 
@@ -67,36 +72,6 @@ export const AuthProvider = ({ children }) => {
             navigate("/");
         }
     };
-
-    const deleteUser = async () => {
-        try {
-            const response = await api.delete("/users/me");
-            if (response.status === 200) {
-                setIsAuthenticated(false);
-                setUser(null);
-                showSuccessAlert({ title: "탈퇴가 완료되었습니다" });
-                navigate("/");
-            }
-        } catch (error) {
-            console.log(error);
-            setError(error.response?.data.detail || "회원탈퇴에 실패했습니다");
-        }
-    };
-
-    // const deleteAccount = async () => {
-    //     try {
-    //         const response = await api.patch("/users/me/state");
-    //         if (response.status === 200) {
-    //             setIsAuthenticated(false);
-    //             setUser(null);
-    //             showSuccessAlert({ title: "탈퇴가 완료되었습니다" });
-    //             navigate("/");
-    //         }
-    //     } catch (error) {
-    //         console.log(error);
-    //         setError(error.response?.data.detail || "회원탈퇴에 실패했습니다");
-    //     }
-    // };
 
     // JWT 토큰 검증 + 사용자 상태 관리 함수
     // 현재 로그인한 사용자인지 확인하기 위함
@@ -136,7 +111,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider
-            value={{ error, setError, isAuthenticated,isLoading, login, signup, logout, user, setUser, deleteUser }}
+            value={{ error, setError, isAuthenticated, login, signup, logout, user, setUser }}
         >
             {children}
         </AuthContext.Provider>

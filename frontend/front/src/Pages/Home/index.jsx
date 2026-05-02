@@ -1,5 +1,4 @@
 import React, {useEffect, useRef, useState} from "react";
-import NotificationModal from "../../Components/Modal/NotificationModal";
 import BgChangeModal from "../../Components/Modal/BgChangeModal";
 import { useNotification } from "@/hooks/useNotification";
 import { useMusic } from "@/hooks/useMusic";
@@ -8,19 +7,15 @@ import {
   BsFillImageFill,
   BsFillSquareFill,
   BsChevronDown,
-  BsFillBellFill,
   BsPlayFill,
   BsPauseFill
 } from "react-icons/bs";
 
 export default function Home() {
     const { musics, getAllMusics, play, currentMusic, toggle, isPlaying } = useMusic();
-    const { notifications } = useNotification();
 
     const [isMusicListOpen, setIsMusicListOpen] = useState(false);
     const playerRef = useRef(null);
-
-    const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isBgOpen, setIsBgOpen] = useState(false);
 
     const handleNotification = () => setIsNotiOpen(true);
@@ -42,20 +37,6 @@ export default function Home() {
 
     // 음악 재생/중지
     const handlePlayToggle = () => toggle();
-
-    // 공용 UI: 상단 벨 버튼
-    const NotificationBell = () => (
-        <button
-            onClick={handleNotification}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
-        >
-            <BsFillBellFill className="w-5 h-5 text-white" />
-
-            {notifications.length > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-            )}
-        </button>
-    );
 
     return (
         <div className="flex-1 flex flex-col">
@@ -83,7 +64,7 @@ export default function Home() {
                     {/* 재생/정지 버튼 — 자기만의 onClick */}
                     <button
                         onClick={handlePlayToggle}
-                        className="w-8 h-8 rounded-full bg-[#A8C8D8] flex items-center justify-center shrink-0 mr-3 transition-colors duration-200 hover:bg-[#97b7c7]"
+                        className="w-8 h-8 rounded-full bg-[#A8C8D8] flex items-center justify-center shrink-0 mr-3 transition-colors duration-200 hover:bg-[#97b7c7] cursor-pointer"
                         aria-label={isPlaying ? "정지" : "재생"}
                     >
                         {/* play가 true면 네모(정지), false면 세모(재생) */}
@@ -98,7 +79,7 @@ export default function Home() {
                     <button
                         type="button"
                         onClick={() => setIsMusicListOpen((v) => !v)}
-                        className="flex-1 flex items-center justify-between overflow-hidden"
+                        className="flex-1 flex items-center justify-between overflow-hidden cursor-pointer"
                         aria-haspopup="listbox"
                         aria-expanded={isMusicListOpen}
                     >
@@ -110,8 +91,8 @@ export default function Home() {
                             size={18}
                             className={`shrink-0 transition-transform duration-300 ${
                                 isMusicListOpen ? "rotate-180" : "rotate-0"
-                            } text-[#3D4D5C]`} // 색상을 텍스트와 같은 남색으로 변경
-                            strokeWidth={1} // 조금 더 뚜렷하게 보이도록 설정 (선택 사항)
+                            } text-[#3D4D5C]`} 
+                            strokeWidth={1} 
                         />
                     </button>
 
@@ -138,7 +119,7 @@ export default function Home() {
                                                     play(m);
                                                     setIsMusicListOpen(false);
                                                 }}
-                                                className={`w-full text-left px-4 py-2 text-sm transition ${
+                                                className={`w-full text-left px-4 py-2 text-sm transition cursor-pointer ${
                                                     isActive
                                                         ? "bg-[#F5F8FA] text-[#3D4D5C] font-bold"
                                                         : "text-[#3D4D5C] hover:bg-[#F5F8FA]"
@@ -156,20 +137,12 @@ export default function Home() {
 
                 <button
                     onClick={() => setIsBgOpen(true)}
-                    className="w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
+                    className="w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0 cursor-pointer"
                     aria-label="배경 이미지 변경"
                 >
                     <BsFillImageFill className="text-white" size={20} />
                 </button>
             </section>
-
-            {/* ─── 모달들 ─── */}
-            <NotificationModal
-                isOpen={isNotiOpen}
-                onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
-                onItemClick={(n) => alert(`"${n.title}" 상세 보기`)}
-            />
             <BgChangeModal
                 isOpen={isBgOpen}
                 onClose={() => setIsBgOpen(false)}

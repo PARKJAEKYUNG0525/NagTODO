@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
-import { showSuccessAlert } from "../utils/alertUtils.js";
+import { showSuccessAlert, showWarningDialog } from "../utils/alertUtils.js";
 import { useAuth } from "./useAuth";
 
 const useMypage = () => {
+    const { setUser, logout } = useAuth();
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const { setUser, logout } = useAuth();
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
     const navigate = useNavigate();
-    
+
 
     // 프로필 조회
     const getProfile = async () => {
@@ -76,23 +78,6 @@ const useMypage = () => {
         }
     };
 
-    // 회원 탈퇴
-    const deleteAccount = async () => {
-        try {
-            const response = await api.delete("/users/me");
-            if (response.status === 200) {
-                showSuccessAlert({title:"회원 탈퇴가 완료되었습니다"});
-                await logout();
-                navigate("/");
-                return true;
-            }
-        } catch (error) {
-            console.log(error);
-            setError(error.response?.data.detail || "(useMypage)회원 탈퇴에 실패했습니다.");
-            return false;
-        }
-    };
-
     // 상태메세지
     const updateStatusMessage = async (status_message) => {
         try {
@@ -109,17 +94,42 @@ const useMypage = () => {
         }
     };
 
+    
+    const deleteUser = async () => {
+        const confirmed = await showWarningDialog({
+        title: "정말 탈퇴하시겠습니까?",
+        text: "탈퇴 시 모든 데이터가 삭제됩니다",
+        confirmText: "탈퇴",
+        });
+        if (!confirmed) return;
+
+        try {
+            const response = await api.delete("/users/me");
+            if (response.status === 200) {
+                setIsDeleting(true);
+                setIsAuthenticated(false);
+                setUser(null);
+                await showSuccessAlert({ title: "탈퇴가 완료되었습니다" });
+                navigate("/");
+            }
+        } catch (error) {
+            console.log(error);
+            setError(error.response?.data.detail || "회원탈퇴에 실패했습니다");
+        } finally {
+        setIsDeleting(false);
+        }
+    };
+
 
     return {
         error,
         setError,
-        isLoading,
         getProfile,
         updateProfile,
         updatePassword,
-        deleteAccount,
         checkUsername,
-        updateStatusMessage
+        updateStatusMessage,
+        deleteUser
     };
 };
 

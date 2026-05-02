@@ -2,15 +2,13 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import FriendAddModal from "../../Components/Modal/FriendAddModal";
-import NotificationModal from "../../Components/Modal/NotificationModal";
+import NotificationBell from "../../Components/Notification";
 
 import { useFriend } from "../../hooks/useFriend";
 import { useAuth } from "../../hooks/useAuth";
 import { useNotification } from "../../hooks/useNotification";
 
 import api from "../../utils/api";
-
-import { BsFillBellFill } from "react-icons/bs";
 
 export default function Friend() {
     const { searchUser, sendRequest, friends, fetchFriends } = useFriend();
@@ -21,9 +19,6 @@ export default function Friend() {
     const [searchQuery, setSearchQuery] = useState("");
 
     const [isFriendAddOpen, setIsFriendAddOpen] = useState(false);
-    const [isNotiOpen, setIsNotiOpen] = useState(false);
-
-    const handleNotification = () => setIsNotiOpen(true);
     const navigate = useNavigate();
 
     // friendName을 state로 함께 넘김
@@ -50,42 +45,6 @@ export default function Friend() {
         }
     };
 
-    const handleAcceptFriend = async (notification) => {
-        try {
-            const friendId = notification.content.split(":")[1];
-            await api.patch(`/friends/${friendId}`, { status: "수락" });
-            await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
-            fetchNotifications();
-            fetchFriends();
-            showSuccessAlert({ title: "친구 추가!", text: "친구가 되었어요!" });
-        } catch (e) {
-            console.error("수락 실패:", e);
-        }
-    };
-
-    const handleRejectFriend = async (notification) => {
-        try {
-            const friendId = notification.content.split(":")[1];
-            await api.delete(`/friends/${friendId}`, { status: "거절" });
-            await api.patch(`/notifications/${notification.notification_id}`, { is_read: true });
-            fetchNotifications();
-        } catch (e) {
-            console.error("거절 실패:", e);
-        }
-    };
-
-    const NotificationBell = () => (
-        <button
-            onClick={handleNotification}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
-        >
-            <BsFillBellFill className="w-5 h-5 text-white" />
-            {notifications.length > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-            )}
-        </button>
-    );
-
     // ====== 관리자 뷰 ======
     if (isAdmin) {
         const filtered = friends.filter((m) => {
@@ -100,7 +59,7 @@ export default function Friend() {
             <>
                 <header className="px-6 pt-6 flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-[#3D4D5C]">회원 관리</h1>
-                    <NotificationBell />
+                    <NotificationBell onAccept={fetchFriends} />
                 </header>
 
                 <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
@@ -112,7 +71,7 @@ export default function Friend() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="회원 검색"
-                                className="flex-1 text-sm text-[#3D4D5C] placeholder-[#B5BEC7] focus:outline-none"
+                                className="flex-1 text-sm text-[#3D4D5C] placeholder-[#B5BEC7] cursor-text focus:outline-none"
                             />
                         </div>
                     </div>
@@ -146,15 +105,6 @@ export default function Friend() {
                         )}
                     </div>
                 </div>
-
-                <NotificationModal
-                    isOpen={isNotiOpen}
-                    onClose={() => setIsNotiOpen(false)}
-                    notifications={notifications}
-                    onItemClick={(n) => console.log(n)}
-                    onAccept={handleAcceptFriend}
-                    onReject={handleRejectFriend}
-                />
                 <FriendAddModal
                     isOpen={isFriendAddOpen}
                     onClose={() => setIsFriendAddOpen(false)}
@@ -180,7 +130,7 @@ return (
     <div className="flex-1 flex flex-col">
         <header className="px-6 pt-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-[#3D4D5C]">친구</h1>
-            <NotificationBell />
+            <NotificationBell onAccept={fetchFriends} />
         </header>
 
             <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
@@ -192,7 +142,7 @@ return (
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="친구 검색"
-                            className="flex-1 text-sm text-[#3D4D5C] placeholder-[#B5BEC7] focus:outline-none"
+                            className="flex-1 text-sm text-[#3D4D5C] placeholder-[#B5BEC7] cursor-text focus:outline-none"
                         />
                     </div>
                 </div>
@@ -209,18 +159,29 @@ return (
                                     ? friend.receiver_username
                                     : friend.requester_username;
 
+                            const friendStatus =
+                                friend.requester_id === currentUser?.user_id
+                                    ? friend.receiver_status_message
+                                    : friend.requester_status_message;
+
                             return (
                                 <button
                                     key={friend.friend_id}
                                     onClick={() => handleFriendClick(friend)}
-                                    className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left"
+                                    className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left cursor-pointer"
                                 >
                                     <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
-                                    <div className="flex-1">
-                                        <p className="text-sm font-bold text-[#3D4D5C]">{friendName}</p>
-                                        <p className="text-xs text-[#8B9BAA] mt-1">
-                                            {friend.status === "수락" ? "친구" : friend.status}
-                                        </p>
+                                    
+                                    <div className="flex flex-col">
+                                            {/* 이름 */}
+                                            <span className="text-sm font-bold text-[#3D4D5C]">
+                                            {friendName}
+                                            </span>
+                                            
+                                            {/* 상태메시지 (질문하신 부분) */}
+                                            <span className="text-xs text-[#8B9BAA]">
+                                            {friendStatus || friend.status_message || "상태메시지"}
+                                            </span>
                                     </div>
                                 </button>
                             );
@@ -232,7 +193,7 @@ return (
             {/* 플로팅 친구 추가 버튼 */}
             <button
                 onClick={handleAddFriend}
-                className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg"
+                className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg cursor-pointer"
                 aria-label="친구 추가"
             >
                 <svg
@@ -252,15 +213,6 @@ return (
                     <line x1="22" y1="11" x2="16" y2="11" />
                 </svg>
             </button>
-
-            <NotificationModal
-                isOpen={isNotiOpen}
-                onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
-                onItemClick={(n) => console.log(n)}
-                onAccept={handleAcceptFriend}
-                onReject={handleRejectFriend}
-            />
             <FriendAddModal
                 isOpen={isFriendAddOpen}
                 onClose={() => setIsFriendAddOpen(false)}
