@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
 import BgChangeModal from "../../Components/Modal/BgChangeModal";
 import { useNotification } from "@/hooks/useNotification";
+import NotificationBell from "../../Components/Notification";
 import { useMusic } from "@/hooks/useMusic";
 
 import {
