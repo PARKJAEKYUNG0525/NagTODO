@@ -103,6 +103,22 @@ export default function MyPage() {
     //     if (db_category) setCategories(db_category);
     // }, [getCategory]);
 
+    // 회원 가입 날짜 계산
+    const getJoinDate = () => {
+        const createdAt = user.created_at;
+        // 1. 현재 시간과 가입 시간의 차이 계산 (밀리초 단위)
+        const now = new Date();
+        const joinedDate = new Date(createdAt);
+        // 2. 시간, 분, 초를 모두 0으로 초기화 (날짜만 남기기)
+        const startOfNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfJoined = new Date(joinedDate.getFullYear(), joinedDate.getMonth(), joinedDate.getDate());
+        // 3. 날짜 차이 계산
+        const diffInMs = startOfNow - startOfJoined;
+        const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24)) + 1;
+
+        return diffInDays;
+    }
+
     // const handleNotification = () => alert("알림 아이콘 클릭");
 
     // const handleWithdraw = () => alert("회원탈퇴 안내");
@@ -118,6 +134,7 @@ export default function MyPage() {
     };
     const handleCancelEditProfile = () => {
         setPendingCloth(null);
+        setError("")
         setView("main");
     };
 
@@ -324,86 +341,6 @@ export default function MyPage() {
         }
     };
 
-    // ====== 렌더: 비관리자 - 내 정보 수정 ======
-    if (!isAdmin && view === "edit-profile") {
-        return (
-            <div className="flex-1 overflow-y-auto px-8 pt-10 pb-10 flex flex-col">
-                <h1 className="text-xl font-bold text-[#3D4D5C]">내 정보 수정</h1>
-
-                <div className="mt-6 flex flex-col items-center">
-                    <div className="w-24 h-24 rounded-full overflow-hidden bg-[#A8C8D8]">
-                        {pendingCloth && (
-                            <img src={`${api.defaults.baseURL}${pendingCloth.file_url}`}
-                                 alt={pendingCloth.title} className="w-full h-full object-cover"
-                            />
-                        )}
-                    </div>
-                    <button
-                        onClick={handleChangeProfileImage}
-                        className="mt-2 text-xs text-[#8B9BAA]"
-                    >
-                        프로필 사진 변경
-                    </button>
-                </div>
-
-                <div className="mt-6 flex flex-col gap-4">
-
-                    <ErrorMessage error={error} />
-
-                    <Field label="닉네임" value={form.username} onChange={(e) => setForm({...form, username: e.target.value})} />
-                    <Field label="이메일" value={form.email} readOnly />
-                    <Field label="현재 비밀번호" type="password" value={form.currentPassword} onChange={(e) => setForm({...form, currentPassword: e.target.value})} placeholder={"••••••••"}/>
-                    <Field label="새 비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} placeholder={"••••••••"}/>
-                    <Field label="새 비밀번호 확인"
-                        type="password"
-                        value={form.confirmPassword} onChange={(e) => setForm({...form, confirmPassword: e.target.value})}
-                        placeholder={"••••••••"}
-                    />
-
-                    <div>
-                        <label className="block text-xs text-[#8B9BAA] mb-2">생일</label>
-                        <div className="flex gap-3">
-                           <div className="flex-1 bg-[#F2F4F6] rounded-xl px-4 py-3 flex items-center text-sm text-[#B5BEC7] shadow-sm cursor-not-allowed">
-                                <span>{form.birthYear || ""}</span>
-                                <span className="text-[#A8C8D8] text-xs">▼</span>
-                            </div>
-                            <div className="flex-1 bg-[#F2F4F6] rounded-xl px-4 py-3 flex items-center text-sm text-[#B5BEC7] shadow-sm cursor-not-allowed">
-                                <span>{form.birthMonth || ""}</span>
-                                <span className="text-[#A8C8D8] text-xs">▼</span>
-                            </div>
-                             <div className="flex-1 bg-[#F2F4F6] rounded-xl px-4 py-3 flex items-center text-sm text-[#B5BEC7] shadow-sm cursor-not-allowed">
-                                <span>{form.birthDay || ""}</span>
-                                <span className="text-[#A8C8D8] text-xs">▼</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="mt-8 flex gap-3">
-                    <button
-                        onClick={handleCancelEditProfile}
-                        className="flex-1 py-4 rounded-2xl bg-[#4A5C6E] text-white font-bold text-sm"
-                    >
-                        취소
-                    </button>
-                    <button
-                        onClick={handleSaveProfile}
-                        className="flex-1 py-4 rounded-2xl bg-[#B4D0DB] text-white font-bold text-sm"
-                    >
-                        저장
-                    </button>
-                </div>
-                {/* 프로필 변경 모달 추가 */}
-                <ClothChangeModal
-                    isOpen={isClothModalOpen}
-                    onClose={() => setIsClothModalOpen(false)}
-                    currentClothId={pendingCloth?.cloth_id}
-                    onApply={handleApplyCloth}
-                />
-            </div>
-        );
-    }
-
     const NotificationBell = () => (
         <button
             onClick={handleNotification}
@@ -588,6 +525,86 @@ export default function MyPage() {
         );
     }
 
+    // ====== 렌더: 비관리자 - 내 정보 수정 ======
+    if (!isAdmin && view === "edit-profile") {
+        return (
+            <div className="flex-1 overflow-y-auto px-8 pt-10 pb-10 flex flex-col">
+                <h1 className="text-xl font-bold text-[#3D4D5C]">내 정보 수정</h1>
+
+                <div className="mt-6 flex flex-col items-center">
+                    <div className={`w-24 h-24 rounded-full overflow-hidden ${!pendingCloth ? 'bg-[#A8C8D8]' : ''}`}>
+                        {pendingCloth && (
+                            <img src={`${api.defaults.baseURL}${pendingCloth.file_url}`}
+                                 alt={pendingCloth.title} className="w-full h-full object-cover"
+                            />
+                        )}
+                    </div>
+                    <button
+                        onClick={handleChangeProfileImage}
+                        className="mt-2 text-xs text-[#8B9BAA]"
+                    >
+                        프로필 사진 변경
+                    </button>
+                </div>
+
+                <div className="mt-6 flex flex-col gap-4">
+
+                    <ErrorMessage error={error} />
+
+                    <Field label="닉네임" value={form.username} onChange={(e) => setForm({...form, username: e.target.value})} />
+                    <Field label="이메일" value={form.email} readOnly />
+                    <Field label="현재 비밀번호" type="password" value={form.currentPassword} onChange={(e) => setForm({...form, currentPassword: e.target.value})} placeholder={"••••••••"}/>
+                    <Field label="새 비밀번호" type="password" value={form.password} onChange={(e) => setForm({...form, password: e.target.value})} placeholder={"••••••••"}/>
+                    <Field label="새 비밀번호 확인"
+                        type="password"
+                        value={form.confirmPassword} onChange={(e) => setForm({...form, confirmPassword: e.target.value})}
+                        placeholder={"••••••••"}
+                    />
+
+                    <div>
+                        <label className="block text-xs text-[#8B9BAA] mb-2">생일</label>
+                        <div className="flex gap-3">
+                           <div className="flex-1 bg-[#F2F4F6] rounded-xl px-4 py-3 flex items-center text-sm text-[#B5BEC7] shadow-sm cursor-not-allowed">
+                                <span>{form.birthYear || ""}</span>
+                                <span className="text-[#A8C8D8] text-xs">▼</span>
+                            </div>
+                            <div className="flex-1 bg-[#F2F4F6] rounded-xl px-4 py-3 flex items-center text-sm text-[#B5BEC7] shadow-sm cursor-not-allowed">
+                                <span>{form.birthMonth || ""}</span>
+                                <span className="text-[#A8C8D8] text-xs">▼</span>
+                            </div>
+                             <div className="flex-1 bg-[#F2F4F6] rounded-xl px-4 py-3 flex items-center text-sm text-[#B5BEC7] shadow-sm cursor-not-allowed">
+                                <span>{form.birthDay || ""}</span>
+                                <span className="text-[#A8C8D8] text-xs">▼</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-8 flex gap-3">
+                    <button
+                        onClick={handleCancelEditProfile}
+                        className="flex-1 py-4 rounded-2xl bg-[#4A5C6E] text-white font-bold text-sm"
+                    >
+                        취소
+                    </button>
+                    <button
+                        onClick={handleSaveProfile}
+                        className="flex-1 py-4 rounded-2xl bg-[#B4D0DB] text-white font-bold text-sm"
+                    >
+                        저장
+                    </button>
+                </div>
+                {/* 프로필 변경 모달 추가 */}
+                <ClothChangeModal
+                    isOpen={isClothModalOpen}
+                    onClose={() => setIsClothModalOpen(false)}
+                    currentClothId={pendingCloth?.cloth_id}
+                    onApply={handleApplyCloth}
+                />
+            </div>
+        );
+    }
+
     // ====== 렌더: 비관리자 - 마이페이지 메인 ======
     return (
         <div className="flex-1 min-h-0 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
@@ -612,7 +629,7 @@ export default function MyPage() {
                     </button>
                     <div className="flex flex-col items-center">
                         <p className="text-base font-bold text-[#3D4D5C]">{user?.username}</p>
-                        <div className="mt-3 w-20 h-20 rounded-full overflow-hidden bg-[#A8C8D8]">
+                        <div className={`mt-3 w-20 h-20 rounded-full overflow-hidden ${!currentCloth ? 'bg-[#A8C8D8]' : ''}`}>
                             {currentCloth && (
                                 <img
                                     src={`${api.defaults.baseURL}${currentCloth.file_url}`}
@@ -623,7 +640,7 @@ export default function MyPage() {
                         </div>
                         <p className="mt-4 text-xs text-[#3D4D5C]">{user?.email || ""}</p>
                         <p className="mt-1 text-xs text-[#8B9BAA]">
-                            함께한 지 <span className="font-semibold">40</span>일째
+                            함께한 지 <span className="font-semibold">{getJoinDate()}</span>일째
                         </p>
                         <button
                             onClick={handleEditProfile}

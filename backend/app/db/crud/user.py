@@ -1,6 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 # from sqlalchemy.future import select
 from sqlalchemy import select, or_, and_
+from sqlalchemy.orm import selectinload
+
 from app.db.models.user import User
 from app.db.models.friend import Friend
 from app.db.scheme.user import UserCreate, UserUpdate
@@ -18,7 +20,10 @@ class UserCrud:
     # R 조회 - user 확인
     @staticmethod
     async def get_user(db: AsyncSession, user_id: int) -> User | None:
-        result = await db.execute(select(User).where(User.user_id == user_id))
+        result = await db.execute(
+            select(User)
+            .options(selectinload(User.reward))
+            .where(User.user_id == user_id))
         return result.scalar_one_or_none()
 
     # R 조회 - username 확인

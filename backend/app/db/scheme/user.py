@@ -61,4 +61,22 @@ class UserInDB(UserBase):
         from_attributes = True
 
 class UserRead(UserInDB):
-    pass
+    pw: str = Field(default="", exclude=True)
+    reward_cloth_ids: list[str] = []
+
+    @classmethod
+    def from_orm_with_rewards(cls, user):
+        return cls(
+            user_id=user.user_id,
+            email=user.email,
+            username=user.username,
+            userimage_url=user.userimage_url,
+            created_at=user.created_at,
+            updated_at=user.updated_at,
+            birthday=user.birthday,
+            cloth_id=user.cloth_id,
+            img_id=user.img_id,
+            music_id=user.music_id,
+            status_message=user.status_message,
+            reward_cloth_ids=[r.cloth_id for r in user.reward] if user.reward else [],
+        )

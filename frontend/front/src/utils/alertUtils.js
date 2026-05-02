@@ -1,4 +1,5 @@
 import Swal from "sweetalert2";
+import api from "./api";
 
 /**
  * sweetalert2 공통 래퍼 모음
@@ -13,6 +14,7 @@ import Swal from "sweetalert2";
  */
 
 const sharedCustomClass = {
+    title: "!text-lg font-bold pt-6",
     popup: "rounded-3xl",
     confirmButton: "px-6 py-3 rounded-2xl",
     cancelButton: "px-6 py-3 rounded-2xl text-[#3D4D5C]",
@@ -26,8 +28,9 @@ export async function showWarningDialog({
                                         cancelText = "취소",
                                     } = {}) {
     const result = await Swal.fire({
-        title,
-        text,
+        title: title,
+        text: text,
+        width: '330px',
         icon: "warning",
         iconColor: "#E89B9B",
         showCancelButton: true,
@@ -44,8 +47,9 @@ export async function showWarningDialog({
 /** 성공 토스트/팝업 */
 export function showSuccessAlert({ title, text } = {}) {
     return Swal.fire({
-        title,
-        text,
+        title : title,
+        text : text,
+        width: '330px',
         icon: "success",
         confirmButtonColor: "#A8C8D8",
         customClass: sharedCustomClass,
@@ -55,8 +59,9 @@ export function showSuccessAlert({ title, text } = {}) {
 /** 정보 팝업 */
 export function showInfoAlert({ title, text } = {}) {
     return Swal.fire({
-        title,
-        text,
+        title: title,
+        text: text,
+        width: '330px',
         icon: "info",
         confirmButtonColor: "#A8C8D8",
         customClass: sharedCustomClass,
@@ -66,11 +71,30 @@ export function showInfoAlert({ title, text } = {}) {
 /** 경고 팝업 */
 export function showWarningAlert({ title, text } = {}) {
     return Swal.fire({
-        title,
-        text,
+        title: title,
+        text: text,
+        width: '300px',
         icon: "warning",
         iconColor: "#E89B9B",
         confirmButtonColor: "#A8C8D8",
         customClass: sharedCustomClass,
     });
 }
+/** 보상 팝업 */
+export const showAttendanceReward = (totalDays, clothTitle, clothFileUrl) => {
+    return Swal.fire({
+        title: `누적 ${totalDays}일 출석 달성!`,
+        html: `
+            <div style="text-align:center;">
+                <img src="${api.defaults.baseURL}${clothFileUrl}"
+                     alt="${clothTitle}"
+                     style="width:120px;height:120px;object-fit:cover;border-radius:50%;margin:16px auto;display:block;background:#F5F8FA;" />
+                <p style="font-weight:bold;color:#3D4D5C;margin-top:8px;font-size:15px;">${clothTitle}</p>
+                <p style="color:#8B9BAA;font-size:13px;margin-top:6px;">새로운 프로필이 해금되었어요</p>
+            </div>
+        `,
+        width: '330px',
+        confirmButtonColor: "#A8C8D8",
+        confirmButtonText: "확인",
+    });
+};

@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from app.db.crud.user import UserCrud
-from app.db.scheme.user import UserCreate, UserUpdate, UserLogin, UserPasswordUpdate
+from app.db.scheme.user import UserCreate, UserUpdate, UserLogin, UserPasswordUpdate, UserRead
 from app.db.models.user import User
 from app.core.jwt_handle import (
     create_access_token,
@@ -60,14 +60,14 @@ class UserService:
 
     # R 조회 - user 단일 조회
     @staticmethod
-    async def get_user_svc(db: AsyncSession, user_id: int) -> User:
+    async def get_user_svc(db: AsyncSession, user_id: int) -> UserRead:
         user = await UserCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
             )
-        return user
+        return UserRead.from_orm_with_rewards(user)
 
     # R 조회 - user 목록 조회
     @staticmethod

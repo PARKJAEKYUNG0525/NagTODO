@@ -1,4 +1,4 @@
-import { useState, createContext, useContext, useEffect } from "react";
+import {useState, createContext, useContext, useEffect, useCallback} from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import { showSuccessAlert, showWarningAlert } from "../utils/alertUtils.js";
@@ -98,6 +98,15 @@ export const AuthProvider = ({ children }) => {
     //     }
     // };
 
+    const refreshUser = useCallback(async () => {
+        try {
+            const response = await api.get("/users/me");
+            setUser(response.data);
+        } catch (error) {
+            showWarningAlert({title: "내 정보 새로고침에 실패했습니다", text: error.message});
+        }
+    }, []);
+
     // JWT 토큰 검증 + 사용자 상태 관리 함수
     // 현재 로그인한 사용자인지 확인하기 위함
     // 성공 시 서버가 사용자 정보 반환
@@ -113,7 +122,7 @@ export const AuthProvider = ({ children }) => {
                 const detail = error.response.data?.detail;
 
                 if (detail ===  "Access token expired") {
-                    showWarningAlert("세션이 만료되었습니다. 다시 로그인해주세요");
+                    showWarningAlert({title: "세션이 만료되었습니다.", text: "다시 로그인해주세요"});
                     navigate("/");
                 }
             }
@@ -136,7 +145,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider
-            value={{ error, setError, isAuthenticated,isLoading, login, signup, logout, user, setUser, deleteUser }}
+            value={{ error, setError, isAuthenticated, isLoading, user, setUser, login, signup, logout, deleteUser, refreshUser }}
         >
             {children}
         </AuthContext.Provider>

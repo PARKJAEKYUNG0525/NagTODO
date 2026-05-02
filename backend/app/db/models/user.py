@@ -5,16 +5,19 @@ from sqlalchemy import String, TIMESTAMP, Enum, func, Date, Integer, ForeignKey,
 from typing import Optional, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .todo import Todo
+    from .attendance import Attendance
+    from .cloth import Cloth
     from .friend import Friend
     from .friend_todo_view import FriendTodoView
-    from .recommend import Recommend
-    from .pw_history import PwHistory
-    # from .homepage import Homepage
-    from .cloth import Cloth
     from .img import Img
     from .music import Music
     from .notification import Notification
+    from .pw_history import PwHistory
+    from .recommend import Recommend
+    from .reward import Reward
+    # from .homepage import Homepage
+    from .todo import Todo
+
 
 class User(Base):
     __tablename__ = "user"
@@ -31,21 +34,12 @@ class User(Base):
     refresh_token:   Mapped[Optional[str]]      = mapped_column(String(255), nullable=True)
     status_message:  Mapped[Optional[str]]      = mapped_column(String(500), nullable=True)
 
-    cloth_id: Mapped[Optional[str]] = mapped_column(
-        String(100),
-        ForeignKey("cloth.cloth_id"),
-        nullable=True
-    )
-    music_id: Mapped[Optional[str]] = mapped_column(
-        String(100),
-        ForeignKey("music.music_id"),
-        nullable=True
-    )
-    img_id: Mapped[Optional[str]] = mapped_column(
-        String(100),
-        ForeignKey("img.img_id"),
-        nullable=True
-    )
+    cloth_id: Mapped[Optional[str]] = mapped_column(String(100), ForeignKey("cloth.cloth_id"),nullable=True)
+    music_id: Mapped[Optional[str]] = mapped_column(String(100),ForeignKey("music.music_id"),nullable=True)
+    img_id: Mapped[Optional[str]] = mapped_column(String(100),ForeignKey("img.img_id"),nullable=True)
+
+    attendance: Mapped[List["Attendance"]] = relationship("Attendance",back_populates="user",cascade="all, delete-orphan")
+    reward: Mapped[List["Reward"]] = relationship("Reward",back_populates="user",cascade="all, delete-orphan")
 
     cloths:           Mapped[Optional["Cloth"]]      = relationship("Cloth")
     music:            Mapped[Optional["Music"]]      = relationship("Music")

@@ -37,7 +37,7 @@ async def logout(response: Response, db: AsyncSession = Depends(get_db), current
 # R 조회 - 고정 경로 먼저
 @router.get("/me", response_model=UserRead)
 async def get_me(current_user: User = Depends(get_current_user)):
-    return current_user
+    return UserRead.from_orm_with_rewards(current_user)
 
 # R 닉네임 중복 확인
 @router.get("/check-username")

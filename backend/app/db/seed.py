@@ -12,29 +12,30 @@ _DEFAULT_CATEGORIES = [
 ]
 
 _CLOTHS_DEFAULT = [
-    {"cloth_id": "default_1",     "title": "가리키는_Default", "file_url": "/static/cloth/가리키는_Default.png"},
-    {"cloth_id": "default_2",     "title": "거만한_Default",   "file_url": "/static/cloth/거만한_Default.png"},
-    {"cloth_id": "default_3",     "title": "노래_Default",    "file_url": "/static/cloth/노래_Default.png"},
-    {"cloth_id": "default_4",     "title": "누워있는_Default", "file_url": "/static/cloth/누워있는_Default.png"},
-    {"cloth_id": "default_5",     "title": "눈반짝_Default",   "file_url": "/static/cloth/눈반짝_Default.png"},
-    {"cloth_id": "default_6",     "title": "드르렁_Default",   "file_url": "/static/cloth/드르렁_Default.png"},
-    {"cloth_id": "default_7",     "title": "앉아있는_default",  "file_url": "/static/cloth/앉아있는_default.png"},
-    {"cloth_id": "default_8",     "title": "웃음_Default",     "file_url": "/static/cloth/웃음_Default.png"},
-    {"cloth_id": "default_9",     "title": "인사_Default",     "file_url": "/static/cloth/인사_Default.png"},
-    {"cloth_id": "default_10",    "title": "째려보는_Default",  "file_url": "/static/cloth/째려보는_Default.png"},
+    {"cloth_id": "default_1",     "title": "삿대질하는 투칸",   "file_url": "/static/cloth/가리키는_Default.png"},
+    {"cloth_id": "default_2",     "title": "거만한 투칸",      "file_url": "/static/cloth/거만한_Default.png"},
+    {"cloth_id": "default_3",     "title": "노래하는 투칸",     "file_url": "/static/cloth/노래_Default.png"},
+    {"cloth_id": "default_4",     "title": "누워있는 투칸",     "file_url": "/static/cloth/누워있는_Default.png"},
+    {"cloth_id": "default_5",     "title": "빤히 쳐다보는 투칸", "file_url": "/static/cloth/눈반짝_Default.png"},
+    {"cloth_id": "default_6",     "title": "숙면하는 투칸",     "file_url": "/static/cloth/드르렁_Default.png"},
+    {"cloth_id": "default_7",     "title": "앉아있는 투칸",     "file_url": "/static/cloth/앉아있는_default.png"},
+    {"cloth_id": "default_8",     "title": "웃고있는 투칸",     "file_url": "/static/cloth/웃음_Default.png"},
+    {"cloth_id": "default_9",     "title": "인사하는 투칸",     "file_url": "/static/cloth/인사_Default.png"},
+    {"cloth_id": "default_10",    "title": "째려보는 투칸",     "file_url": "/static/cloth/째려보는_Default.png"},
 ]
 
 _CLOTHS_CROISSANT = [
-    {"cloth_id": "croissant_1",   "title": "앉아있는_Croissant", "file_url": "/static/cloth/앉아있는_Croissant.png"},
-    {"cloth_id": "croissant_2",   "title": "째려보는_Croissant", "file_url": "/static/cloth/째려보는_Croissant.png"},
-    {"cloth_id": "croissant_3",   "title": "가리키는_Croissant", "file_url": "/static/cloth/가리키는_Croissant.png"},
-    {"cloth_id": "croissant_4",   "title": "거만한_Croissant",   "file_url": "/static/cloth/거만한_Croissant.png"},
-    {"cloth_id": "croissant_5",   "title": "노래_Croissant",    "file_url": "/static/cloth/노래_Croissant.png"},
-    {"cloth_id": "croissant_6",   "title": "누워있는_Croissant", "file_url": "/static/cloth/누워있는_Croissant.png"},
-    {"cloth_id": "croissant_7",   "title": "눈반짝_Croissant",   "file_url": "/static/cloth/눈반짝_Croissant.png"},
-    {"cloth_id": "croissant_8",   "title": "드르렁_Croissant",   "file_url": "/static/cloth/드르렁_Croissant.png"},
-    {"cloth_id": "croissant_9",   "title": "웃음_Croissant",    "file_url": "/static/cloth/웃음_Croissant.png"},
-    {"cloth_id": "croissant_10",  "title": "인사_Croissant",    "file_url": "/static/cloth/인사_Croissant.png"},
+    {"cloth_id": "croissant_1",   "title": "삿대질하는 투칸",   "file_url": "/static/cloth/가리키는_Croissant.png"},
+    {"cloth_id": "croissant_2",   "title": "거만한 투칸",      "file_url": "/static/cloth/거만한_Croissant.png"},
+    {"cloth_id": "croissant_3",   "title": "노래하는 투칸",     "file_url": "/static/cloth/노래_Croissant.png"},
+    {"cloth_id": "croissant_4",   "title": "누워있는 투칸",     "file_url": "/static/cloth/누워있는_Croissant.png"},
+    {"cloth_id": "croissant_5",   "title": "빤히 쳐다보는 투칸", "file_url": "/static/cloth/눈반짝_Croissant.png"},
+    {"cloth_id": "croissant_6",   "title": "숙면하는 투칸",     "file_url": "/static/cloth/드르렁_Croissant.png"},
+    {"cloth_id": "croissant_7",   "title": "앉아있는 투칸",     "file_url": "/static/cloth/앉아있는_Croissant.png"},
+    {"cloth_id": "croissant_8",   "title": "웃고있는 투칸",     "file_url": "/static/cloth/웃음_Croissant.png"},
+    {"cloth_id": "croissant_9",   "title": "인사하는 투칸",     "file_url": "/static/cloth/인사_Croissant.png"},
+    {"cloth_id": "croissant_10",  "title": "째려보는 투칸",     "file_url": "/static/cloth/째려보는_Croissant.png"},
+
 ]
 
 _DEFAULT_IMGS = [
