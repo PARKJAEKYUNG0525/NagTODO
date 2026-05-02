@@ -8,24 +8,12 @@ const api = axios.create({
     },
 });
 
-// api.interceptors.request.use((config) => {
-//     const token = localStorage.getItem("access_token");
-//     if (token) {
-//         config.headers.Authorization = `Bearer ${token}`;
-//     }
-//     return config;
-// });
-
-api.interceptors.request.use((config) => {
-    const token = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("access_token="))
-        ?.split("=")[1];
-
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-});
+// ngrok 환경에서 <img>, <audio> 등 브라우저 직접 로드 요청에 헤더를 붙일 수 없으므로
+// 쿼리 파라미터로 ngrok 경고 페이지를 우회
+export const buildFileUrl = (filePath) => {
+    const base = api.defaults.baseURL || '';
+    const url = `${base}${filePath}`;
+    return base.includes('ngrok') ? `${url}?ngrok-skip-browser-warning=true` : url;
+};
 
 export default api;

@@ -7,8 +7,6 @@ import NotificationBell from "../../Components/Notification";
 import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
 import useTodo from "@/hooks/useTodo.jsx";
 import useCategory from "@/hooks/useCategory.jsx";
-import { useImg } from "@/hooks/useImg";
-import api from "@/utils/api.js";
 
 import { useAuth } from "../../hooks/useAuth";
 import { useNotification } from "@/hooks/useNotification";
@@ -41,7 +39,7 @@ export default function Todo() {
 
     const { todoLoading, getAllTodos, createTodo, updateTodo, deleteTodo } = useTodo();
     const { ctLoading, getCategory } = useCategory();
-    const { currentBg, setCurrentBg, getUserBg } = useImg();
+    const { notifications } = useNotification();
 
     const [selectedDate, setSelectedDate] = useState(TODAY);
     const [isDeleteMode, setIsDeleteMode] = useState(false);
@@ -52,9 +50,6 @@ export default function Todo() {
     // 모달 상태
     const [isNewOpen, setIsNewOpen] = useState(false);
     const [detailTodo, setDetailTodo] = useState(null);
-
-    // db에서 배경화면 불러오기
-    useEffect(() => { getUserBg(); }, []);
 
     // db에서 todo 불러오기
     const loadTodos = useCallback(async () => {
@@ -201,14 +196,7 @@ export default function Todo() {
     })();
 
     return (
-        <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
-             style={
-                 currentBg
-                     ? {
-                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
-                     }
-                     : undefined
-             }
+        <div className="flex-1 flex flex-col"
         >
             {/* 상단 헤더 */}
             <header className="px-6 pt-6 flex items-center justify-between">
