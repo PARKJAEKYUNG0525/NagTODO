@@ -90,6 +90,18 @@ export const useFriend = () => {
         }
     }, []);
 
+
+    const deleteFriend = async (friendId) => {
+        try {
+            await api.delete(`/friends/${friendId}`);
+            await fetchFriends(); // 목록 새로고침
+            return true;
+        } catch (err) {
+            console.error("친구 삭제 실패:", err);
+            return false;
+        }
+    };
+
     useEffect(() => {
         fetchFriends();
     }, [fetchFriends]);    
@@ -105,6 +117,7 @@ export const useFriend = () => {
         isSearching,
         searchUser,
         sendRequest,
-        fetchReceivedRequests
+        fetchReceivedRequests,
+        deleteFriend 
     };
 };

@@ -11,7 +11,7 @@ import { useImg } from "@/hooks/useImg";
 import api from "../../utils/api";
 
 export default function Friend() {
-    const { searchUser, sendRequest, friends, fetchFriends } = useFriend();
+    const { searchUser, sendRequest, friends, fetchFriends, deleteFriend } = useFriend();
     const { user: currentUser } = useAuth();
     const { currentBg, setCurrentBg, getUserBg } = useImg();
 
@@ -43,6 +43,14 @@ export default function Friend() {
         if (success) {
             setIsFriendAddOpen(false);
         }
+    };
+
+    const handleDeleteFriend = async (e, friendId) => {
+        e.stopPropagation(); // 카드 클릭(navigate) 이벤트 막기
+        const confirmed = await showWarningDialog();
+        if (!confirmed) return;
+        const success = await deleteFriend(friendId);
+        if (success) showSuccessAlert("친구가 삭제되었어요.");
     };
 
     // ====== 관리자 뷰 ======
@@ -173,25 +181,42 @@ return (
                                     : friend.requester_status_message;
 
                             return (
-                                <button
+                                <div
                                     key={friend.friend_id}
-                                    onClick={() => handleFriendClick(friend)}
-                                    className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left cursor-pointer"
+                                    className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3"
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
-                                    
-                                    <div className="flex flex-col">
-                                            {/* 이름 */}
+                                    {/* 기존 button을 div로 감싸고, 클릭 영역을 분리 */}
+                                    <button
+                                        onClick={() => handleFriendClick(friend)}
+                                        className="flex items-center gap-3 flex-1 text-left cursor-pointer"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
+                                        <div className="flex flex-col">
                                             <span className="text-sm font-bold text-[#3D4D5C]">
-                                            {friendName}
+                                                {friendName}
                                             </span>
-                                            
-                                            {/* 상태메시지 (질문하신 부분) */}
                                             <span className="text-xs text-[#8B9BAA]">
-                                            {friendStatus || friend.status_message || "상태메시지"}
+                                                {friendStatus || friend.status_message || "상태메시지"}
                                             </span>
-                                    </div>
-                                </button>
+                                        </div>
+                                    </button>
+
+                                    {/* 삭제 버튼 */}
+                                    <button
+                                        onClick={(e) => handleDeleteFriend(e, friend.friend_id)}
+                                        className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[#B5BEC7] hover:bg-red-50 hover:text-red-400 transition-colors"
+                                        aria-label="친구 삭제"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            fill="none" stroke="currentColor" strokeWidth="2"
+                                            strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                                            <polyline points="3 6 5 6 21 6" />
+                                            <path d="M19 6l-1 14H6L5 6" />
+                                            <path d="M10 11v6M14 11v6" />
+                                            <path d="M9 6V4h6v2" />
+                                        </svg>
+                                    </button>
+                                </div>
                             );
                         })
                     )}

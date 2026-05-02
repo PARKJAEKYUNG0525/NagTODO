@@ -20,9 +20,9 @@ const sharedCustomClass = {
 
 /** 삭제 확인 다이얼로그 (isConfirmed 를 boolean 으로 반환) */
 export async function showWarningDialog({
-                                        title,
-                                        text,
-                                        confirmText = "삭제",
+                                        title='친구를 삭제할까요?',
+                                        text="삭제된 친구는 복구할 수 없어요",
+                                        confirmText = "확인",
                                         cancelText = "취소",
                                     } = {}) {
     const result = await Swal.fire({
@@ -33,8 +33,10 @@ export async function showWarningDialog({
         showCancelButton: true,
         confirmButtonText: confirmText,
         cancelButtonText: cancelText,
-        confirmButtonColor: "#EEF2F5",
-        cancelButtonColor: "#E89B9B",
+        // confirmButtonColor: "#EEF2F5",
+        confirmButtonColor: "#E89B9B",
+        // cancelButtonColor: "#E89B9B",
+        cancelButtonColor: "#EEF2F5",
         reverseButtons: false,
         customClass: sharedCustomClass,
     });
