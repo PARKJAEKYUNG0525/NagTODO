@@ -111,36 +111,22 @@ const FriendAddModal = ({ isOpen, onClose, onSearch, onRequest }) => {
                 >
                   <div className="flex items-center gap-3">
 
-<<<<<<< HEAD
-                    <div className="w-10 h-10 rounded-full bg-[#F5F8FA] overflow-hidden border border-[#E4E9EE] flex items-center justify-center shrink-0">
-                      {user.file_url ? (
+                    <div className="w-10 h-10 rounded-full bg-[#F5F8FA] shrink-0 overflow-hidden border border-[#E4E9EE] flex items-center justify-center">
+                      {user.file_url ? ( // 수정: user.cloth_id?.file_url 대신 user.file_url 사용
                         <img
-                          src={
-                            user.file_url 
-                              ? `${api.defaults.baseURL}${user.file_url}` 
-                              : "/default_profile.png"
-                          }
+                          src={`${api.defaults.baseURL}${user.file_url}`} // 백엔드에서 조립된 경로를 그대로 사용
                           alt={user.username}
+                          className="w-full h-full object-cover"
                           onError={(e) => {
+                            // 이미지 로드 실패 시 안전장치
                             e.target.src = "/default_profile.png"; 
                           }}
                         />
                       ) : (
-                        <div className="w-full h-full bg-[#A8C8D8] flex items-center justify-center text-white text-xs">
-                          No Image
+                        // 데이터 자체가 없을 때 (fallback)
+                        <div className="w-full h-full bg-[#A8C8D8] opacity-50 flex items-center justify-center text-white text-[10px]">
+                          No img
                         </div>
-=======
-                    <div className="w-10 h-10 rounded-full bg-[#F5F8FA] shrink-0 overflow-hidden border border-[#E4E9EE] flex items-center justify-center">
-                      {user.cloth_id?.file_url ? (
-                        <img
-                          src={`${api.defaults.baseURL}${user.cloth_id.file_url}`}
-                          alt={user.username}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        // 이미지가 없을 때 기본 배경
-                        <div className="w-full h-full bg-[#A8C8D8] opacity-50" />
->>>>>>> 7f46033850a0a3392f3d9917f929d8bcc71f5f7c
                       )}
                     </div>
                     

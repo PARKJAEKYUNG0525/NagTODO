@@ -172,20 +172,10 @@ return (
                                     ? friend.receiver_status_message
                                     : friend.requester_status_message;
 
-<<<<<<< HEAD
-                            const friendFileUrl = 
-                                friend.requester_id === currentUser?.user_id
-                                    ? friend.receiver_file_url
-                                    : friend.requester_file_url;
-
-                                    
-
-=======
                                 const friendFileUrl = isRequester
                                     ? friend.receiver_file_url
                                     : friend.requester_file_url;
 
->>>>>>> 7f46033850a0a3392f3d9917f929d8bcc71f5f7c
                             return (
                                 <button
                                     key={friend.friend_id}
