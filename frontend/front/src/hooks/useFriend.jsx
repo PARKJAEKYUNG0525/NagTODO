@@ -102,6 +102,16 @@ export const useFriend = () => {
         }
     };
 
+    const deleteUser = async (userId) => {
+        try {
+            await api.delete(`/users/${userId}`);
+            return true;
+        } catch (err) {
+            console.error("회원 삭제 실패:", err);
+            return false;
+        }
+    };
+
     useEffect(() => {
         fetchFriends();
     }, [fetchFriends]);    
@@ -118,6 +128,7 @@ export const useFriend = () => {
         searchUser,
         sendRequest,
         fetchReceivedRequests,
-        deleteFriend 
+        deleteFriend,
+        deleteUser
     };
 };

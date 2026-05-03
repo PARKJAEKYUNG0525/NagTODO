@@ -57,4 +57,4 @@ class User(Base):
     friends_received: Mapped[List["Friend"]]         = relationship("Friend", foreign_keys="Friend.receiver_id", back_populates="receiver", cascade="all, delete-orphan")
     friend_todo_views:Mapped[List["FriendTodoView"]] = relationship("FriendTodoView", back_populates="user", cascade="all, delete-orphan")
     pw_histories:     Mapped[List["PwHistory"]]      = relationship("PwHistory", back_populates="user", cascade="all, delete-orphan")
-    notifications:    Mapped[List["Notification"]]   = relationship("Notification", back_populates="user")
+    notifications:    Mapped[List["Notification"]]   = relationship("Notification", back_populates="user", cascade="all, delete-orphan")

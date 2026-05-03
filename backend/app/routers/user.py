@@ -105,3 +105,8 @@ async def delete_me(
     current_user: User = Depends(get_current_user)
 ):
     return await user_svc.delete_user_svc(db, current_user.user_id)
+
+# D 삭제 - 관리자용
+@router.delete("/{user_id}")
+async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
+    return await user_svc.delete_user_svc(db, user_id)

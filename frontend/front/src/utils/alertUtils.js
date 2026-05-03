@@ -42,6 +42,29 @@ export async function showWarningDialog({
     });
     return result.isConfirmed;
 }
+export async function showWarningUserDialog({
+                                        title='  회원을 삭제할까요?',
+                                        text="삭제된 회원은 복구할 수 없어요",
+                                        confirmText = "확인",
+                                        cancelText = "취소",
+                                    } = {}) {
+    const result = await Swal.fire({
+        title,
+        text,
+        icon: "warning",
+        iconColor: "#E89B9B",
+        showCancelButton: true,
+        confirmButtonText: confirmText,
+        cancelButtonText: cancelText,
+        // confirmButtonColor: "#EEF2F5",
+        confirmButtonColor: "#E89B9B",
+        // cancelButtonColor: "#E89B9B",
+        cancelButtonColor: "#EEF2F5",
+        reverseButtons: false,
+        customClass: sharedCustomClass,
+    });
+    return result.isConfirmed;
+}
 
 /** 성공 토스트/팝업 */
 export function showSuccessAlert({ title, text } = {}) {

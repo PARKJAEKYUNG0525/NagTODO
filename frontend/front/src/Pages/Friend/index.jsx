@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
+import { showWarningDialog, showWarningUserDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import FriendAddModal from "../../Components/Modal/FriendAddModal";
 import NotificationBell from "../../Components/Notification";
 
@@ -11,11 +11,13 @@ import { useImg } from "@/hooks/useImg";
 import api from "../../utils/api";
 
 export default function Friend() {
-    const { searchUser, sendRequest, friends, fetchFriends, deleteFriend } = useFriend();
+    const { searchUser, sendRequest, friends, fetchFriends, deleteFriend, deleteUser  } = useFriend();
     const { user: currentUser } = useAuth();
     const { currentBg, setCurrentBg, getUserBg } = useImg();
 
-    const [isAdmin, setIsAdmin] = useState(false);
+    // const [isAdmin, setIsAdmin] = useState(false);
+    const isAdmin = currentUser?.role === "admin";
+    const [allUsers, setAllUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
 
     const [isFriendAddOpen, setIsFriendAddOpen] = useState(false);
@@ -50,18 +52,31 @@ export default function Friend() {
         const confirmed = await showWarningDialog();
         if (!confirmed) return;
         const success = await deleteFriend(friendId);
-        if (success) showSuccessAlert("친구가 삭제되었어요.");
+        if (success) showSuccessAlert({ title: "친구가 삭제되었어요." });
     };
+
+    const handleDeleteUser = async (e, userId) => {
+        e.stopPropagation();
+        const confirmed = await showWarningUserDialog();
+        if (!confirmed) return;
+        const success = await deleteUser(userId);
+        if (success) {
+            setAllUsers((prev) => prev.filter((u) => u.user_id !== userId));
+            showSuccessAlert({ title: "회원이 삭제되었어요." });
+        }
+    };
+
+    useEffect(() => {
+        if (isAdmin) {
+            api.get("/users/user").then((res) => setAllUsers(res.data));
+        }
+    }, [isAdmin]);
 
     // ====== 관리자 뷰 ======
     if (isAdmin) {
-        const filtered = friends.filter((m) => {
-            const name =
-                m.requester_id === currentUser?.user_id
-                    ? m.receiver_username
-                    : m.requester_username;
-            return (name || "").includes(searchQuery.trim());
-        });
+        const filtered = allUsers.filter((u) =>
+            (u.username || "").includes(searchQuery.trim())
+        );
 
         return (
             <>
@@ -90,38 +105,42 @@ export default function Friend() {
                                 검색 결과가 없어요.
                             </div>
                         ) : (
-                            filtered.map((member) => {
-                                const name =
-                                    member.requester_id === currentUser?.user_id
-                                        ? member.receiver_username
-                                        : member.requester_username;
-                                return (
-                                    <div
-                                        key={member.friend_id}
-                                        className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 relative"
-                                    >
-                                        <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
-                                        <div className="flex-1">
-                                            <p className="text-sm font-bold text-[#3D4D5C]">{name}</p>
-                                            <p className="text-xs text-[#8B9BAA] mt-1">
-                                                {member.status === "수락" ? "친구" : member.status}
-                                            </p>
-                                        </div>
+                            filtered.map((user) => (
+                                <div
+                                    key={user.user_id}
+                                    className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3"
+                                >
+                                    <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
+                                    <div className="flex-1 flex flex-col">
+                                        <span className="text-sm font-bold text-[#3D4D5C]">
+                                            {user.username}
+                                        </span>
+                                        <span className="text-xs text-[#8B9BAA]">
+                                            {user.status_message || "상태메시지"}
+                                        </span>
                                     </div>
-                                );
-                            })
+                                    <button
+                                        onClick={(e) => handleDeleteUser(e, user.user_id)}
+                                        className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[#B5BEC7] hover:bg-red-50 hover:text-red-400 transition-colors"
+                                        aria-label="회원 삭제"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            fill="none" stroke="currentColor" strokeWidth="2"
+                                            strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                                            <polyline points="3 6 5 6 21 6" />
+                                            <path d="M19 6l-1 14H6L5 6" />
+                                            <path d="M10 11v6M14 11v6" />
+                                            <path d="M9 6V4h6v2" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            ))
                         )}
                     </div>
                 </div>
-                <FriendAddModal
-                    isOpen={isFriendAddOpen}
-                    onClose={() => setIsFriendAddOpen(false)}
-                    onSearch={searchUser}
-                    onRequest={handleFriendRequest}
-                />
             </>
         );
-    }
+    }   
 
     // ====== 일반 유저 친구 목록 ======
     const filteredFriends = friends.filter((f) => {
