@@ -56,9 +56,34 @@ class UserInDB(UserBase):
     img_id : str | None = None
     music_id : str | None = None
     status_message: str | None = None
+    file_url: str | None = None
 
     class Config:
         from_attributes = True
 
 class UserRead(UserInDB):
-    pass
+    @classmethod
+    def from_orm_custom(cls, user):
+        final_url = getattr(user, "userimage_url", None)
+        
+        if not final_url:
+            cloth_obj = getattr(user, "cloths", None)
+
+            if cloth_obj and hasattr(cloth_obj, "file_url"):
+                final_url = cloth_obj.file_url
+        
+        if not final_url:
+            final_url = "/static/default_profile.png"
+
+        return cls(
+            user_id=user.user_id,
+            email=user.email,
+            username=user.username,
+            pw=user.pw,
+            birthday=user.birthday,
+            status_message=user.status_message,
+            cloth_id=user.cloth_id,
+            file_url=final_url,
+            created_at=user.created_at,
+            updated_at=user.updated_at
+        )

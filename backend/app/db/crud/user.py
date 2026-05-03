@@ -4,6 +4,7 @@ from sqlalchemy import select, or_, and_
 from app.db.models.user import User
 from app.db.models.friend import Friend
 from app.db.scheme.user import UserCreate, UserUpdate
+from sqlalchemy.orm import selectinload
 
 class UserCrud:
 
@@ -62,25 +63,20 @@ class UserCrud:
         friend_result = await db.execute(
             select(Friend).where(
                 (Friend.requester_id == current_user_id) | (Friend.receiver_id == current_user_id),
-                Friend.status.in_(["대기", "수락"])  # 대기 중이거나 수락된 친구 제외
+                Friend.status.in_(["대기", "수락"])
             )
         )
         friends = friend_result.scalars().all()
 
-        # 친구 id 목록 추출
-        excluded_ids = set()
-        for f in friends:
-            if f.requester_id == current_user_id:
-                excluded_ids.add(f.receiver_id)
-            else:
-                excluded_ids.add(f.requester_id)
+        excluded_ids = {f.receiver_id if f.requester_id == current_user_id else f.requester_id for f in friends}
 
-        # 검색 쿼리
         result = await db.execute(
-            select(User).where(
+            select(User)
+            .options(selectinload(User.cloths)) # 연관된 옷 데이터를 즉시 로드
+            .where(
                 (User.username.ilike(f"%{query}%") | User.email.ilike(f"%{query}%")),
-                User.user_id != current_user_id,  # 본인 제외
-                User.user_id.notin_(excluded_ids)  # 친구 제외
+                User.user_id != current_user_id,
+                User.user_id.notin_(excluded_ids) if excluded_ids else True # 빈 목록일 때 에러 방지
             )
         )
         return list(result.scalars().all())

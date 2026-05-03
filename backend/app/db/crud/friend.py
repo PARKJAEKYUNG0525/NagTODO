@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from app.db.models.friend import Friend
 from app.db.models.user import User
 from app.db.scheme.friend import FriendCreate, FriendUpdate
@@ -46,7 +46,7 @@ class FriendCrud:
     async def get_all_friends(db: AsyncSession, user_id: int) -> list[Friend]:
         result = await db.execute(
             select(Friend)
-            .options(joinedload(Friend.requester), joinedload(Friend.receiver))  # ← 이게 있어야 함
+            .options(joinedload(Friend.requester).selectinload(User.cloths), joinedload(Friend.receiver).selectinload(User.cloths))
             .where(
                 (Friend.requester_id == user_id) | (Friend.receiver_id == user_id),
                 Friend.status == "수락"

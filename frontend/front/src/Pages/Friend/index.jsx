@@ -172,13 +172,31 @@ return (
                                     ? friend.receiver_status_message
                                     : friend.requester_status_message;
 
+                            const friendFileUrl = 
+                                friend.requester_id === currentUser?.user_id
+                                    ? friend.receiver_file_url
+                                    : friend.requester_file_url;
+
+                                    
+
                             return (
                                 <button
                                     key={friend.friend_id}
                                     onClick={() => handleFriendClick(friend)}
                                     className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3 text-left cursor-pointer"
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
+                                    <div className="w-12 h-12 rounded-full bg-[#F5F8FA] shrink-0 overflow-hidden border border-[#E4E9EE] flex items-center justify-center">
+                                        {friendFileUrl ? (
+                                            <img
+                                                src={`${api.defaults.baseURL}${friendFileUrl}`}
+                                                alt={friendName}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            // 이미지가 없을 때 보여줄 기본 아이콘 또는 색상
+                                            <div className="w-full h-full bg-[#A8C8D8]" />
+                                        )}
+                                    </div>
                                     
                                     <div className="flex flex-col">
                                             {/* 이름 */}
@@ -186,7 +204,7 @@ return (
                                             {friendName}
                                             </span>
                                             
-                                            {/* 상태메시지 (질문하신 부분) */}
+                                            {/* 상태메시지 */}
                                             <span className="text-xs text-[#8B9BAA]">
                                             {friendStatus || friend.status_message || "상태메시지"}
                                             </span>

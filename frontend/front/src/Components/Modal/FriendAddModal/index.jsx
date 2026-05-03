@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import ModalLayout from "../ModalLayout";
+import api from "../../../utils/api";
 
 const FriendAddModal = ({ isOpen, onClose, onSearch, onRequest }) => {
   const [query, setQuery] = useState("");                 // 검색창에 입력된 텍스트
@@ -107,7 +108,27 @@ const FriendAddModal = ({ isOpen, onClose, onSearch, onRequest }) => {
                   className="flex items-center justify-between p-4 rounded-2xl bg-white border border-[#E1E8ED]"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#A8C8D8] opacity-50"></div>
+
+                    <div className="w-10 h-10 rounded-full bg-[#F5F8FA] overflow-hidden border border-[#E4E9EE] flex items-center justify-center shrink-0">
+                      {user.file_url ? (
+                        <img
+                          src={
+                            user.file_url 
+                              ? `${api.defaults.baseURL}${user.file_url}` 
+                              : "/default_profile.png"
+                          }
+                          alt={user.username}
+                          onError={(e) => {
+                            e.target.src = "/default_profile.png"; 
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-[#A8C8D8] flex items-center justify-center text-white text-xs">
+                          No Image
+                        </div>
+                      )}
+                    </div>
+                    
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-[#3D4D5C]">
                         {user.username}

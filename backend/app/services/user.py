@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException, status
 from app.db.crud.user import UserCrud
-from app.db.scheme.user import UserCreate, UserUpdate, UserLogin, UserPasswordUpdate
+from app.db.scheme.user import UserCreate, UserUpdate, UserLogin, UserPasswordUpdate, UserRead
 from app.db.models.user import User
 from app.core.jwt_handle import (
     create_access_token,
@@ -79,7 +79,7 @@ class UserService:
     @staticmethod
     async def search_users_svc(db: AsyncSession, query: str, current_user_id: int):
         users = await UserCrud.search_users(db, query, current_user_id)
-        return users
+        return [UserRead.from_orm_custom(u) for u in users]
 
     # U 수정
     @staticmethod
