@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useCallback} from "react";
-import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
+import {showWarningDialog, showSuccessAlert, showWarningAlert} from "@/utils/alertUtils.js";
 import { useAuth } from "../../hooks/useAuth";
 import { useNotification } from "@/hooks/useNotification";
 import useMypage from "../../hooks/useMypage";
@@ -44,6 +44,7 @@ export default function MyPage() {
     // const [categories, setCategories] = useState([]);
     const [draggedIdx, setDraggedIdx] = useState(null);
     const [isNotiOpen, setIsNotiOpen] = useState(false);
+    const [editingStatusMessage, setEditingStatusMessage] = useState(null);
     const [statusMessage, setStatusMessage] = useState("");
 
     const handleNotification = () => setIsNotiOpen(true);
@@ -314,31 +315,37 @@ export default function MyPage() {
         }
     };
 
-    const handleSaveStatusMessage = async () => {
-        if (statusMessage.length > 50) {
-            alert("50자 이하로 입력하세요");
-            return;
-        }
-
-        try {
-            const success = await updateStatusMessage(statusMessage);
-
-            if (success) {
-                showSuccessAlert({ title: "상태메세지가 저장되었습니다." });
-            } else {
-                showWarningDialog({
-                    title: "저장 실패",
-                    text: error || "다시 시도해주세요."
-                });
+    const handleStatusMessage = async () => {
+        if (editingStatusMessage) {
+            if (statusMessage.length > 50) {
+                showWarningAlert({title: "50자 이내로 입력하세요."})
+                return;
             }
 
-        } catch (e) {
-            console.error("상태메시지 저장 중 에러 발생:", e);
-            showWarningDialog({
-                title: "시스템 오류",
-                text: "서버와 통신하는 중 문제가 발생했습니다."
-            });
+            try {
+                const success = await updateStatusMessage(statusMessage);
+
+                if (success) {
+                    showSuccessAlert({ title: "상태메세지가 저장되었습니다."});
+                } else {
+                    showWarningDialog({
+                        title: "저장 실패",
+                        text: error || "다시 시도해주세요."
+                    });
+                }
+            } catch (error) {
+                console.error("상태메시지 저장 중 에러 발생:", error);
+                showWarningDialog({
+                    title: "시스템 오류",
+                    text: "서버와 통신하는 중 문제가 발생했습니다."
+                });
+            }
+            setEditingStatusMessage(null)
         }
+        else {
+            setEditingStatusMessage(true)
+        }
+
     };
 
     const NotificationBell = () => (
@@ -654,22 +661,32 @@ export default function MyPage() {
                 {/* 상태메세지 */}
                 <div className="shrink-0">
                     <div className="flex justify-between items-end mb-3 px-1">
-                        <h2 className="text-[13px] font-bold text-[#3D4D5C]">상태메세지</h2>
+                        <h2 className="text-base font-bold text-[#3D4D5C] mb-3 px-1">상태메세지 변경</h2>
                         <span className="text-[10px] text-[#8B9BAA]">{statusMessage?.length || 0}/50</span>
                     </div>
                     <div className="bg-white rounded-xl p-3 shadow-sm flex gap-2 items-center border border-transparent focus-within:border-[#A8C8D8]">
-                        <input
-                            type="text"
-                            value={statusMessage}
-                            onChange={(e) => setStatusMessage(e.target.value)}
-                            placeholder="상태를 입력하세요"
-                            className="flex-1 px-3 py-2 text-xs bg-[#F1F3F5] rounded-lg text-[#3D4D5C] outline-none placeholder:text-[#ADB5BD]"
-                        />
+                        {editingStatusMessage ? (
+                            <>
+                                <input
+                                    type="text"
+                                    value={statusMessage}
+                                    onChange={(e) => setStatusMessage(e.target.value)}
+                                    placeholder="상태메시지를 입력하세요."
+                                    className="flex-1 px-3 py-2 bg-[#F1F3F5] rounded-lg text-xs text-[#3D4D5C] outline-none placeholder:text-[#ADB5BD]"
+                                />
+                            </>
+                        ) : (
+                            <>
+                                <span className="flex-1 px-3 py-2 rounded-lg text-xs text-[#3D4D5C]">
+                                    {statusMessage}
+                                </span>
+                            </>
+                        )}
                         <button
-                            onClick={handleSaveStatusMessage}
+                            onClick={handleStatusMessage}
                             className="px-4 py-2 rounded-lg bg-[#A8C8D8] text-white text-[12px] font-bold shrink-0"
                         >
-                            저장
+                            {editingStatusMessage ? "저장" : "수정"}
                         </button>
                     </div>
                 </div>
