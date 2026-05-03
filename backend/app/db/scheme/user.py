@@ -56,12 +56,17 @@ class UserInDB(UserBase):
     img_id : str | None = None
     music_id : str | None = None
     status_message: str | None = None
+<<<<<<< HEAD
     file_url: str | None = None
+=======
+    
+>>>>>>> 7f46033850a0a3392f3d9917f929d8bcc71f5f7c
 
     class Config:
         from_attributes = True
 
 class UserRead(UserInDB):
+<<<<<<< HEAD
     @classmethod
     def from_orm_custom(cls, user):
         final_url = getattr(user, "userimage_url", None)
@@ -87,3 +92,6 @@ class UserRead(UserInDB):
             created_at=user.created_at,
             updated_at=user.updated_at
         )
+=======
+    pass
+>>>>>>> 7f46033850a0a3392f3d9917f929d8bcc71f5f7c

@@ -100,7 +100,9 @@ class FriendCrud:
     async def search_user(db: AsyncSession, query: str) -> User | None:
         # 이메일이 일치하거나, 닉네임이 일치하는 유저 1명 검색
         result = await db.execute(
-            select(User).where(
+            select(User)
+            .options(selectinload(User.cloth_id))
+            .where(
                 or_(User.email == query, User.username == query)
             )
         )

@@ -26,6 +26,11 @@ class FriendRead(FriendInDB):
     receiver_username: str | None = None
     requester_status_message: str | None = None
     receiver_status_message: str | None = None
+<<<<<<< HEAD
+=======
+    requester_cloth_id: str | None = None
+    receiver_cloth_id: str | None = None
+>>>>>>> 7f46033850a0a3392f3d9917f929d8bcc71f5f7c
     requester_file_url: str | None = None
     receiver_file_url: str | None = None
 
@@ -41,6 +46,11 @@ class FriendRead(FriendInDB):
             receiver_username=friend.receiver.username if friend.receiver else None,
             requester_status_message=friend.requester.status_message if friend.requester else None,
             receiver_status_message=friend.receiver.status_message if friend.receiver else None,
+<<<<<<< HEAD
+=======
+            requester_cloth_id=friend.requester.cloths.cloth_id if friend.requester and friend.requester.cloths else None,
+            receiver_cloth_id=friend.receiver.cloths.cloth_id if friend.receiver and friend.receiver.cloths else None,
+>>>>>>> 7f46033850a0a3392f3d9917f929d8bcc71f5f7c
             requester_file_url=friend.requester.cloths.file_url if friend.requester and friend.requester.cloths else None,
             receiver_file_url=friend.receiver.cloths.file_url if friend.receiver and friend.receiver.cloths else None,
         )

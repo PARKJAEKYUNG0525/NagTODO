@@ -102,13 +102,16 @@ const FriendAddModal = ({ isOpen, onClose, onSearch, onRequest }) => {
         <div className="flex flex-col gap-3 min-h-[100px] max-h-[300px] overflow-y-auto">
           {hasSearched ? (
             searchResults.length > 0 ? (
-              searchResults.map((user) => (
+              searchResults.map((user) => {
+                console.log("검색된 유저:", user.username, "옷 데이터:", user.cloths);
+                return(
                 <div
                   key={user.user_id}
                   className="flex items-center justify-between p-4 rounded-2xl bg-white border border-[#E1E8ED]"
                 >
                   <div className="flex items-center gap-3">
 
+<<<<<<< HEAD
                     <div className="w-10 h-10 rounded-full bg-[#F5F8FA] overflow-hidden border border-[#E4E9EE] flex items-center justify-center shrink-0">
                       {user.file_url ? (
                         <img
@@ -126,6 +129,18 @@ const FriendAddModal = ({ isOpen, onClose, onSearch, onRequest }) => {
                         <div className="w-full h-full bg-[#A8C8D8] flex items-center justify-center text-white text-xs">
                           No Image
                         </div>
+=======
+                    <div className="w-10 h-10 rounded-full bg-[#F5F8FA] shrink-0 overflow-hidden border border-[#E4E9EE] flex items-center justify-center">
+                      {user.cloth_id?.file_url ? (
+                        <img
+                          src={`${api.defaults.baseURL}${user.cloth_id.file_url}`}
+                          alt={user.username}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        // 이미지가 없을 때 기본 배경
+                        <div className="w-full h-full bg-[#A8C8D8] opacity-50" />
+>>>>>>> 7f46033850a0a3392f3d9917f929d8bcc71f5f7c
                       )}
                     </div>
                     
@@ -145,7 +160,8 @@ const FriendAddModal = ({ isOpen, onClose, onSearch, onRequest }) => {
                     요청
                   </button>
                 </div>
-              ))
+                );
+              })
             ) : (
               <div className="flex items-center justify-center py-10">
                 <p className="text-xs text-[#8B9BAA]">검색 결과가 없습니다.</p>
