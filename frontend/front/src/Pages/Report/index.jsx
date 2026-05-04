@@ -537,7 +537,7 @@ function ClusterGrid({ clusters }) {
             {clusters.map((cluster) => (
                 <div key={cluster.cluster_id} className="bg-white rounded-2xl p-3 shadow-sm">
                     <span className="inline-block px-2 py-0.5 rounded-full bg-[#EEF2F5] text-[10px] text-[#3D4D5C]">
-                        {cluster.dominant_category}
+                        {cluster.topic ?? cluster.dominant_category}
                     </span>
                     <p className="mt-2 text-xs text-[#3D4D5C] font-medium">{cluster.size}개 실패 task</p>
                     {cluster.sample_texts[0] && (
