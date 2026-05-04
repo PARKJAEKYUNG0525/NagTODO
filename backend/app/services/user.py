@@ -60,14 +60,14 @@ class UserService:
 
     # R 조회 - user 단일 조회
     @staticmethod
-    async def get_user_svc(db: AsyncSession, user_id: int) -> User:
+    async def get_user_svc(db: AsyncSession, user_id: int) -> UserRead:
         user = await UserCrud.get_user(db, user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
             )
-        return user
+        return UserRead.from_orm_with_rewards(user)
 
     # R 조회 - user 목록 조회
     @staticmethod
@@ -169,8 +169,9 @@ class UserService:
             await db.commit()
             return {"message": f"user_id '{user_id}' 삭제 완료"}
 
-        except Exception:
+        except Exception as e:
             await db.rollback()
+            print(f"삭제 에러: {e}")  # ← 추가
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="user 삭제에 실패했습니다."

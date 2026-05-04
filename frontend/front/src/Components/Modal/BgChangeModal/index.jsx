@@ -46,7 +46,7 @@ const BgChangeModal = ({ isOpen, onClose }) => {
     };
 
     const handleReset = () => {
-        setCurrentBg(null);    // null을 넘겨서 "초기화"를 알림
+        setCurrentBg(null);
         onClose?.();
     };
 

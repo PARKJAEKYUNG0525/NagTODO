@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import ModalLayout from "../ModalLayout";
 import api from "@/utils/api.js";
+import { useAuth } from "@/hooks/useAuth";
 import useCloth from "@/hooks/useCloth.jsx";
 
 const TABS = [
@@ -10,9 +11,11 @@ const TABS = [
 
 const ClothChangeModal = ({ isOpen, onClose, currentClothId, onApply }) => {
     const { getAllCloths } = useCloth();
+    const { user } = useAuth();
     const [cloths, setCloths] = useState([]);
     const [selected, setSelected] = useState(currentClothId ?? null);
     const [activeTab, setActiveTab] = useState("default");
+    const rewardSet = new Set(user?.reward_cloth_ids ?? []);
 
     const loadCloths = useCallback(async () => {
         const data = await getAllCloths();
@@ -39,13 +42,23 @@ const ClothChangeModal = ({ isOpen, onClose, currentClothId, onApply }) => {
     );
 
     // TODO: 출석 보상 도입 시 백엔드의 owned_cloths로 대체
-    const isUnlocked = (cloth_id) => cloth_id?.startsWith("default_");
+    const isUnlocked = (cloth_id) => {
+        if (!cloth_id) return false;
+        if (cloth_id.startsWith("default_")) return true;     // 기본 제공 (DB 안 봄)
+        return rewardSet.has(cloth_id);                        // 보상으로 받은 것
+    };
 
     const handleApply = () => {
         const selectedCloth = cloths.find((c) => c.cloth_id === selected);
         if (selectedCloth && isUnlocked(selectedCloth.cloth_id)) {
             onApply?.(selectedCloth);
         }
+        onClose?.();
+    };
+
+    const handleReset = () => {
+        setSelected(null);
+        onApply?.(null);
         onClose?.();
     };
 
@@ -139,6 +152,14 @@ const ClothChangeModal = ({ isOpen, onClose, currentClothId, onApply }) => {
             >
                 적용하기
             </button>
+            <div className="flex flex-col items-center">
+                <button
+                    onClick={handleReset}
+                    className="mt-3 px-4 py-1.5 text-xs text-[#F4A6A6]"
+                >
+                    초기화
+                </button>
+            </div>
         </ModalLayout>
     );
 };

@@ -5,6 +5,7 @@ import {
     Outlet,
     Navigate,
     useNavigate,
+    useLocation,
 } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
@@ -20,16 +21,19 @@ import Report from "./Pages/Report/index.jsx";
 import MyPage from "./Pages/MyPage/index.jsx";
 import FriendDetail from "./Pages/FriendDetail/index.jsx";
 import { MusicProvider } from "@/hooks/useMusic.jsx";
-import { ImgProvider } from "./hooks/useImg";
+import { ImgProvider, useImg } from "./hooks/useImg";
+import api, { buildFileUrl } from "@/utils/api.js";
 
 
 const ProtectedRoute = ({ children }) => {
-    const { isAuthenticated, isLoading, isDeleting } = useAuth();
+    const { isAuthenticated, isLoading, isDeleting, isLoggingOut } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         // 로딩이 끝났는데 인증이 안 된 경우에만 알림 후 이동
-        if (!isLoading && !isAuthenticated && !isDeleting) {
+        if (!isLoading && !isAuthenticated && !isDeleting && !isLoggingOut) {
+            if (location.pathname === "/") return;            
             Swal.fire({
                 icon: "warning",
                 title: "로그인 필요",
@@ -39,7 +43,7 @@ const ProtectedRoute = ({ children }) => {
                 navigate("/", { replace: true });
             });
         }
-    }, [isAuthenticated, isLoading, isDeleting, navigate]);
+    }, [isAuthenticated, isLoading, isDeleting, isLoggingOut, navigate]);
 
     if (isLoading) {
         return (
@@ -49,17 +53,41 @@ const ProtectedRoute = ({ children }) => {
         );
     }
 
-    return isAuthenticated ? children : null;
+    return (isAuthenticated || isLoggingOut || isDeleting) ? children : null;
 };
 
 const RootLayout = () => {
     return (
         <div className="min-h-screen bg-gray-200 flex items-center justify-center font-sans">
-            <main className="bg-[#EEF2F5] flex flex-col w-full min-h-screen sm:w-[390px] sm:min-h-0 sm:h-auto sm:aspect-[390/844] sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative">
+            <main className="bg-[#EEF2F5] flex flex-col w-full min-h-screen sm:w-97.5 sm:min-h-0 sm:h-auto sm:aspect-390/844 sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative">
                 <Outlet />
                 <InterferencePopup />
             </main>
         </div>
+    );
+};
+
+const ProtectedLayout = () => {
+    const { currentBg, getUserBg } = useImg();
+
+    useEffect(() => { getUserBg(); }, []);
+
+    return (
+        <MusicProvider>
+            <div
+                className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
+                style={
+                    currentBg
+                        ? {
+                            backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${buildFileUrl(currentBg.file_url)})`,
+                        }
+                        : undefined
+                }
+            >
+                <Outlet />
+            </div>
+            <Navbar />
+        </MusicProvider>
     );
 };
 
@@ -88,15 +116,10 @@ const router = createBrowserRouter([
             {
                 element: (
                     <ProtectedRoute>
-                        <MusicProvider>
-                            {/*  일단 로그인 -> 쿠키 생성 잘 되면 아래 주석 해제*/}
-                            <Outlet />
-                            <Navbar />
-                        </MusicProvider>
+                        <ProtectedLayout />
                     </ProtectedRoute>
                 ),
                 children: [
-                    // 일단 로그인 -> 쿠키 생성 잘 되면 아래 주석 해제
                     { path: "main", element: <Home /> },
                     { path: "friend", element: <Friend/>},
                     { path: "friend/:userId", element: <FriendDetail/>},

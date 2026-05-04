@@ -1,15 +1,39 @@
-import api from "@/utils/api.js";
-import React, {createContext, useCallback, useContext, useRef, useState} from "react";
-import {showWarningAlert} from "@/utils/alertUtils.js";
+import api, { buildFileUrl } from "@/utils/api.js";
+import React, {createContext, useCallback, useContext, useEffect, useRef, useState} from "react";
+import {showAttendanceReward, showWarningAlert} from "@/utils/alertUtils.js";
+import {useAuth} from "@/hooks/useAuth.jsx";
+import useAttendance from "@/hooks/useAttendance.jsx";
 
 const MusicContext = createContext(null);
 
 export function MusicProvider({ children }) {
+    const { createAttendance } = useAttendance();
+    const { refreshUser } = useAuth();
     // useRef : DOM 객체에 직접 접근하기 위한 React Hook, document.getElementById()와 같은 역할
     const musicRef = useRef(null);
     const [currentMusic, setCurrentMusic] = useState(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [musics, setMusics] = useState([]);
+
+    // 진입 시 출석 체크 1회
+    useEffect(() => {
+        createAttendance().then(async (result) => {
+            if (!result) return;
+
+            // 보상 받은 경우
+            if (result.reward_cloth_id) {
+                // user 정보 새로고침 (reward_cloth_ids 갱신)
+                await refreshUser?.();
+
+                // 팝업 표시
+                showAttendanceReward(
+                    result.total_days,
+                    result.reward_cloth_title,
+                    result.reward_cloth_file_url
+                );
+            }
+        });
+    }, []);
 
     const getAllMusics = useCallback(async () => {
         try {
@@ -26,7 +50,7 @@ export function MusicProvider({ children }) {
         if (currentMusic?.music_id !== music.music_id) {
             // baseURL + 상대경로
             // api.defaults.baseURL은 import.meta.env.VITE_API_BASE_URL과 같음;
-            musicRef.current.src = `${api.defaults.baseURL}${music.file_url}`;
+            musicRef.current.src = buildFileUrl(music.file_url);
             setCurrentMusic(music);
         }
         musicRef.current.play().catch((error) => showWarningAlert({title:"음악 재생에 실패했습니다.", text: error.message}));

@@ -1,6 +1,10 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import Category, Cloth, Img, Music
+from app.db.models.user import User
+from datetime import date
+import bcrypt
+import os
 
 _DEFAULT_CATEGORIES = [
     ("study",       "공부"),
@@ -12,29 +16,30 @@ _DEFAULT_CATEGORIES = [
 ]
 
 _CLOTHS_DEFAULT = [
-    {"cloth_id": "default_1",     "title": "가리키는_Default", "file_url": "/static/cloth/가리키는_Default.png"},
-    {"cloth_id": "default_2",     "title": "거만한_Default",   "file_url": "/static/cloth/거만한_Default.png"},
-    {"cloth_id": "default_3",     "title": "노래_Default",    "file_url": "/static/cloth/노래_Default.png"},
-    {"cloth_id": "default_4",     "title": "누워있는_Default", "file_url": "/static/cloth/누워있는_Default.png"},
-    {"cloth_id": "default_5",     "title": "눈반짝_Default",   "file_url": "/static/cloth/눈반짝_Default.png"},
-    {"cloth_id": "default_6",     "title": "드르렁_Default",   "file_url": "/static/cloth/드르렁_Default.png"},
-    {"cloth_id": "default_7",     "title": "앉아있는_default",  "file_url": "/static/cloth/앉아있는_default.png"},
-    {"cloth_id": "default_8",     "title": "웃음_Default",     "file_url": "/static/cloth/웃음_Default.png"},
-    {"cloth_id": "default_9",     "title": "인사_Default",     "file_url": "/static/cloth/인사_Default.png"},
-    {"cloth_id": "default_10",    "title": "째려보는_Default",  "file_url": "/static/cloth/째려보는_Default.png"},
+    {"cloth_id": "default_1",     "title": "삿대질하는 투칸",   "file_url": "/static/cloth/가리키는_Default.png"},
+    {"cloth_id": "default_2",     "title": "거만한 투칸",      "file_url": "/static/cloth/거만한_Default.png"},
+    {"cloth_id": "default_3",     "title": "노래하는 투칸",     "file_url": "/static/cloth/노래_Default.png"},
+    {"cloth_id": "default_4",     "title": "누워있는 투칸",     "file_url": "/static/cloth/누워있는_Default.png"},
+    {"cloth_id": "default_5",     "title": "빤히 쳐다보는 투칸", "file_url": "/static/cloth/눈반짝_Default.png"},
+    {"cloth_id": "default_6",     "title": "숙면하는 투칸",     "file_url": "/static/cloth/드르렁_Default.png"},
+    {"cloth_id": "default_7",     "title": "앉아있는 투칸",     "file_url": "/static/cloth/앉아있는_default.png"},
+    {"cloth_id": "default_8",     "title": "웃고있는 투칸",     "file_url": "/static/cloth/웃음_Default.png"},
+    {"cloth_id": "default_9",     "title": "인사하는 투칸",     "file_url": "/static/cloth/인사_Default.png"},
+    {"cloth_id": "default_10",    "title": "째려보는 투칸",     "file_url": "/static/cloth/째려보는_Default.png"},
 ]
 
 _CLOTHS_CROISSANT = [
-    {"cloth_id": "croissant_1",   "title": "앉아있는_Croissant", "file_url": "/static/cloth/앉아있는_Croissant.png"},
-    {"cloth_id": "croissant_2",   "title": "째려보는_Croissant", "file_url": "/static/cloth/째려보는_Croissant.png"},
-    {"cloth_id": "croissant_3",   "title": "가리키는_Croissant", "file_url": "/static/cloth/가리키는_Croissant.png"},
-    {"cloth_id": "croissant_4",   "title": "거만한_Croissant",   "file_url": "/static/cloth/거만한_Croissant.png"},
-    {"cloth_id": "croissant_5",   "title": "노래_Croissant",    "file_url": "/static/cloth/노래_Croissant.png"},
-    {"cloth_id": "croissant_6",   "title": "누워있는_Croissant", "file_url": "/static/cloth/누워있는_Croissant.png"},
-    {"cloth_id": "croissant_7",   "title": "눈반짝_Croissant",   "file_url": "/static/cloth/눈반짝_Croissant.png"},
-    {"cloth_id": "croissant_8",   "title": "드르렁_Croissant",   "file_url": "/static/cloth/드르렁_Croissant.png"},
-    {"cloth_id": "croissant_9",   "title": "웃음_Croissant",    "file_url": "/static/cloth/웃음_Croissant.png"},
-    {"cloth_id": "croissant_10",  "title": "인사_Croissant",    "file_url": "/static/cloth/인사_Croissant.png"},
+    {"cloth_id": "croissant_1",   "title": "삿대질하는 투칸",   "file_url": "/static/cloth/가리키는_Croissant.png"},
+    {"cloth_id": "croissant_2",   "title": "거만한 투칸",      "file_url": "/static/cloth/거만한_Croissant.png"},
+    {"cloth_id": "croissant_3",   "title": "노래하는 투칸",     "file_url": "/static/cloth/노래_Croissant.png"},
+    {"cloth_id": "croissant_4",   "title": "누워있는 투칸",     "file_url": "/static/cloth/누워있는_Croissant.png"},
+    {"cloth_id": "croissant_5",   "title": "빤히 쳐다보는 투칸", "file_url": "/static/cloth/눈반짝_Croissant.png"},
+    {"cloth_id": "croissant_6",   "title": "숙면하는 투칸",     "file_url": "/static/cloth/드르렁_Croissant.png"},
+    {"cloth_id": "croissant_7",   "title": "앉아있는 투칸",     "file_url": "/static/cloth/앉아있는_Croissant.png"},
+    {"cloth_id": "croissant_8",   "title": "웃고있는 투칸",     "file_url": "/static/cloth/웃음_Croissant.png"},
+    {"cloth_id": "croissant_9",   "title": "인사하는 투칸",     "file_url": "/static/cloth/인사_Croissant.png"},
+    {"cloth_id": "croissant_10",  "title": "째려보는 투칸",     "file_url": "/static/cloth/째려보는_Croissant.png"},
+
 ]
 
 _DEFAULT_IMGS = [
@@ -92,3 +97,29 @@ async def seed_musics(session: AsyncSession):
             existing[m["music_id"]].file_url = m["file_url"]
         else:
             session.add(Music(**m))
+
+# 관리자 생성
+async def seed_admin(session: AsyncSession) -> None:
+    result = await session.execute(
+        select(User).where(User.role == "admin")
+    )
+    admin = result.scalar_one_or_none()
+
+    if not admin:
+        hashed_pw = bcrypt.hashpw(
+            os.getenv("ADMIN_PW", "admin1234").encode(),
+            bcrypt.gensalt()
+        ).decode()
+
+        admin_user = User(
+            email=os.getenv("ADMIN_EMAIL", "admin@admin.com"),
+            pw=hashed_pw,
+            username="관리자",
+            birthday=date(2000, 1, 1),
+            state=True,
+            role="admin"
+        )
+        session.add(admin_user)
+        print("관리자 계정 생성 완료")
+    else:
+        print("관리자 계정 이미 존재")

@@ -1,4 +1,4 @@
-import { useState, createContext, useContext, useEffect } from "react";
+import {useState, createContext, useContext, useEffect, useCallback} from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import { showSuccessAlert, showWarningAlert } from "../utils/alertUtils.js";
@@ -9,6 +9,8 @@ export const AuthProvider = ({ children }) => {
     const [error, setError] = useState("");
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
@@ -17,6 +19,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await api.post("/users/login", { email, pw: password })
             if (response.status === 200) {
+                setIsLoggingOut(false);
                 setUser(response.data.user);
                 setIsAuthenticated(true);
                 await verifyJWT();
@@ -52,26 +55,31 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = async () => {
-        try {
-            const response = await api.post("/users/logout");
-            setIsAuthenticated(false);
-            setUser(null);
+        setIsLoggingOut(true);
 
-            if (response.status === 200) {
-                showSuccessAlert({title:"로그아웃 되었습니다" });
-                navigate("/");
-            }
-        }
-        catch (error) {
-            console.log(error);
-            setError(error.response?.data.detail || "로그아웃에 실패하였습니다")
-        }
-        finally {
+        try {
+            await api.post("/users/logout");
+            showSuccessAlert({ title: "로그아웃 되었습니다" });
+
+        } catch (error) {
+            console.log("로그아웃 API 에러:", error);
+
+        } finally {
             setIsAuthenticated(false);
             setUser(null);
             navigate("/");
+            // setIsLoggingOut(false);
         }
     };
+
+    const refreshUser = useCallback(async () => {
+        try {
+            const response = await api.get("/users/me");
+            setUser(response.data);
+        } catch (error) {
+            showWarningAlert({title: "내 정보 새로고침에 실패했습니다", text: error.message});
+        }
+    }, []);
 
     // JWT 토큰 검증 + 사용자 상태 관리 함수
     // 현재 로그인한 사용자인지 확인하기 위함
@@ -88,7 +96,7 @@ export const AuthProvider = ({ children }) => {
                 const detail = error.response.data?.detail;
 
                 if (detail ===  "Access token expired") {
-                    showWarningAlert("세션이 만료되었습니다. 다시 로그인해주세요");
+                    showWarningAlert({title: "세션이 만료되었습니다.", text: "다시 로그인해주세요"});
                     navigate("/");
                 }
             }
@@ -111,7 +119,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider
-            value={{ error, setError, isAuthenticated, login, signup, logout, user, setUser }}
+            value={{ error, setError, isAuthenticated, isLoading,  user, setUser, login, signup, logout, isDeleting, isLoggingOut, refreshUser }}
         >
             {children}
         </AuthContext.Provider>

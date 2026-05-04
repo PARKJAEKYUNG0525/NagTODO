@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState} from "react";
 import ModalLayout from "../ModalLayout";
-// import { showSuccessAlert, showWarningAlert } from "../utils/alertUtiles.js";
+import { showWarningAlert } from "@/utils/alertUtils.js";
 import useCategory from "@/hooks/useCategory.jsx";
 
 /**
@@ -48,7 +48,8 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
   const handleSave = (e) => {
     e.preventDefault();
     if (!title.trim()) {
-      alert("할 일 제목을 입력해 주세요.");
+      showWarningAlert({title:"할 일 제목을 입력해주세요."})
+      // alert("할 일 제목을 입력해 주세요.");
       return;
     }
     onSave?.({

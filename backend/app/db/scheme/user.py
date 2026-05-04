@@ -57,11 +57,17 @@ class UserInDB(UserBase):
     music_id : str | None = None
     status_message: str | None = None
     file_url: str | None = None
+    role: str = "user"
 
     class Config:
         from_attributes = True
 
 class UserRead(UserInDB):
+
+    pw: str = Field(default="", exclude=True)
+    reward_cloth_ids: list[str] = []
+
+
     @classmethod
     def from_orm_custom(cls, user):
         final_url = getattr(user, "userimage_url", None)
@@ -85,6 +91,10 @@ class UserRead(UserInDB):
             cloth_id=user.cloth_id,
             file_url=final_url,
             created_at=user.created_at,
-            updated_at=user.updated_at
+            updated_at=user.updated_at,
+            userimage_url=user.userimage_url,
+            img_id=user.img_id,
+            music_id=user.music_id,
+            reward_cloth_ids=[r.cloth_id for r in user.reward] if user.reward else [],
         )
 
