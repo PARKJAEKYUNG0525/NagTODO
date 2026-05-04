@@ -152,7 +152,7 @@ export default function MonthlyReport() {
         }
     };
     return (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 min-h-0 flex flex-col">
             {/* 상단 헤더 (알림 벨) */}
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">월간 리포트</h1>

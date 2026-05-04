@@ -55,8 +55,8 @@ const ProtectedRoute = ({ children }) => {
 
 const RootLayout = () => {
     return (
-        <div className="min-h-screen bg-gray-200 flex items-center justify-center font-sans">
-            <main className="bg-[#EEF2F5] flex flex-col w-full min-h-screen sm:w-[390px] sm:min-h-0 sm:h-auto sm:aspect-[390/844] sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative">
+        <div className="h-screen bg-gray-200 flex items-center justify-center font-sans">
+            <main className="bg-[#EEF2F5] flex flex-col w-full h-screen sm:w-[390px] sm:h-auto sm:aspect-[390/844] sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative">
                 <Outlet />
                 <InterferencePopup />
             </main>
@@ -72,7 +72,7 @@ const ProtectedLayout = () => {
     return (
         <MusicProvider>
             <div
-                className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
+                className="flex-1 min-h-0 flex flex-col bg-[#F4F7FA] bg-cover bg-center overflow-hidden"
                 style={
                     currentBg
                         ? {
