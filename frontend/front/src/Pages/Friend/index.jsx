@@ -85,7 +85,7 @@ export default function Friend() {
                     <NotificationBell onAccept={fetchFriends} />
                 </header>
 
-                <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
+                <div className="flex-1 min-h-0 overflow-y-auto px-6 pt-4 pb-4">
                     <div className="flex gap-2">
                         <div className="flex-1 bg-white rounded-full px-4 py-3 flex items-center gap-2 shadow-sm">
                             <span className="text-[#8B9BAA] text-xs">🔍</span>

@@ -126,7 +126,7 @@ export default function FriendDetail() {
             </header>
 
             {/* 스크롤 영역 */}
-            <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 pt-4 pb-4">
                 {/* 캘린더 */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                     <Calendar

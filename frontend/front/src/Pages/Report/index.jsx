@@ -152,14 +152,14 @@ export default function MonthlyReport() {
         }
     };
     return (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 min-h-0 flex flex-col">
             {/* 상단 헤더 (알림 벨) */}
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">월간 리포트</h1>
                 <NotificationBell />
             </header>
 
-            <div className="flex-1 overflow-y-auto px-6 pt-6 pb-4">
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 pt-6 pb-4">
                 {/* 탭 토글 */}
                 <div className="flex flex-col gap-2">
                     <div className="flex gap-2">
