@@ -54,7 +54,10 @@ def _check_failure_count(state: dict) -> str:
 
 
 def _route_after_quality(state: dict) -> str:
-    # 품질 미달이어도 재시도 없이 종료 — LLM 호출이 늘어날수록 응답 시간 초과 위험이 커짐
+    if state.get("quality_passed", False):
+        return END
+    if state.get("retry_count", 0) < 1:
+        return "llm_retrospective_report"
     return END
 
 
