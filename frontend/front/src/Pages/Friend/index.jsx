@@ -181,15 +181,19 @@ return (
                         </div>
                     ) : (
                         filteredFriends.map((friend) => {
-                            const friendName =
-                                friend.requester_id === currentUser?.user_id
+                            const isRequester = friend.requester_id === currentUser?.user_id;
+
+                                const friendName = isRequester
                                     ? friend.receiver_username
                                     : friend.requester_username;
 
-                            const friendStatus =
-                                friend.requester_id === currentUser?.user_id
+                                const friendStatus = isRequester
                                     ? friend.receiver_status_message
                                     : friend.requester_status_message;
+
+                                const friendFileUrl = isRequester
+                                    ? friend.receiver_file_url
+                                    : friend.requester_file_url;
 
                             return (
                                 <div
@@ -206,6 +210,8 @@ return (
                                             <span className="text-sm font-bold text-[#3D4D5C]">
                                                 {friendName}
                                             </span>
+                                            
+                                            {/* 상태메시지 */}
                                             <span className="text-xs text-[#8B9BAA]">
                                                 {friendStatus || friend.status_message || "상태메시지"}
                                             </span>

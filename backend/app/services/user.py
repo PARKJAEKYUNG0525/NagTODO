@@ -67,7 +67,7 @@ class UserService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
             )
-        return UserRead.from_orm_with_rewards(user)
+        return UserRead.from_orm_custom(user)
 
     # R 조회 - user 목록 조회
     @staticmethod
@@ -79,7 +79,7 @@ class UserService:
     @staticmethod
     async def search_users_svc(db: AsyncSession, query: str, current_user_id: int):
         users = await UserCrud.search_users(db, query, current_user_id)
-        return users
+        return [UserRead.from_orm_custom(u) for u in users]
 
     # U 수정
     @staticmethod

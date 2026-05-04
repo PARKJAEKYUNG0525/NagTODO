@@ -3,6 +3,7 @@ from fastapi import HTTPException, status
 from app.db.crud.friend import FriendCrud
 from app.db.scheme.friend import FriendCreate, FriendUpdate, FriendRead  
 from app.db.models.friend import Friend
+from sqlalchemy.orm import selectinload
 
 class FriendService:
 
