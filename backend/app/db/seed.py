@@ -1,6 +1,10 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import Category, Cloth, Img, Music
+from app.db.models.user import User
+from datetime import date
+import bcrypt
+import os
 
 _DEFAULT_CATEGORIES = [
     ("study",       "공부"),
@@ -92,3 +96,29 @@ async def seed_musics(session: AsyncSession):
             existing[m["music_id"]].file_url = m["file_url"]
         else:
             session.add(Music(**m))
+
+# 관리자 생성
+async def seed_admin(session: AsyncSession) -> None:
+    result = await session.execute(
+        select(User).where(User.role == "admin")
+    )
+    admin = result.scalar_one_or_none()
+
+    if not admin:
+        hashed_pw = bcrypt.hashpw(
+            os.getenv("ADMIN_PW", "admin1234").encode(),
+            bcrypt.gensalt()
+        ).decode()
+
+        admin_user = User(
+            email=os.getenv("ADMIN_EMAIL", "admin@admin.com"),
+            pw=hashed_pw,
+            username="관리자",
+            birthday=date(2000, 1, 1),
+            state=True,
+            role="admin"
+        )
+        session.add(admin_user)
+        print("관리자 계정 생성 완료")
+    else:
+        print("관리자 계정 이미 존재")

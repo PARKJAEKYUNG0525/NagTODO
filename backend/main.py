@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.db.database import Base, async_engine, AsyncSessionLocal
-from app.db.seed import seed_categories, seed_musics, seed_imgs, seed_cloths
+from app.db.seed import seed_categories, seed_musics, seed_imgs, seed_cloths, seed_admin  
 from fastapi.concurrency import asynccontextmanager
 
 from app.middleware.token_refresh import RefreshTokenMiddleware
@@ -34,6 +34,7 @@ async def lifespan(app:FastAPI):
             await seed_cloths(session)
             await seed_imgs(session)
             await seed_musics(session)
+            await seed_admin(session)
     yield
     await async_engine.dispose()
 

@@ -30,7 +30,7 @@ const STATUS = {
     PENDING:     "시작전",
     IN_PROGRESS: "진행중",
     COMPLETED:   "완료",
-    FAILED:      "실패", // 표시 전용 — DB에 저장되지 않음
+    FAILED:      "실패", 
 };
 
 export default function Todo() {
@@ -66,7 +66,22 @@ export default function Todo() {
     }, [getCategory]);
 
     useEffect(() => { loadCategory(); }, [loadCategory]);
+    useEffect(() => {
+        if (todos.length === 0) return;
 
+        const failedTodos = todos.filter((t) => {
+            const todoDay = startOfDay(new Date(t.created_at));
+            const isPast = isBefore(todoDay, TODAY);
+            return isPast && t.todo_status !== STATUS.COMPLETED && t.todo_status !== STATUS.PENDING;
+        });
+
+        if (failedTodos.length === 0) return;
+
+        Promise.all(
+            failedTodos.map((t) => updateTodo(t.todo_id, { todo_status: "시작전" }))
+        ).then(() => loadTodos());
+
+    }, [todos]);
     const currentTodos = todos.filter((t) =>
         isSameDay(startOfDay(new Date(t.created_at)), selectedDate)
     );
@@ -125,8 +140,10 @@ export default function Todo() {
     const getDisplayStatus = (todo) => {
         const todoDay = startOfDay(new Date(todo.created_at));
         const isPast = isBefore(todoDay, TODAY);
-        if (isPast && todo.todo_status !== STATUS.COMPLETED) return STATUS.FAILED;
-        return todo.todo_status;
+        
+        if (todo.todo_status === STATUS.COMPLETED) return STATUS.COMPLETED; // 완료는 항상 초록
+        if (isPast) return STATUS.FAILED;   // 과거 미완료 → 빨강 ✕
+        return STATUS.PENDING;              // 오늘/미래 → 빈 동그라미
     };
 
     // 클릭 시: 완료 ↔ 시작전 토글
@@ -274,7 +291,7 @@ export default function Todo() {
                             // 상태에 따른 라디오 색
                             const radioBorder =
                                 displayStatus === STATUS.COMPLETED ? STATUS_COLOR.COMPLETED :
-                                    displayStatus === STATUS.FAILED    ? STATUS_COLOR.FAILED :
+                                    displayStatus === STATUS.FAILED  ? STATUS_COLOR.FAILED :
                                         STATUS_COLOR.PENDING;
                             return (
                                 <div
@@ -300,7 +317,7 @@ export default function Todo() {
                                                 aria-label={
                                                     displayStatus === STATUS.COMPLETED
                                                         ? "완료 해제"
-                                                        : displayStatus === STATUS.FAILED
+                                                        : displayStatus === STATUS.PENDING
                                                             ? "다시 완료로 변경"
                                                             : "완료 표시"
                                                 }
@@ -317,7 +334,7 @@ export default function Todo() {
                                                         style={{ backgroundColor: STATUS_COLOR.COMPLETED }}
                                                     />
                                                 )}
-                                                {displayStatus === STATUS.FAILED && (
+                                                {displayStatus === STATUS.FAILED  && (
                                                     <span className="text-[#E89B9B] text-[11px] font-bold leading-none">
                                                         ✕
                                                     </span>

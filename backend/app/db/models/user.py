@@ -30,6 +30,7 @@ class User(Base):
     state:           Mapped[bool]               = mapped_column(Boolean, nullable=False, server_default=text('1')) # 1은 회원, 0은 탈퇴
     refresh_token:   Mapped[Optional[str]]      = mapped_column(String(255), nullable=True)
     status_message:  Mapped[Optional[str]]      = mapped_column(String(500), nullable=True)
+    role:            Mapped[str]                = mapped_column(String(20),  nullable=False, server_default=text("'user'")) # 기본값은 일반 유저
 
     cloth_id: Mapped[Optional[str]] = mapped_column(
         String(100),
@@ -56,4 +57,4 @@ class User(Base):
     friends_received: Mapped[List["Friend"]]         = relationship("Friend", foreign_keys="Friend.receiver_id", back_populates="receiver", cascade="all, delete-orphan")
     friend_todo_views:Mapped[List["FriendTodoView"]] = relationship("FriendTodoView", back_populates="user", cascade="all, delete-orphan")
     pw_histories:     Mapped[List["PwHistory"]]      = relationship("PwHistory", back_populates="user", cascade="all, delete-orphan")
-    notifications:    Mapped[List["Notification"]]   = relationship("Notification", back_populates="user")
+    notifications:    Mapped[List["Notification"]]   = relationship("Notification", back_populates="user", cascade="all, delete-orphan")
