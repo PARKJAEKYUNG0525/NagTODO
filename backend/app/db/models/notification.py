@@ -13,6 +13,7 @@ class Notification(Base):
     title:           Mapped[str] = mapped_column(String(255), nullable=False)
     content:         Mapped[str] = mapped_column(String(500), nullable=False)
     is_read:         Mapped[bool] = mapped_column(Boolean, default=False)
+    type:            Mapped[str]  = mapped_column(String(50), nullable=False, default="system")
 
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("user.user_id"), nullable=False)
 

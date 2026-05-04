@@ -9,6 +9,8 @@ export const AuthProvider = ({ children }) => {
     const [error, setError] = useState("");
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
@@ -17,6 +19,7 @@ export const AuthProvider = ({ children }) => {
         try {
             const response = await api.post("/users/login", { email, pw: password })
             if (response.status === 200) {
+                setIsLoggingOut(false);
                 setUser(response.data.user);
                 setIsAuthenticated(true);
                 await verifyJWT();
@@ -27,7 +30,7 @@ export const AuthProvider = ({ children }) => {
         }
         catch (error) {
             console.log(error);
-            setError(error.response?.data.detail || "로그인에 실패했습니다.");
+            showWarningAlert({title:'아이디/비밀번호가 틀립니다.'});
             setIsAuthenticated(false);
             return false;
         }
@@ -42,61 +45,32 @@ export const AuthProvider = ({ children }) => {
             }
         } catch (error) {
             console.log(error);
-            setError(error.response?.data.detail || "회원가입에 실패했습니다");
+            const detail = error.response?.data.detail;
+            setError(
+                Array.isArray(detail)
+                    ? detail.map(d => d.msg).join(", ")
+                    : detail || "회원가입에 실패했습니다"
+            );
         }
     };
 
     const logout = async () => {
-        try {
-            const response = await api.post("/users/logout");
-            setIsAuthenticated(false);
-            setUser(null);
+        setIsLoggingOut(true);
 
-            if (response.status === 200) {
-                showSuccessAlert({title:"로그아웃 되었습니다" });
-                navigate("/");
-            }
-        }
-        catch (error) {
-            console.log(error);
-            setError(error.response?.data.detail || "로그아웃에 실패하였습니다")
-        }
-        finally {
+        try {
+            await api.post("/users/logout");
+            showSuccessAlert({ title: "로그아웃 되었습니다" });
+
+        } catch (error) {
+            console.log("로그아웃 API 에러:", error);
+
+        } finally {
             setIsAuthenticated(false);
             setUser(null);
             navigate("/");
+            // setIsLoggingOut(false);
         }
     };
-
-    const deleteUser = async () => {
-        try {
-            const response = await api.delete("/users/me");
-            if (response.status === 200) {
-                setIsAuthenticated(false);
-                setUser(null);
-                showSuccessAlert({ title: "탈퇴가 완료되었습니다" });
-                navigate("/");
-            }
-        } catch (error) {
-            console.log(error);
-            setError(error.response?.data.detail || "회원탈퇴에 실패했습니다");
-        }
-    };
-
-    // const deleteAccount = async () => {
-    //     try {
-    //         const response = await api.patch("/users/me/state");
-    //         if (response.status === 200) {
-    //             setIsAuthenticated(false);
-    //             setUser(null);
-    //             showSuccessAlert({ title: "탈퇴가 완료되었습니다" });
-    //             navigate("/");
-    //         }
-    //     } catch (error) {
-    //         console.log(error);
-    //         setError(error.response?.data.detail || "회원탈퇴에 실패했습니다");
-    //     }
-    // };
 
     const refreshUser = useCallback(async () => {
         try {
@@ -145,7 +119,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider
-            value={{ error, setError, isAuthenticated, isLoading, user, setUser, login, signup, logout, deleteUser, refreshUser }}
+            value={{ error, setError, isAuthenticated, isLoading,  user, setUser, login, signup, logout, isDeleting, isLoggingOut, refreshUser }}
         >
             {children}
         </AuthContext.Provider>

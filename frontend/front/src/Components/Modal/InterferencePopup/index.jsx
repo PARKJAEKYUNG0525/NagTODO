@@ -57,7 +57,7 @@ const InterferencePopup = () => {
 
             <button
                 onClick={dismiss}
-                className="mt-5 w-full py-3 rounded-xl bg-[#A8C8D8] text-white font-semibold text-sm hover:bg-[#97BAC9]"
+                className="mt-5 w-full py-3 rounded-xl bg-[#A8C8D8] text-white font-semibold text-sm hover:bg-[#97BAC9] cursor-pointer"
             >
                 알겠다고
             </button>

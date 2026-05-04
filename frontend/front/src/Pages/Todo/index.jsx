@@ -3,18 +3,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, isSameDay, startOfDay, isBefore } from "date-fns";
 import { ko } from "date-fns/locale";
 import NewTodoModal from "../../Components/Modal/NewTodoModal";
-import NotificationModal from "../../Components/Modal/NotificationModal";
+import NotificationBell from "../../Components/Notification";
 import TodoDetailModal from "../../Components/Modal/TodoDetailModal";
 import useTodo from "@/hooks/useTodo.jsx";
 import useCategory from "@/hooks/useCategory.jsx";
-import { useImg } from "@/hooks/useImg";
 
 import { useAuth } from "../../hooks/useAuth";
-import api from "@/utils/api";
 import { useNotification } from "@/hooks/useNotification";
-
 import { BsFillBellFill } from "react-icons/bs";
-
 // 달성률에 따른 도트 색
 const RATE_COLOR = {
     HIGH:  "#A8D5B4", // 100% — 초록
@@ -34,7 +30,7 @@ const STATUS = {
     PENDING:     "시작전",
     IN_PROGRESS: "진행중",
     COMPLETED:   "완료",
-    FAILED:      "실패", // 표시 전용 — DB에 저장되지 않음
+    FAILED:      "실패", 
 };
 
 export default function Todo() {
@@ -43,7 +39,6 @@ export default function Todo() {
 
     const { todoLoading, getAllTodos, createTodo, updateTodo, deleteTodo } = useTodo();
     const { ctLoading, getCategory } = useCategory();
-    const { currentBg, setCurrentBg, getUserBg } = useImg();
     const { notifications } = useNotification();
 
     const [selectedDate, setSelectedDate] = useState(TODAY);
@@ -53,12 +48,8 @@ export default function Todo() {
     const [categories, setCategories] = useState([]);
 
     // 모달 상태
-    const [isNotiOpen, setIsNotiOpen] = useState(false);
     const [isNewOpen, setIsNewOpen] = useState(false);
     const [detailTodo, setDetailTodo] = useState(null);
-
-    // db에서 배경화면 불러오기
-    useEffect(() => { getUserBg(); }, []);
 
     // db에서 todo 불러오기
     const loadTodos = useCallback(async () => {
@@ -75,9 +66,22 @@ export default function Todo() {
     }, [getCategory]);
 
     useEffect(() => { loadCategory(); }, [loadCategory]);
+    useEffect(() => {
+        if (todos.length === 0) return;
 
-    const handleNotification = () => setIsNotiOpen(true);
+        const failedTodos = todos.filter((t) => {
+            const todoDay = startOfDay(new Date(t.created_at));
+            const isPast = isBefore(todoDay, TODAY);
+            return isPast && t.todo_status !== STATUS.COMPLETED && t.todo_status !== STATUS.PENDING;
+        });
 
+        if (failedTodos.length === 0) return;
+
+        Promise.all(
+            failedTodos.map((t) => updateTodo(t.todo_id, { todo_status: "시작전" }))
+        ).then(() => loadTodos());
+
+    }, [todos]);
     const currentTodos = todos.filter((t) =>
         isSameDay(startOfDay(new Date(t.created_at)), selectedDate)
     );
@@ -136,8 +140,10 @@ export default function Todo() {
     const getDisplayStatus = (todo) => {
         const todoDay = startOfDay(new Date(todo.created_at));
         const isPast = isBefore(todoDay, TODAY);
-        if (isPast && todo.todo_status !== STATUS.COMPLETED) return STATUS.FAILED;
-        return todo.todo_status;
+        
+        if (todo.todo_status === STATUS.COMPLETED) return STATUS.COMPLETED; // 완료는 항상 초록
+        if (isPast) return STATUS.FAILED;   // 과거 미완료 → 빨강 ✕
+        return STATUS.PENDING;              // 오늘/미래 → 빈 동그라미
     };
 
     // 클릭 시: 완료 ↔ 시작전 토글
@@ -189,29 +195,8 @@ export default function Todo() {
         return { highDays: high, midDays: mid, lowDays: low };
     })();
 
-    // 공용 UI: 상단 벨 버튼
-    const NotificationBell = () => (
-        <button
-            onClick={handleNotification}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
-        >
-            <BsFillBellFill className="w-5 h-5 text-white" />
-
-            {notifications.length > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-            )}
-        </button>
-    );
-
     return (
-        <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
-             style={
-                 currentBg
-                     ? {
-                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
-                     }
-                     : undefined
-             }
+        <div className="flex-1 flex flex-col"
         >
             {/* 상단 헤더 */}
             <header className="px-6 pt-6 flex items-center justify-between">
@@ -228,7 +213,7 @@ export default function Todo() {
                     <div className="flex items-center justify-end px-1 mb-1">
                         <button
                             onClick={handleToday}
-                            className="text-xs text-[#87B4C4] font-medium"
+                            className="text-xs text-[#87B4C4] font-medium cursor-pointer"
                         >
                         </button>
                     </div>
@@ -248,7 +233,7 @@ export default function Todo() {
                             mid:  "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#F4D58A]",
                             low:  "relative after:content-[''] after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-[#E89B9B]",
                         }}
-                        className="w-full"
+                        className="w-full [&_button]:cursor-pointer"
                     />
                 </div>
 
@@ -265,18 +250,18 @@ export default function Todo() {
 
                     {isDeleteMode ? (
                         <div className="flex items-center gap-3 text-xs">
-                            <button onClick={handleSelectAll} className="text-[#8B9BAA]">
+                            <button onClick={handleSelectAll} className="text-[#8B9BAA] cursor-pointer">
                                 전체 선택
                             </button>
                             <button
                                 onClick={handleDeleteSelected}
-                                className="text-[#3D4D5C] font-semibold"
+                                className="text-[#3D4D5C] font-semibold cursor-pointer"
                             >
                                 선택한 할 일 삭제
                             </button>
                             <button
                                 onClick={handleCancelDeleteMode}
-                                className="text-[#8B9BAA]"
+                                className="text-[#8B9BAA] cursor-pointer"
                             >
                                 취소
                             </button>
@@ -284,7 +269,7 @@ export default function Todo() {
                     ) : (
                         <button
                             onClick={handleEnterDeleteMode}
-                            className="text-xs text-[#8B9BAA]"
+                            className="text-xs text-[#8B9BAA] cursor-pointer"
                         >
                             할 일 삭제
                         </button>
@@ -306,7 +291,7 @@ export default function Todo() {
                             // 상태에 따른 라디오 색
                             const radioBorder =
                                 displayStatus === STATUS.COMPLETED ? STATUS_COLOR.COMPLETED :
-                                    displayStatus === STATUS.FAILED    ? STATUS_COLOR.FAILED :
+                                    displayStatus === STATUS.FAILED  ? STATUS_COLOR.FAILED :
                                         STATUS_COLOR.PENDING;
                             return (
                                 <div
@@ -332,7 +317,7 @@ export default function Todo() {
                                                 aria-label={
                                                     displayStatus === STATUS.COMPLETED
                                                         ? "완료 해제"
-                                                        : displayStatus === STATUS.FAILED
+                                                        : displayStatus === STATUS.PENDING
                                                             ? "다시 완료로 변경"
                                                             : "완료 표시"
                                                 }
@@ -340,7 +325,7 @@ export default function Todo() {
                                                     e.stopPropagation();
                                                     handleToggleStatus(todo);
                                                 }}
-                                                className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center border-2 transition"
+                                                className="w-6 h-6 rounded-full shrink-0 mt-0.5 flex items-center justify-center border-2 transition cursor-pointer"
                                                 style={{ borderColor: radioBorder }}
                                             >
                                                 {displayStatus === STATUS.COMPLETED && (
@@ -349,7 +334,7 @@ export default function Todo() {
                                                         style={{ backgroundColor: STATUS_COLOR.COMPLETED }}
                                                     />
                                                 )}
-                                                {displayStatus === STATUS.FAILED && (
+                                                {displayStatus === STATUS.FAILED  && (
                                                     <span className="text-[#E89B9B] text-[11px] font-bold leading-none">
                                                         ✕
                                                     </span>
@@ -382,20 +367,13 @@ export default function Todo() {
             {!isDeleteMode && (
                 <button
                     onClick={() => setIsNewOpen(true)}
-                    className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg"
+                    className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg cursor-pointer"
                     aria-label="새 할 일 추가"
                 >
                     {/* 아이콘 위치: 플러스 (bi-plus-lg) */}
                     <span className="text-white text-2xl leading-none">+</span>
                 </button>
             )}
-
-            {/* ─── 모달들 ─── */}
-            <NotificationModal
-                isOpen={isNotiOpen}
-                onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
-            />
             <NewTodoModal
                 isOpen={isNewOpen}
                 onClose={() => setIsNewOpen(false)}

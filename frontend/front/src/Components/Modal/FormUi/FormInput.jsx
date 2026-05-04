@@ -28,6 +28,7 @@ const FormInput = (
           placeholder:text-gray-400
           focus:border-gray-900 focus:bg-white focus:ring-0
           transition-all duration-200
+          cursor-text
           ${className}
         `}
             />

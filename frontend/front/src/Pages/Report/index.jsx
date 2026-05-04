@@ -3,12 +3,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, subMonths, subDays, startOfDay, getDaysInMonth } from "date-fns";
 import { ko } from "date-fns/locale";
 import ReactMarkdown from "react-markdown";
-import NotificationModal from "../../Components/Modal/NotificationModal";
+import NotificationBell from "../../Components/Notification";
 import remarkGfm from "remark-gfm";
 import { useAuth } from "@/hooks/useAuth";
 import { useReport } from "@/hooks/useReport";
 import api from "@/utils/api.js";
-import { useImg } from "@/hooks/useImg";
 import { BsFillBellFill } from "react-icons/bs";
 import { useNotification } from "@/hooks/useNotification";
 
@@ -53,12 +52,9 @@ export default function MonthlyReport() {
     const { isLoading, error, reportData, savedReports, fetchReport, fetchSavedReports } = useReport();
     const { notifications } = useNotification();
 
-    const { currentBg, getUserBg } = useImg();
-    useEffect(() => { getUserBg(); }, []);
 
     const [reportMode, setReportMode] = useState("monthly");
     const [analyzed, setAnalyzed] = useState(false);
-    const [isNotiOpen, setIsNotiOpen] = useState(false);
 
     // 30일 모드
     const [selectedDate, setSelectedDate] = useState(TODAY);
@@ -78,8 +74,6 @@ export default function MonthlyReport() {
     const [selectedReport, setSelectedReport] = useState(null);
     const [selectedReportDetail, setSelectedReportDetail] = useState(null);
     const [isReportDropdownOpen, setIsReportDropdownOpen] = useState(false);
-
-    const handleNotification = () => setIsNotiOpen(true);
 
     // 발행 이력 탭 진입 시 저장된 리포트 로드
     useEffect(() => {
@@ -157,31 +151,8 @@ export default function MonthlyReport() {
             });
         }
     };
-
-    // 공용 UI: 상단 벨 버튼
-    const NotificationBell = () => (
-        <button
-            onClick={handleNotification}
-            className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0"
-        >
-            <BsFillBellFill className="w-5 h-5 text-white" />
-
-            {notifications.length > 0 && (
-                <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
-            )}
-        </button>
-    );
-
     return (
-        <div className="flex-1 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
-             style={
-                 currentBg
-                     ? {
-                         backgroundImage: `linear-gradient(rgba(255,255,255,0.4), rgba(255,255,255,0.4)), url(${api.defaults.baseURL}${currentBg.file_url})`,
-                     }
-                     : undefined
-             }
-        >
+        <div className="flex-1 flex flex-col">
             {/* 상단 헤더 (알림 벨) */}
             <header className="px-6 pt-6 flex items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">월간 리포트</h1>
@@ -194,27 +165,27 @@ export default function MonthlyReport() {
                     <div className="flex gap-2">
                         <button
                             onClick={() => handleTabChange("monthly")}
-                            className={`flex-1 px-4 py-2 rounded-full text-xs whitespace-nowrap ${reportMode === "monthly" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
+                            className={`flex-1 px-4 py-2 rounded-full text-xs whitespace-nowrap cursor-pointer ${reportMode === "monthly" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
                         >
                             월 단위 리포트 보기
                         </button>
                         <button
                             onClick={() => handleTabChange("30days")}
-                            className={`flex-1 px-4 py-2 rounded-full text-xs whitespace-nowrap ${reportMode === "30days" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
+                            className={`flex-1 px-4 py-2 rounded-full text-xs whitespace-nowrap cursor-pointer ${reportMode === "30days" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
                         >
                             최근 30일 리포트 보기
                         </button>
                     </div>
                     <button
                         onClick={() => handleTabChange("history")}
-                        className={`w-full py-2 rounded-full text-xs ${reportMode === "history" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
+                        className={`w-full py-2 rounded-full text-xs cursor-pointer ${reportMode === "history" ? "bg-[#A8C8D8] font-bold text-white" : "bg-[#D9DFE4] font-medium text-[#8B9BAA]"}`}
                     >
                         발행했던 리포트 보기
                     </button>
                 </div>
 
                 {/* 월 단위 뷰 */}
-                {reportMode === "monthly" && (
+                {reportMode === "monthly" && !analyzed && (
                     <>
                         <p className="mt-5 text-xs text-[#3D4D5C]">
                             분석할 <span className="text-[#E89B9B] font-semibold">년/월</span>을 선택하세요
@@ -225,7 +196,7 @@ export default function MonthlyReport() {
                                 <button
                                     type="button"
                                     onClick={() => { setIsYearDropdownOpen((v) => !v); setIsMonthDropdownOpen(false); }}
-                                    className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
+                                    className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm cursor-pointer"
                                 >
                                     <span>{selectedYear}년</span>
                                     <span className="text-[#8B9BAA] text-xs">▼</span>
@@ -237,7 +208,7 @@ export default function MonthlyReport() {
                                                 <button
                                                     type="button"
                                                     onClick={() => { setSelectedYear(y); setAnalyzed(false); setIsYearDropdownOpen(false); }}
-                                                    className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] text-[#3D4D5C] ${selectedYear === y ? "bg-[#EEF2F5] font-semibold" : ""}`}
+                                                    className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] text-[#3D4D5C] cursor-pointer ${selectedYear === y ? "bg-[#EEF2F5] font-semibold" : ""}`}
                                                 >
                                                     {y}년
                                                 </button>
@@ -251,7 +222,7 @@ export default function MonthlyReport() {
                                 <button
                                     type="button"
                                     onClick={() => { setIsMonthDropdownOpen((v) => !v); setIsYearDropdownOpen(false); }}
-                                    className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm"
+                                    className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm text-[#3D4D5C] shadow-sm cursor-pointer"
                                 >
                                     <span>{selectedMonth}월</span>
                                     <span className="text-[#8B9BAA] text-xs">▼</span>
@@ -263,7 +234,7 @@ export default function MonthlyReport() {
                                                 <button
                                                     type="button"
                                                     onClick={() => { setSelectedMonth(i + 1); setAnalyzed(false); setIsMonthDropdownOpen(false); }}
-                                                    className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] text-[#3D4D5C] ${selectedMonth === i + 1 ? "bg-[#EEF2F5] font-semibold" : ""}`}
+                                                    className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] text-[#3D4D5C] cursor-pointer ${selectedMonth === i + 1 ? "bg-[#EEF2F5] font-semibold" : ""}`}
                                                 >
                                                     {m}
                                                 </button>
@@ -290,7 +261,7 @@ export default function MonthlyReport() {
                             <button
                                 type="button"
                                 onClick={() => setIsReportDropdownOpen((v) => !v)}
-                                className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm shadow-sm"
+                                className="w-full bg-white rounded-xl px-4 py-3 flex items-center justify-between text-sm shadow-sm cursor-pointer"
                             >
                                 <span className={selectedReport ? "text-[#3D4D5C]" : "text-[#8B9BAA]"}>
                                     {selectedReport
@@ -306,7 +277,7 @@ export default function MonthlyReport() {
                                             <button
                                                 type="button"
                                                 onClick={() => handlePastReportSelect(report)}
-                                                className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] ${selectedReport?.report_id === report.report_id ? "bg-[#EEF2F5] font-semibold" : ""} text-[#3D4D5C]`}
+                                                className={`w-full px-4 py-3 text-left text-sm hover:bg-[#EEF2F5] cursor-pointer ${selectedReport?.report_id === report.report_id ? "bg-[#EEF2F5] font-semibold" : ""} text-[#3D4D5C]`}
                                             >
                                                 {formatDateRange(report.month_start, report.month_end)}
                                             </button>
@@ -319,7 +290,7 @@ export default function MonthlyReport() {
                 )}
 
                 {/* 최근 30일 뷰 */}
-                {reportMode === "30days" && (
+                {reportMode === "30days" && !analyzed && (
                     <>
                         <p className="mt-5 text-xs text-[#3D4D5C]">
                             30일 기준의 <span className="text-[#E89B9B] font-semibold">마지막 날짜</span>를 선택하세요
@@ -351,13 +322,13 @@ export default function MonthlyReport() {
                 )}
 
                 {/* 분석하기 버튼 */}
-                {reportMode !== "history" && (
+                {reportMode !== "history" && !analyzed && (
                     <button
                         onClick={handleAnalyze}
                         disabled={isLoading}
-                        className="mt-6 w-full py-4 rounded-2xl bg-[#B4D0DB] text-white font-bold text-sm disabled:opacity-60"
+                        className="mt-6 w-full py-4 rounded-2xl bg-[#B4D0DB] text-white font-bold text-sm cursor-pointer disabled:opacity-60"
                     >
-                        {isLoading ? "분석 중..." : "분석하기"}
+                        분석하기
                     </button>
                 )}
 
@@ -368,7 +339,7 @@ export default function MonthlyReport() {
                             <h2 className="text-sm font-bold text-[#3D4D5C]">{resultRange}</h2>
                             <button
                                 onClick={handleReselect}
-                                className="px-3 py-1.5 rounded-full bg-[#4A5C6E] text-[11px] text-white font-medium"
+                                className="px-3 py-1.5 rounded-full bg-[#4A5C6E] text-[11px] text-white font-medium cursor-pointer"
                             >
                                 다시 선택
                             </button>
@@ -416,11 +387,6 @@ export default function MonthlyReport() {
                     </>
                 )}
             </div>
-            <NotificationModal
-                isOpen={isNotiOpen}
-                onClose={() => setIsNotiOpen(false)}
-                notifications={notifications}
-            />
         </div>
     );
 }

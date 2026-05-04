@@ -19,7 +19,7 @@ const ModalLayout = ({ isOpen, onClose, children, title }) => {
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
 
             <div
-                className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity cursor-pointer "
                 onClick={onClose}
             />
 
@@ -31,7 +31,7 @@ const ModalLayout = ({ isOpen, onClose, children, title }) => {
                     </h2>
                     <button
                         onClick={onClose}
-                        className="p-2 -mr-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all"
+                        className="p-2 -mr-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all cursor-pointer "
                         aria-label="Close modal"
                     >
                         <svg

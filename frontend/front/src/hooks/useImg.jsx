@@ -1,6 +1,5 @@
 import api from "../utils/api.js";
 import { createContext, useCallback, useContext, useState } from "react";
-import { showWarningAlert } from "@/utils/alertUtils.js";
 
 const ImgContext = createContext(null);
 
@@ -32,8 +31,8 @@ export const ImgProvider = ({children}) => {
                 const userImg = imgs.find(i => i.img_id === response.data.img_id);
                 if (userImg) setCurrentBg(userImg);
             }
-        } catch (error) {
-            await showWarningAlert({title: "배경 불러오기 실패", text: error.message});
+        } catch {
+            // 인증 실패 등의 경우 조용히 무시
         }
     }, [getAllImgs]);
 
