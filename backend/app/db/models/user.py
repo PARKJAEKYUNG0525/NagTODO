@@ -42,7 +42,7 @@ class User(Base):
     attendance: Mapped[List["Attendance"]] = relationship("Attendance",back_populates="user",cascade="all, delete-orphan")
     reward: Mapped[List["Reward"]] = relationship("Reward",back_populates="user",cascade="all, delete-orphan")
 
-    cloths:           Mapped[Optional["Cloth"]]      = relationship("Cloth")
+    cloths:           Mapped[Optional["Cloth"]]      = relationship("Cloth", lazy="selectin")
     music:            Mapped[Optional["Music"]]      = relationship("Music")
     img:              Mapped[Optional["Img"]]        = relationship("Img")
 

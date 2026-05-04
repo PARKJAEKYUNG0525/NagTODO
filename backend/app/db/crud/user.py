@@ -79,7 +79,10 @@ class UserCrud:
 
         result = await db.execute(
             select(User)
-            .options(selectinload(User.cloths)) # 연관된 옷 데이터를 즉시 로드
+            .options(
+                selectinload(User.cloths),
+                selectinload(User.reward)
+            )
             .where(
                 (User.username.ilike(f"%{query}%") | User.email.ilike(f"%{query}%")),
                 User.user_id != current_user_id,
