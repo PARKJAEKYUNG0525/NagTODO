@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import api from "../utils/api";
-import { showSuccessAlert, showWarningAlert } from "../utils/alertUtils.js";
+import { showSuccessAlert, showWarningAlert, showWarningDialog  } from "../utils/alertUtils.js";
 import { useAuth } from "./useAuth";
 
 export const useFriend = () => {
@@ -63,6 +63,7 @@ export const useFriend = () => {
                     user_id: receiverId,
                     title: "새 친구 요청",
                     content: `friend_request:${response.data.friend_id}:${currentUser.username}`, // ← 닉네임 저장
+                    type: "friend",
                 });
                 showSuccessAlert({ title: "신청 완료", text: "성공적으로 요청을 보냈습니다." });
                 return true;
@@ -92,9 +93,15 @@ export const useFriend = () => {
 
 
     const deleteFriend = async (friendId) => {
+        const confirmed = await showWarningDialog({
+            title: "정말 친구를 삭제하시겠습니까?",
+            confirmText: "삭제",
+        });
+        if (!confirmed) return false;
+
         try {
             await api.delete(`/friends/${friendId}`);
-            await fetchFriends(); // 목록 새로고침
+            await fetchFriends();
             return true;
         } catch (err) {
             console.error("친구 삭제 실패:", err);
@@ -103,6 +110,12 @@ export const useFriend = () => {
     };
 
     const deleteUser = async (userId) => {
+        const confirmed = await showWarningDialog({
+            title: "정말 회원을 삭제하시겠습니까?",
+            confirmText: "삭제",
+        });
+        if (!confirmed) return false;
+
         try {
             await api.delete(`/users/${userId}`);
             return true;

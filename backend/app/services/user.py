@@ -73,7 +73,7 @@ class UserService:
     @staticmethod
     async def get_all_users_svc(db: AsyncSession) -> list[User]:
         users = await UserCrud.get_all_users(db)
-        return users
+        return [UserRead.from_orm_custom(u) for u in users]
     
     # R 조회 - 검색
     @staticmethod
