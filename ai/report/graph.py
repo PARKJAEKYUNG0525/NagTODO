@@ -54,22 +54,7 @@ def _check_failure_count(state: dict) -> str:
 
 
 def _route_after_quality(state: dict) -> str:
-    if not isinstance(state, dict):
-        raise TypeError(f"state must be dict, got {type(state).__name__}")
-    quality_passed = state.get("quality_passed", False)
-    retry_count = state.get("retry_count", 0)
-    # TypedDict 계약을 기대하지만, 직렬화 과정의 타입 불일치를 방어
-    if not isinstance(quality_passed, bool):
-        quality_passed = str(quality_passed).lower() not in ("false", "0", "")
-    if not isinstance(retry_count, int) or retry_count < 0:
-        try:
-            retry_count = max(0, int(retry_count))
-        except (TypeError, ValueError):
-            retry_count = 0
-    if quality_passed:
-        return END
-    if retry_count < 2:
-        return "llm_retrospective_report"
+    # 품질 미달이어도 재시도 없이 종료 — LLM 호출이 늘어날수록 응답 시간 초과 위험이 커짐
     return END
 
 
