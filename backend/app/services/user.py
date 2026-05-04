@@ -67,7 +67,7 @@ class UserService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"user_id '{user_id}'에 해당하는 user가 없습니다."
             )
-        return UserRead.from_orm_with_rewards(user)
+        return UserRead.from_orm_custom(user)
 
     # R 조회 - user 목록 조회
     @staticmethod

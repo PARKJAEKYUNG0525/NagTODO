@@ -5,7 +5,7 @@ from sqlalchemy.orm import selectinload
 
 from app.db.models.user import User
 from app.db.models.friend import Friend
-from app.db.scheme.user import UserCreate, UserUpdate
+from app.db.scheme.user import UserCreate, UserUpdate, UserRead
 from sqlalchemy.orm import selectinload
 
 class UserCrud:
@@ -25,7 +25,9 @@ class UserCrud:
             select(User)
             .options(selectinload(User.reward))
             .where(User.user_id == user_id))
-        return result.scalar_one_or_none()
+        
+        user = result.scalar_one_or_none()
+        return user
 
     # R 조회 - username 확인
     @staticmethod
