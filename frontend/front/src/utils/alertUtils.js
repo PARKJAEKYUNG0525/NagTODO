@@ -37,7 +37,7 @@ export async function showWarningDialog({
         confirmButtonColor: "#E89B9B",
         // cancelButtonColor: "#E89B9B",
         cancelButtonColor: "#EEF2F5",
-        reverseButtons: false,
+        reverseButtons: true,
         customClass: sharedCustomClass,
     });
     return result.isConfirmed;
@@ -60,7 +60,7 @@ export async function showWarningUserDialog({
         confirmButtonColor: "#E89B9B",
         // cancelButtonColor: "#E89B9B",
         cancelButtonColor: "#EEF2F5",
-        reverseButtons: false,
+        reverseButtons: true,
         customClass: sharedCustomClass,
     });
     return result.isConfirmed;
