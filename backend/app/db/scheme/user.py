@@ -79,5 +79,6 @@ class UserRead(UserInDB):
             img_id=user.img_id,
             music_id=user.music_id,
             status_message=user.status_message,
+            role=user.role,
             reward_cloth_ids=[r.cloth_id for r in user.reward] if user.reward else [],
         )
