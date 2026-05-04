@@ -27,7 +27,8 @@ class Settings(BaseSettings):
     VECTOR_DIM: int = 384
 
     # 백엔드 API
-    BACKEND_API_URL: str = "https://aa63-1-215-146-37.ngrok-free.app"
+    BACKEND_API_URL: str = "https://f30b-1-215-146-37.ngrok-free.app"
+    # BACKEND_API_URL: str = "http://localhost:8081"
 
     # 벡터 스토어
     FAISS_INDEX_PATH: str = "data/index.faiss"
