@@ -48,17 +48,13 @@ export default function Friend() {
     };
 
     const handleDeleteFriend = async (e, friendId) => {
-        e.stopPropagation(); // 카드 클릭(navigate) 이벤트 막기
-        const confirmed = await showWarningDialog();
-        if (!confirmed) return;
+        e.stopPropagation(); 
         const success = await deleteFriend(friendId);
         if (success) showSuccessAlert({ title: "친구가 삭제되었어요." });
     };
 
     const handleDeleteUser = async (e, userId) => {
         e.stopPropagation();
-        const confirmed = await showWarningDialog();
-        if (!confirmed) return;
         const success = await deleteUser(userId);
         if (success) {
             setAllUsers((prev) => prev.filter((u) => u.user_id !== userId));
@@ -110,7 +106,18 @@ export default function Friend() {
                                     key={user.user_id}
                                     className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3"
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
+                                    {user.file_url ? (
+                                        <img
+                                            src={`${api.defaults.baseURL}${user.file_url}`}
+                                            alt={user.username}
+                                            onError={(e) => {
+                                                e.target.outerHTML =`<div style="width:48px;height:48px;border-radius:9999px;background-color:#A8C8D8;flex-shrink:0;"></div>`;
+                                            }}
+                                            className="w-12 h-12 rounded-full shrink-0 object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
+                                    )}
                                     <div className="flex-1 flex flex-col">
                                         <span className="text-sm font-bold text-[#3D4D5C]">
                                             {user.username}
@@ -205,7 +212,18 @@ return (
                                         onClick={() => handleFriendClick(friend)}
                                         className="flex items-center gap-3 flex-1 text-left cursor-pointer"
                                     >
-                                        <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
+                                        {friendFileUrl ? (
+                                            <img
+                                                src={`${api.defaults.baseURL}${friendFileUrl}`}
+                                                alt={friendName}
+                                                onError={(e) => {
+                                                    e.target.outerHTML = `<div style="width:48px;height:48px;border-radius:9999px;background-color:#A8C8D8;flex-shrink:0;"></div>`;
+                                                }}
+                                                className="w-12 h-12 rounded-full shrink-0 object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
+                                        )}
                                         <div className="flex flex-col">
                                             <span className="text-sm font-bold text-[#3D4D5C]">
                                                 {friendName}
