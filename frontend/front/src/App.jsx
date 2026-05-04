@@ -5,6 +5,7 @@ import {
     Outlet,
     Navigate,
     useNavigate,
+    useLocation,
 } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
@@ -25,12 +26,14 @@ import api, { buildFileUrl } from "@/utils/api.js";
 
 
 const ProtectedRoute = ({ children }) => {
-    const { isAuthenticated, isLoading, isDeleting } = useAuth();
+    const { isAuthenticated, isLoading, isDeleting, isLoggingOut } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         // 로딩이 끝났는데 인증이 안 된 경우에만 알림 후 이동
-        if (!isLoading && !isAuthenticated && !isDeleting) {
+        if (!isLoading && !isAuthenticated && !isDeleting && !isLoggingOut) {
+            if (location.pathname === "/") return;            
             Swal.fire({
                 icon: "warning",
                 title: "로그인 필요",
@@ -40,7 +43,7 @@ const ProtectedRoute = ({ children }) => {
                 navigate("/", { replace: true });
             });
         }
-    }, [isAuthenticated, isLoading, isDeleting, navigate]);
+    }, [isAuthenticated, isLoading, isDeleting, isLoggingOut, navigate]);
 
     if (isLoading) {
         return (
@@ -50,7 +53,7 @@ const ProtectedRoute = ({ children }) => {
         );
     }
 
-    return isAuthenticated ? children : null;
+    return (isAuthenticated || isLoggingOut || isDeleting) ? children : null;
 };
 
 const RootLayout = () => {
