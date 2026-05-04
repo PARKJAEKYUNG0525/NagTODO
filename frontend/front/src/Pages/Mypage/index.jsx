@@ -97,6 +97,7 @@ export default function MyPage() {
 
     // 회원 가입 날짜 계산
     const getJoinDate = () => {
+        if (!user) return 0;
         const createdAt = user.created_at;
         // 1. 현재 시간과 가입 시간의 차이 계산 (밀리초 단위)
         const now = new Date();

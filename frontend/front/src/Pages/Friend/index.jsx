@@ -2,6 +2,7 @@ import React, { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import FriendAddModal from "../../Components/Modal/FriendAddModal";
+import AdminMessageModal from "../../Components/Modal/AdminMessageModal";
 import NotificationBell from "../../Components/Notification";
 
 import { useFriend } from "../../hooks/useFriend";
@@ -13,7 +14,7 @@ import api from "../../utils/api";
 export default function Friend() {
     const { searchUser, sendRequest, friends, fetchFriends, deleteFriend, deleteUser  } = useFriend();
     const { user: currentUser } = useAuth();
-    const { notifications, fetchNotifications } = useNotification();
+    const { notifications, fetchNotifications, sendNotification, sendNotificationToAll  } = useNotification();
 
     // const [isAdmin, setIsAdmin] = useState(false);
     const isAdmin = currentUser?.role === "admin";
@@ -21,6 +22,7 @@ export default function Friend() {
     const [searchQuery, setSearchQuery] = useState("");
 
     const [isFriendAddOpen, setIsFriendAddOpen] = useState(false);
+    const [isMessageOpen, setIsMessageOpen] = useState(false);
     const navigate = useNavigate();
 
     // friendName을 state로 함께 넘김
@@ -145,6 +147,25 @@ export default function Friend() {
                         )}
                     </div>
                 </div>
+                <button
+                    onClick={() => setIsMessageOpen(true)}
+                    className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg cursor-pointer"
+                    aria-label="메세지 보내기"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                        fill="none" stroke="white" strokeWidth="2"
+                        strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                </button>
+
+                <AdminMessageModal
+                    isOpen={isMessageOpen}
+                    onClose={() => setIsMessageOpen(false)}
+                    users={allUsers}
+                    sendNotification={sendNotification}
+                    sendNotificationToAll={sendNotificationToAll}
+                />
             </>
         );
     }   

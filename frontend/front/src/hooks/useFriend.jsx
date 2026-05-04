@@ -63,6 +63,7 @@ export const useFriend = () => {
                     user_id: receiverId,
                     title: "새 친구 요청",
                     content: `friend_request:${response.data.friend_id}:${currentUser.username}`, // ← 닉네임 저장
+                    type: "friend",
                 });
                 showSuccessAlert({ title: "신청 완료", text: "성공적으로 요청을 보냈습니다." });
                 return true;
