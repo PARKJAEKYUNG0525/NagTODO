@@ -43,7 +43,7 @@ async def _create_todo(client: AsyncClient, user_id: int, **overrides) -> dict:
     payload = {
         "title":       "원래 제목",
         "detail":      "원래 상세",
-        "category_id": "study",
+        "category_id": 1,
         "user_id":     user_id,
         "todo_status": "시작전",
         "visibility":  "친구공개",
@@ -60,7 +60,7 @@ async def test_create_success(client: AsyncClient, test_user):
     resp = await client.post("/todos/", json={
         "title":       "오늘의 운동",
         "detail":      "30분 달리기",
-        "category_id": "workout",
+        "category_id": 2,
         "user_id":     test_user.user_id,
         "todo_status": "시작전",
         "visibility":  "친구공개",
@@ -77,7 +77,7 @@ async def test_create_user_not_found(client: AsyncClient):
     resp = await client.post("/todos/", json={
         "title":       "할 일",
         "detail":      "",
-        "category_id": "study",
+        "category_id": 1,
         "user_id":     9999,
         "todo_status": "시작전",
         "visibility":  "친구공개",
@@ -90,13 +90,13 @@ async def test_create_category_not_found(client: AsyncClient, test_user):
     resp = await client.post("/todos/", json={
         "title":       "할 일",
         "detail":      "",
-        "category_id": "nonexistent_cat",
+        "category_id": 9999,
         "user_id":     test_user.user_id,
         "todo_status": "시작전",
         "visibility":  "친구공개",
     })
     assert resp.status_code == 404
-    assert "nonexistent_cat" in resp.json()["detail"]
+    assert "9999" in resp.json()["detail"]
 
 
 async def test_create_ai_failure_still_returns_201(client: AsyncClient, test_user):
@@ -105,7 +105,7 @@ async def test_create_ai_failure_still_returns_201(client: AsyncClient, test_use
         resp = await client.post("/todos/", json={
             "title":       "공부하기",
             "detail":      "",
-            "category_id": "study",
+            "category_id": 1,
             "user_id":     test_user.user_id,
             "todo_status": "시작전",
             "visibility":  "친구공개",
@@ -130,7 +130,7 @@ async def test_get_todo_not_found(client: AsyncClient):
 
 async def test_get_todos_by_user(client: AsyncClient, test_user):
     for i in range(3):
-        await _create_todo(client, test_user.user_id, title=f"할 일 {i}", category_id="work")
+        await _create_todo(client, test_user.user_id, title=f"할 일 {i}", category_id=5)
     resp = await client.get(f"/todos/user/{test_user.user_id}")
     assert resp.status_code == 200
     assert len(resp.json()) >= 3
@@ -173,7 +173,7 @@ async def test_update_status_calls_patch_embedding(client: AsyncClient, test_use
 async def test_update_category_calls_patch_embedding(client: AsyncClient, test_user):
     todo = await _create_todo(client, test_user.user_id)
     with patch(_AI_PATHS["patch_embedding"], new_callable=AsyncMock) as mock_patch:
-        resp = await client.patch(f"/todos/{todo['todo_id']}", json={"category_id": "workout"})
+        resp = await client.patch(f"/todos/{todo['todo_id']}", json={"category_id": 2})
         assert resp.status_code == 200
         mock_patch.assert_called_once()
 
@@ -198,7 +198,7 @@ async def test_update_not_found(client: AsyncClient):
 
 async def test_update_invalid_category(client: AsyncClient, test_user):
     todo = await _create_todo(client, test_user.user_id)
-    resp = await client.patch(f"/todos/{todo['todo_id']}", json={"category_id": "invalid_cat"})
+    resp = await client.patch(f"/todos/{todo['todo_id']}", json={"category_id": 9999})
     assert resp.status_code == 404
 
 

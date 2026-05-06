@@ -21,6 +21,13 @@ class UserService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="이미 동일한 닉네임이 존재합니다."
             )
+        
+        # 중복 email 확인
+        if await UserCrud.get_email(db, data.email):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="이미 동일한 이메일이 존재합니다."
+            )
 
         # 비밀번호 해시화
         data.pw = get_password_hash(data.pw)

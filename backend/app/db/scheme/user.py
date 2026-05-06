@@ -43,6 +43,7 @@ class UserUpdate(BaseModel):
     img_id : str | None = None
     music_id : str | None = None
     status_message: str | None = None
+    mode: int | None = None 
 
 class UserInDB(UserBase):
     user_id: int
@@ -58,6 +59,7 @@ class UserInDB(UserBase):
     status_message: str | None = None
     file_url: str | None = None
     role: str = "user"
+    mode: int = 0
 
     class Config:
         from_attributes = True
@@ -96,6 +98,7 @@ class UserRead(UserInDB):
             music_id=user.music_id,
             status_message=user.status_message,
             role=user.role,
+            mode=user.mode,
             reward_cloth_ids=[r.cloth_id for r in user.reward] if user.reward else [],
         )
 

@@ -40,7 +40,7 @@ def mock_ai():
 
 async def _create(client, user_id: int, **kw) -> dict:
     resp = await client.post("/todos/", json={
-        "title": "기본 제목", "detail": "상세", "category_id": "study",
+        "title": "기본 제목", "detail": "상세", "category_id": 1,
         "user_id": user_id, "todo_status": "시작전", "visibility": "친구공개",
         **kw,
     })
@@ -96,7 +96,7 @@ async def test_owner_change_currently_succeeds(client: AsyncClient, test_user, s
 async def test_create_empty_title_rejected(client: AsyncClient, test_user):
     """빈 제목으로 생성 → 422 이어야 하지만 현재 201 반환."""
     resp = await client.post("/todos/", json={
-        "title": "", "detail": "상세", "category_id": "study",
+        "title": "", "detail": "상세", "category_id": 1,
         "user_id": test_user.user_id, "todo_status": "시작전", "visibility": "친구공개",
     })
     assert resp.status_code == 422, f"빈 제목으로 생성됨: {resp.status_code}"
@@ -105,7 +105,7 @@ async def test_create_empty_title_rejected(client: AsyncClient, test_user):
 async def test_empty_title_currently_creates(client: AsyncClient, test_user):
     """현재 빈 제목 생성이 성공함을 증명 (버그 확인)."""
     resp = await client.post("/todos/", json={
-        "title": "", "detail": "상세", "category_id": "study",
+        "title": "", "detail": "상세", "category_id": 1,
         "user_id": test_user.user_id, "todo_status": "시작전", "visibility": "친구공개",
     })
     assert resp.status_code == 201  # 버그: 빈 제목이 DB에 저장됨
@@ -138,7 +138,7 @@ async def test_empty_title_update_currently_succeeds(client: AsyncClient, test_u
 async def test_invalid_todo_status_rejected(client: AsyncClient, test_user):
     """잘못된 todo_status → 422 이어야 하지만 SQLite에서는 201 반환."""
     resp = await client.post("/todos/", json={
-        "title": "할 일", "detail": "", "category_id": "study",
+        "title": "할 일", "detail": "", "category_id": 1,
         "user_id": test_user.user_id,
         "todo_status": "완전히_틀린_상태",  # ENUM 외 값
         "visibility": "친구공개",
@@ -153,7 +153,7 @@ async def test_invalid_todo_status_returns_db_error_not_pydantic(client: AsyncCl
     현재 동작: SQLAlchemy CHECK 제약 위반 → 400 (서비스의 except Exception 포착)
     """
     resp = await client.post("/todos/", json={
-        "title": "할 일", "detail": "", "category_id": "study",
+        "title": "할 일", "detail": "", "category_id": 1,
         "user_id": test_user.user_id,
         "todo_status": "완전히_틀린_상태",
         "visibility": "친구공개",
@@ -170,25 +170,20 @@ async def test_invalid_todo_status_returns_db_error_not_pydantic(client: AsyncCl
 )
 async def test_invalid_visibility_rejected(client: AsyncClient, test_user):
     resp = await client.post("/todos/", json={
-        "title": "할 일", "detail": "", "category_id": "study",
+        "title": "할 일", "detail": "", "category_id": 1,
         "user_id": test_user.user_id, "todo_status": "시작전",
         "visibility": "전체공개",  # "친구공개"/"비공개"만 유효
     })
     assert resp.status_code == 422
 
 
-# ─── CRITICAL-4: TodoUpdate category_id max_length 검증 우회 ─────────────────
+# ─── CRITICAL-4: category_id 타입 검증 (int로 변경 후 자동 해소) ──────────────
 
-@pytest.mark.xfail(
-    reason="CRITICAL-4: TodoUpdate.category_id에 max_length 없음 — 101자 카테고리 수정 허용",
-    strict=True,
-)
-async def test_update_category_max_length_enforced(client: AsyncClient, test_user):
-    """101자 category_id로 수정 → 422여야 하지만 현재 404 또는 200 반환."""
+async def test_update_category_invalid_type_rejected(client: AsyncClient, test_user):
+    """문자열 category_id로 수정 시도 → category_id가 int이므로 422 반환."""
     todo = await _create(client, test_user.user_id)
-    long_cat = "a" * 101
-    resp = await client.patch(f"/todos/{todo['todo_id']}", json={"category_id": long_cat})
-    assert resp.status_code == 422, f"101자 category_id 수정 허용: {resp.status_code}"
+    resp = await client.patch(f"/todos/{todo['todo_id']}", json={"category_id": "not-an-int"})
+    assert resp.status_code == 422
 
 
 # ─── HIGH-1: title + status 동시 변경 시 update_embedding 파라미터 검증 ───────
@@ -214,7 +209,7 @@ async def test_title_and_status_change_uses_update_embedding(client: AsyncClient
 
 async def test_update_embedding_receives_correct_params(client: AsyncClient, test_user):
     """update_embedding 호출 시 user_id(str), category, text, completed가 올바른지."""
-    todo = await _create(client, test_user.user_id, title="원본", category_id="study")
+    todo = await _create(client, test_user.user_id, title="원본", category_id=1)
     with patch(_AI["update_embedding"], new_callable=AsyncMock) as mock_update:
         resp = await client.patch(
             f"/todos/{todo['todo_id']}",
@@ -224,7 +219,7 @@ async def test_update_embedding_receives_correct_params(client: AsyncClient, tes
         mock_update.assert_called_once()
         _, kwargs = mock_update.call_args
         assert kwargs["user_id"] == str(test_user.user_id)
-        assert kwargs["category"] == "study"
+        assert kwargs["category"] == 1
         assert kwargs["text"] == "변경된 제목"
         assert kwargs["completed"] is False  # 시작전이므로
 
@@ -245,11 +240,11 @@ async def test_patch_embedding_receives_correct_params_on_category_change(
     client: AsyncClient, test_user
 ):
     """카테고리 변경 시 patch_embedding에 category 파라미터가 올바른지."""
-    todo = await _create(client, test_user.user_id, category_id="study")
+    todo = await _create(client, test_user.user_id, category_id=1)
     with patch(_AI["patch_embedding"], new_callable=AsyncMock) as mock_patch:
-        await client.patch(f"/todos/{todo['todo_id']}", json={"category_id": "workout"})
+        await client.patch(f"/todos/{todo['todo_id']}", json={"category_id": 2})
         _, kwargs = mock_patch.call_args
-        assert kwargs["category"] == "workout"
+        assert kwargs["category"] == 2
         assert "completed" not in kwargs or kwargs.get("completed") is None
 
 
@@ -310,7 +305,7 @@ async def test_whitespace_only_title_rejected(client: AsyncClient, test_user):
 async def test_create_response_contains_all_required_fields(client: AsyncClient, test_user):
     """생성 응답에 created_at, updated_at 등 모든 필드가 포함되어야 함."""
     resp = await client.post("/todos/", json={
-        "title": "필드 검증", "detail": "상세", "category_id": "daily",
+        "title": "필드 검증", "detail": "상세", "category_id": 3,
         "user_id": test_user.user_id, "todo_status": "시작전", "visibility": "친구공개",
     })
     assert resp.status_code == 201
@@ -325,7 +320,7 @@ async def test_create_response_contains_all_required_fields(client: AsyncClient,
 async def test_create_title_at_max_length(client: AsyncClient, test_user):
     """255자 제목으로 생성 → 성공해야 함."""
     resp = await client.post("/todos/", json={
-        "title": "가" * 255, "detail": "", "category_id": "etc",
+        "title": "가" * 255, "detail": "", "category_id": 6,
         "user_id": test_user.user_id, "todo_status": "시작전", "visibility": "친구공개",
     })
     assert resp.status_code == 201
@@ -335,7 +330,7 @@ async def test_create_title_at_max_length(client: AsyncClient, test_user):
 async def test_create_title_over_max_length_rejected(client: AsyncClient, test_user):
     """256자 제목 → 422여야 하지만 SQLite에서 통과."""
     resp = await client.post("/todos/", json={
-        "title": "가" * 256, "detail": "", "category_id": "etc",
+        "title": "가" * 256, "detail": "", "category_id": 6,
         "user_id": test_user.user_id, "todo_status": "시작전", "visibility": "친구공개",
     })
     assert resp.status_code == 422

@@ -29,10 +29,10 @@ router = APIRouter()
 class InterferenceRequest(BaseModel):
     todo_id: str
     todo_text: str
-    category: str
+    category: int
     user_id: str
 
-    @field_validator("todo_id", "todo_text", "user_id", "category")
+    @field_validator("todo_id", "todo_text", "user_id")
     @classmethod
     def not_empty(cls, v: str) -> str:
         if not v.strip():

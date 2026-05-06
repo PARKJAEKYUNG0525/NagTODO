@@ -23,6 +23,7 @@ import FriendDetail from "./Pages/FriendDetail/index.jsx";
 import { MusicProvider } from "@/hooks/useMusic.jsx";
 import { ImgProvider, useImg } from "./hooks/useImg";
 import api, { buildFileUrl } from "@/utils/api.js";
+import { showDeadlineAlert } from "@/utils/alertUtils.js";
 
 
 const ProtectedRoute = ({ children }) => {
@@ -69,6 +70,41 @@ const RootLayout = () => {
 
 const ProtectedLayout = () => {
     const { currentBg, getUserBg } = useImg();
+    const { user } = useAuth();
+
+    useEffect(() => {
+        if (!user) return;
+
+        const ALERT_HOURS = { 20: 4, 22: 2, 23: 1 }; // { 시각: 남은시간 }
+
+        const check = () => {
+            const now = new Date();
+            const hour = now.getHours();
+            const minute = now.getMinutes();
+            const today = now.toISOString().slice(0, 10); // "2025-05-06"
+
+            if (!(hour in ALERT_HOURS) || minute !== 0) return;
+
+            const storageKey = `deadline_alert_${today}_${hour}`;
+            if (localStorage.getItem(storageKey)) return; // 오늘 이미 띄움
+
+            localStorage.setItem(storageKey, "shown");
+            showDeadlineAlert({ hoursLeft: ALERT_HOURS[hour], mode: user.mode ?? 0 });
+        };
+
+        const interval = setInterval(check, 60 * 1000); // 1분마다 체크
+        check(); // 마운트 시 즉시 1회 체크 (앱 켰을 때 정각이면 바로 뜸)
+
+        return () => clearInterval(interval);
+    }, [user]);
+
+    // 즉시 모드 테스트 
+    // useEffect(() => {
+    //     if (!user) return;
+    //     // 바로 띄우기 테스트
+    //     showDeadlineAlert({ hoursLeft: 4, mode: user.mode ?? 0 }); // 엄격 모드
+    //     // showDeadlineAlert({ hoursLeft: 1, mode: 1 });            // 경박 모드
+    // }, [user]);
 
     useEffect(() => { getUserBg(); }, []);
 
@@ -107,12 +143,6 @@ const router = createBrowserRouter([
             { index: true, element: <Login /> },
             { path: "login", element: <Login /> },
             { path: "signup", element: <Signup /> },
-            // { index: true, element: <Navigate to="/login" replace /> }, // 기본 경로를 /login으로 리다이렉트
-            // { path: "main", element: <Home /> },
-            // { path: "friend", element: <Friend/>},
-            // { path: "todo", element: <Todo/>},
-            // { path: "report", element: <Report/>},
-            // { path: "mypage", element: <MyPage/>},
             {
                 element: (
                     <ProtectedRoute>
@@ -133,8 +163,6 @@ const router = createBrowserRouter([
 ]);
 
 const App = () => {
-    // 위에 작성한 router를 RouterProvider를 통해 전달
-    // RouterProvider : 앱 전체에 라우터 적용
     return <RouterProvider router={router} />;
 };
 

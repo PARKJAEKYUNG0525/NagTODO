@@ -11,7 +11,7 @@ CSV 컬럼: history_id, user_id, title, todo_status, archived_at, category_name
 매핑:
   history_id    → todo_id
   archived_at   → created_at, updated_at
-  category_name → category_id  (_CATEGORY_MAP 참조)
+  category_name → category_id  (_CATEGORY_MAP 참조, 숫자 PK)
 """
 
 import csv
@@ -33,13 +33,13 @@ from sqlalchemy.orm import sessionmaker
 from ai.core.dependencies import get_embedding_model, get_embedding_store
 
 # category_name(한글) → category_id 매핑 (backend/app/db/seed.py 기준)
-_CATEGORY_MAP: dict[str, str] = {
-    "공부": "study",
-    "운동": "workout",
-    "일상": "daily",
-    "약속": "appointment",
-    "업무": "work",
-    "기타": "etc",
+_CATEGORY_MAP: dict[str, int] = {
+    "공부": 1,
+    "운동": 2,
+    "일상": 3,
+    "약속": 4,
+    "업무": 5,
+    "기타": 6,
 }
 
 
@@ -88,8 +88,8 @@ def _seed_db(rows: list[dict]) -> int:
             category_name = row["category_name"]
             category_id = _CATEGORY_MAP.get(category_name)
             if category_id is None:
-                print(f"  경고: 알 수 없는 category_name '{category_name}', 'etc'로 대체")
-                category_id = "etc"
+                print(f"  경고: 알 수 없는 category_name '{category_name}', 기타(6)로 대체")
+                category_id = 6
 
             archived_at = datetime.fromisoformat(row["archived_at"])
 
@@ -136,7 +136,7 @@ def _seed_vector_store(rows: list[dict]) -> int:
         if todo_id in existing:
             continue
 
-        category_id = _CATEGORY_MAP.get(row["category_name"], "etc")
+        category_id = _CATEGORY_MAP.get(row["category_name"], 6)
         vec = model.encode_passage(row["title"])
         store.add(
             todo_id=todo_id,

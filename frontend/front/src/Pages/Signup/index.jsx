@@ -30,23 +30,23 @@ export default function Signup({ onLoginClick }) {
         setError("");
 
         if (form.username.length < 2) {
-            setError("(index)닉네임은 최소 2글자 이상이어야 합니다");
+            setError("닉네임은 최소 2글자 이상이어야 합니다");
             return;
         }
 
         const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{8,30}$/;
         if (!pwRegex.test(form.password)) {
-            setError("(index)비밀번호는 8~30자, 영문/숫자/특수문자를 포함해야 합니다");
+            setError("비밀번호는 8~30자, 영문/숫자/특수문자를 포함해야 합니다");
             return;
         }
 
         if (form.password !== form.confirmPassword) {
-            setError("(index)비밀번호가 일치하지 않습니다");
+            setError("비밀번호가 일치하지 않습니다");
             return;
         }
 
         if (!form.birthYear || !form.birthMonth || !form.birthDay) {
-            setError("(index)생년월일을 모두 선택해주세요");
+            setError("생년월일을 모두 선택해주세요");
             return;
         }
 

@@ -98,3 +98,38 @@ export const showAttendanceReward = (totalDays, clothTitle, clothFileUrl) => {
         confirmButtonText: "확인",
     });
 };
+
+export function showDeadlineAlert({ hoursLeft, mode } = {}) {
+    const isStrict = mode === 0; // 0: 엄격, 1: 경박
+
+    const messages = {
+        4: {
+            strict: "마감 4시간 전이야. 아직 안 했으면 지금 당장 시작해.",
+            less:   "야야야!!! 4시간 남았어!!!! 설마 아직도 안 한 거 아니지???",
+        },
+        2: {
+            strict: "2시간 남았어. 진짜로. 지금 안 하면 후회한다.",
+            less:   "2시간!!!!!! 어???? 아직도????? 빨리 해!!!!!",
+        },
+        1: {
+            strict: "1시간 남았어. 할 거야, 말 거야.",
+            less:   "1시간!!!!! 야 이거 진짜야???? 지금 당장 해!!!!!!",
+        },
+    };
+
+    const msg = messages[hoursLeft];
+    const text = isStrict ? msg.strict : msg.less;
+    const icon = isStrict ? "warning" : "error";
+    const iconColor = isStrict ? "#E89B9B" : "#FFB347";
+
+    return Swal.fire({
+        title: `⏰ 마감 ${hoursLeft}시간 전!`,
+        text,
+        width: "330px",
+        icon,
+        iconColor,
+        confirmButtonColor: "#A8C8D8",
+        confirmButtonText: "알겠어",
+        customClass: sharedCustomClass,
+    });
+}
