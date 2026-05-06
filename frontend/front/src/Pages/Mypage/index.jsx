@@ -348,7 +348,7 @@ export default function MyPage() {
     };
 
     // ====== 렌더: 비관리자/관리자 - 내 정보 수정 ======
-    if (!isAdmin && view === "edit-profile") {
+    if (view === "edit-profile") {
         return (
             <div className="flex-1 overflow-y-auto px-8 pt-10 pb-10 flex flex-col">
                 <h1 className="text-xl font-bold text-[#3D4D5C]">내 정보 수정</h1>

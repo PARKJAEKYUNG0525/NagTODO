@@ -235,7 +235,7 @@ return (
                                     >
                                         {friendFileUrl ? (
                                             <img
-                                                src={`${api.defaults.baseURL}${friendFileUrl}`}
+                                                src={friendFileUrl}
                                                 alt={friendName}
                                                 onError={(e) => {
                                                     e.target.outerHTML = `<div style="width:48px;height:48px;border-radius:9999px;background-color:#A8C8D8;flex-shrink:0;"></div>`;
