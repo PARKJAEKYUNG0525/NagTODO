@@ -120,8 +120,8 @@ export default function Todo() {
     const handleDeleteSelected = async () => {
         if (selectedTodoIds.length === 0) return;
         const ok = await showWarningDialog({
-            title: `${selectedTodoIds.length}개 할 일을 삭제할까요?`,
-            text: "삭제하면 되돌릴 수 없습니다.",
+            title: `${selectedTodoIds.length}개 할 일을 진짜 삭제?`,
+            text: "삭제하면 되돌릴 수 없는데!?!?!",
         });
         if (!ok) return;
         await Promise.all(selectedTodoIds.map((id) => deleteTodo(id)));
