@@ -1,18 +1,19 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import Category, Cloth, Img, Music
+from sqlalchemy.dialects.postgresql import insert
 from app.db.models.user import User
 from datetime import date
 import bcrypt
 import os
 
 _DEFAULT_CATEGORIES = [
-    ("study",       "공부"),
-    ("workout",     "운동"),
-    ("daily",       "일상"),
-    ("appointment", "약속"),
-    ("work",        "업무"),
-    ("etc",         "기타"),
+    (1, "공부"),
+    (2, "운동"),
+    (3, "일상"),
+    (4, "약속"),
+    (5, "업무"),
+    (6, "기타"),
 ]
 
 _CLOTHS_DEFAULT = [
@@ -123,3 +124,11 @@ async def seed_admin(session: AsyncSession) -> None:
         print("관리자 계정 생성 완료")
     else:
         print("관리자 계정 이미 존재")
+
+
+async def run_all_seeds(session: AsyncSession) -> None:
+    await seed_categories(session)
+    await seed_cloths(session)
+    await seed_imgs(session)
+    await seed_musics(session)
+    await seed_admin(session)

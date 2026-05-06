@@ -89,10 +89,34 @@ export default function Signup({ onLoginClick }) {
         }
     };
 
-    const currentYear = new Date().getFullYear();
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1;
+    const currentDay = today.getDate();
+
     const years = Array.from({ length: 100 }, (_, i) => currentYear - i);   // 올해~100년 전
-    const months = Array.from({ length: 12 }, (_, i) => i + 1);
-    const days = Array.from({ length: 31 }, (_, i) => i + 1);
+    const months = Array.from({ length: 12 }, (_, i) => i + 1).filter((m) => {
+        if (parseInt(form.birthYear) === currentYear) {
+            return m <= currentMonth;
+        }
+        return true;
+    });
+    const days = Array.from({ length: 31 }, (_, i) => i + 1).filter((d) => {
+        if (
+            parseInt(form.birthYear) === currentYear &&
+            parseInt(form.birthMonth) === currentMonth
+        ) {
+            return d <= currentDay;
+        }
+        
+        // 선택한 달의 실제 마지막 날짜까지만 보여주기
+        if (form.birthYear && form.birthMonth) {
+            const lastDay = new Date(form.birthYear, form.birthMonth, 0).getDate();
+            return d <= lastDay;
+        }
+        
+        return true;
+    });
 
     const selectStyle = {
         backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%234A5568' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`,

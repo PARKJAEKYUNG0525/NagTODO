@@ -21,7 +21,7 @@ class Todo(Base):
     created_at:  Mapped[datetime] = mapped_column(TIMESTAMP, default=lambda: datetime.now(), nullable=False)
     updated_at:  Mapped[datetime] = mapped_column(TIMESTAMP, server_default=func.now(), onupdate=func.now(), nullable=False)
     user_id:     Mapped[int]      = mapped_column(Integer, ForeignKey("user.user_id"), nullable=False)
-    category_id: Mapped[str]      = mapped_column(String(100), ForeignKey("category.category_id"), nullable=False)
+    category_id: Mapped[int]      = mapped_column(Integer, ForeignKey("category.category_id"), nullable=False)
 
     user:              Mapped["User"]                  = relationship("User", back_populates="todos")
     category:          Mapped["Category"]              = relationship("Category", back_populates="todos")
