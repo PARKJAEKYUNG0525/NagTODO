@@ -12,7 +12,7 @@ import useCategory from "@/hooks/useCategory.jsx";
 
 export default function MyPage() {
     const { user, setUser, logout, deleteUser } = useAuth();
-    const { updateProfile, updatePassword, checkUsername, updateStatusMessage } = useMypage();
+    const { updateProfile, updatePassword, checkUsername, updateStatusMessage, error: mypageError, setError: setMypageError } = useMypage();
     const { currentCloth, getUserCloth, setUserCloth } = useCloth();
     const { getCategory, addCategory, updateCategory, deleteCategory } = useCategory();
 
@@ -90,7 +90,10 @@ export default function MyPage() {
 
     // 에러 메시지 띄운 후, 한 글자라도 수정하면 에러 메시지 즉시 내리기
     useEffect(() => {
-        if (error) setError("");
+        if (error || mypageError) {
+            setError("");
+            setMypageError("");
+        }
     }, [form.username, form.currentPassword, form.password, form.confirmPassword]);
 
     // 카테고리 로드
@@ -260,15 +263,16 @@ export default function MyPage() {
                 setError("(Mypage/index)현재 비밀번호를 입력해주세요.");
                 return;
             }
+            if (!form.password) {
+                setError("(Mypage/index)새 비밀번호를 입력해주세요.");
+                return;
+            }
             const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
             if (!pwRegex.test(form.password)) {
                 setError("(Mypage/index)새 비밀번호는 8자 이상, 영문·숫자·특수문자를 포함해야 합니다.");
                 return;
             }
-            if (form.password !== form.confirmPassword) {
-                setError("(Mypage/index)새 비밀번호가 일치하지 않습니다.");
-                return;
-            }
+            
         }
 
         try {
@@ -284,9 +288,14 @@ export default function MyPage() {
                     newPassword: form.password,
                     confirmPassword: form.confirmPassword,
                 });
-                if (!pwOk) {
-                    setError("(Mypage/index)비밀번호를 다시 확인해주세요.");
-                    return;   
+                if (!pwOk) return;
+                //     {
+                //     setError("(Mypage/index)비밀번호를 다시 확인해주세요.");
+                //     return;   
+                // }
+                if (form.password !== form.confirmPassword) {
+                    setError("(Mypage/index)새 비밀번호가 일치하지 않습니다.");
+                    return;
                 }
                 message.push("비밀번호");
             }
@@ -309,7 +318,7 @@ export default function MyPage() {
             }));
             setPendingCloth(null);
             setView("main");
-        } catch (error) {
+        } catch (err) {
             setError("(Mypage/index)저장 중 오류가 발생했습니다.");
         }
     };
@@ -329,10 +338,10 @@ export default function MyPage() {
                 } else {
                     showWarningDialog({
                         title: "저장 실패",
-                        text: error || "다시 시도해주세요."
+                        text: mypageError || "다시 시도해주세요."
                     });
                 }
-            } catch (error) {
+            } catch (err) {
                 console.error("상태메시지 저장 중 에러 발생:", error);
                 showWarningDialog({
                     title: "시스템 오류",
@@ -371,7 +380,7 @@ export default function MyPage() {
 
                 <div className="mt-6 flex flex-col gap-4">
 
-                    <ErrorMessage error={error} />
+                    <ErrorMessage error={error || mypageError} />
 
                     <Field label="닉네임" value={form.username} onChange={(e) => setForm({...form, username: e.target.value})} />
                     <Field label="이메일" value={form.email} readOnly />
