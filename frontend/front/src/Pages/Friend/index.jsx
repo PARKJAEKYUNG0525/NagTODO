@@ -2,6 +2,7 @@ import React, { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { showWarningDialog, showSuccessAlert } from "@/utils/alertUtils.js";
 import FriendAddModal from "../../Components/Modal/FriendAddModal";
+import AdminMessageModal from "../../Components/Modal/AdminMessageModal";
 import NotificationBell from "../../Components/Notification";
 
 import { useFriend } from "../../hooks/useFriend";
@@ -13,7 +14,7 @@ import api from "../../utils/api";
 export default function Friend() {
     const { searchUser, sendRequest, friends, fetchFriends, deleteFriend, deleteUser  } = useFriend();
     const { user: currentUser } = useAuth();
-    const { notifications, fetchNotifications } = useNotification();
+    const { notifications, fetchNotifications, sendNotification, sendNotificationToAll  } = useNotification();
 
     // const [isAdmin, setIsAdmin] = useState(false);
     const isAdmin = currentUser?.role === "admin";
@@ -21,6 +22,7 @@ export default function Friend() {
     const [searchQuery, setSearchQuery] = useState("");
 
     const [isFriendAddOpen, setIsFriendAddOpen] = useState(false);
+    const [isMessageOpen, setIsMessageOpen] = useState(false);
     const navigate = useNavigate();
 
     // friendName을 state로 함께 넘김
@@ -48,17 +50,13 @@ export default function Friend() {
     };
 
     const handleDeleteFriend = async (e, friendId) => {
-        e.stopPropagation(); // 카드 클릭(navigate) 이벤트 막기
-        const confirmed = await showWarningDialog();
-        if (!confirmed) return;
+        e.stopPropagation(); 
         const success = await deleteFriend(friendId);
         if (success) showSuccessAlert({ title: "친구가 삭제되었어요." });
     };
 
     const handleDeleteUser = async (e, userId) => {
         e.stopPropagation();
-        const confirmed = await showWarningDialog();
-        if (!confirmed) return;
         const success = await deleteUser(userId);
         if (success) {
             setAllUsers((prev) => prev.filter((u) => u.user_id !== userId));
@@ -85,7 +83,7 @@ export default function Friend() {
                     <NotificationBell onAccept={fetchFriends} />
                 </header>
 
-                <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
+                <div className="flex-1 min-h-0 overflow-y-auto px-6 pt-4 pb-4">
                     <div className="flex gap-2">
                         <div className="flex-1 bg-white rounded-full px-4 py-3 flex items-center gap-2 shadow-sm">
                             <span className="text-[#8B9BAA] text-xs">🔍</span>
@@ -110,7 +108,18 @@ export default function Friend() {
                                     key={user.user_id}
                                     className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3"
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
+                                    {user.file_url ? (
+                                        <img
+                                            src={`${api.defaults.baseURL}${user.file_url}`}
+                                            alt={user.username}
+                                            onError={(e) => {
+                                                e.target.outerHTML =`<div style="width:48px;height:48px;border-radius:9999px;background-color:#A8C8D8;flex-shrink:0;"></div>`;
+                                            }}
+                                            className="w-12 h-12 rounded-full shrink-0 object-cover"
+                                        />
+                                    ) : (
+                                        <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
+                                    )}
                                     <div className="flex-1 flex flex-col">
                                         <span className="text-sm font-bold text-[#3D4D5C]">
                                             {user.username}
@@ -138,6 +147,25 @@ export default function Friend() {
                         )}
                     </div>
                 </div>
+                <button
+                    onClick={() => setIsMessageOpen(true)}
+                    className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg cursor-pointer"
+                    aria-label="메세지 보내기"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                        fill="none" stroke="white" strokeWidth="2"
+                        strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                </button>
+
+                <AdminMessageModal
+                    isOpen={isMessageOpen}
+                    onClose={() => setIsMessageOpen(false)}
+                    users={allUsers}
+                    sendNotification={sendNotification}
+                    sendNotificationToAll={sendNotificationToAll}
+                />
             </>
         );
     }   
@@ -205,7 +233,18 @@ return (
                                         onClick={() => handleFriendClick(friend)}
                                         className="flex items-center gap-3 flex-1 text-left cursor-pointer"
                                     >
-                                        <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
+                                        {friendFileUrl ? (
+                                            <img
+                                                src={`${api.defaults.baseURL}${friendFileUrl}`}
+                                                alt={friendName}
+                                                onError={(e) => {
+                                                    e.target.outerHTML = `<div style="width:48px;height:48px;border-radius:9999px;background-color:#A8C8D8;flex-shrink:0;"></div>`;
+                                                }}
+                                                className="w-12 h-12 rounded-full shrink-0 object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-12 h-12 rounded-full bg-[#A8C8D8] shrink-0" />
+                                        )}
                                         <div className="flex flex-col">
                                             <span className="text-sm font-bold text-[#3D4D5C]">
                                                 {friendName}

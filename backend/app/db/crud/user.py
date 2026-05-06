@@ -44,7 +44,12 @@ class UserCrud:
     # R 조회 - 전체 조회
     @staticmethod
     async def get_all_users(db: AsyncSession) -> list[User]:
-        result = await db.execute(select(User))
+        result = await db.execute(
+            select(User).options(
+                selectinload(User.reward),
+                selectinload(User.cloths)
+            )
+        )
         return list(result.scalars().all())
 
     # U 수정

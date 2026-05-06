@@ -196,10 +196,9 @@ export default function Todo() {
     })();
 
     return (
-        <div className="flex-1 flex flex-col"
-        >
+        <div className="flex-1 flex flex-col min-h-0">
             {/* 상단 헤더 */}
-            <header className="px-6 pt-6 flex items-center justify-between">
+            <header className="px-6 pt-6 flex min-h-0 items-center justify-between">
                 <h1 className="text-2xl font-bold text-[#3D4D5C]">
                     {format(selectedDate, "M월", { locale: ko })}
                 </h1>
@@ -207,7 +206,7 @@ export default function Todo() {
             </header>
 
             {/* 스크롤 영역 */}
-            <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 pt-4 pb-4">
                 {/* 캘린더 카드 (shadcn/ui Calendar) */}
                 <div className="bg-white rounded-2xl p-4 shadow-sm">
                     <div className="flex items-center justify-end px-1 mb-1">

@@ -34,7 +34,7 @@ export default function Login({ onSignupClick }) {
         // 모바일: 배경색이 카드색과 동일 → 전체화면처럼 보임
         // PC(sm 이상): 흰 배경에 카드 형태로 중앙 정렬
         <>
-            <div className="bg-[#EEF2F5] flex flex-col flex-1 w-full px-6 py-10">
+            <div className="bg-[#EEF2F5] flex flex-col flex-1 w-full px-6 py-10 justify-center">
                 {/* 프로필 아이콘 */}
                 <div className="flex flex-col items-center">
                     <div className="mb-5 ">

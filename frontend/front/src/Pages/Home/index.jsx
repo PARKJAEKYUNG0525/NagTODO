@@ -40,14 +40,14 @@ export default function Home() {
     const handlePlayToggle = () => toggle();
 
     return (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-h-0">
             {/* 상단 헤더 (알림 벨) */}
             <header className="px-6 pt-6 flex justify-end">
                 <NotificationBell />
             </header>
 
             {/* 메인 콘텐츠 (Welcome 타이포) */}
-            <main className="flex-1 flex flex-col items-center justify-center px-6">
+            <main className="flex-1 min-h-0 flex flex-col items-center justify-center px-6">
                 <h1 className="text-6xl font-bold text-[#3D4D5C] tracking-tight">
                     Welcome
                 </h1>

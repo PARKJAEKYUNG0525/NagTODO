@@ -97,6 +97,7 @@ export default function MyPage() {
 
     // 회원 가입 날짜 계산
     const getJoinDate = () => {
+        if (!user) return 0;
         const createdAt = user.created_at;
         // 1. 현재 시간과 가입 시간의 차이 계산 (밀리초 단위)
         const now = new Date();
@@ -583,7 +584,7 @@ export default function MyPage() {
                     <NotificationBell />
             </header>
 
-            <div className="flex-1 overflow-y-auto px-6 pb-8 flex flex-col gap-5">
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 pb-8 flex flex-col gap-5">
                 {/* 프로필 카드 */}
                 <div className="bg-white rounded-2xl p-5 shadow-sm relative shrink-0">
                     <button onClick={logout} className="absolute top-4 right-5 text-[10px] text-[#8B9BAA] cursor-pointer">

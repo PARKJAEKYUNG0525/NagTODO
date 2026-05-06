@@ -127,7 +127,7 @@ export default function Signup({ onLoginClick }) {
 
     return (
         <>
-            <div className="bg-[#EEF2F5] flex flex-col flex-1 w-full px-6 py-10">
+            <div className="bg-[#EEF2F5] flex flex-col flex-1 w-full px-6 py-10 justify-center">
                 {/* 타이틀 */}
                 <h1 className="text-2xl font-bold text-[#2D3748] tracking-tight mb-8">
                     회원가입
