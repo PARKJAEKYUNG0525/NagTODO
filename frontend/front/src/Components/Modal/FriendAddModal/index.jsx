@@ -114,7 +114,7 @@ const FriendAddModal = ({ isOpen, onClose, onSearch, onRequest }) => {
                     <div className="w-10 h-10 rounded-full bg-[#F5F8FA] shrink-0 overflow-hidden border border-[#E4E9EE] flex items-center justify-center">
                       {user.file_url ? ( // 수정: user.cloth_id?.file_url 대신 user.file_url 사용
                         <img
-                          src={`${api.defaults.baseURL}${user.file_url}`} // 백엔드에서 조립된 경로를 그대로 사용
+                          src={user.file_url}
                           alt={user.username}
                           className="w-full h-full object-cover"
                           onError={(e) => {

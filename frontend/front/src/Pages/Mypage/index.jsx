@@ -505,7 +505,7 @@ export default function MyPage() {
                 <div className="mt-6 flex flex-col items-center">
                     <div className={`w-24 h-24 rounded-full overflow-hidden ${!pendingCloth ? 'bg-[#A8C8D8]' : ''}`}>
                         {pendingCloth && (
-                            <img src={`${api.defaults.baseURL}${pendingCloth.file_url}`}
+                            <img src={pendingCloth.file_url}
                                  alt={pendingCloth.title} className="w-full h-full object-cover"
                             />
                         )}
