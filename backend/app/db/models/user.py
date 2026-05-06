@@ -33,6 +33,7 @@ class User(Base):
     state:           Mapped[bool]               = mapped_column(Boolean, nullable=False, server_default=text('1')) # 1은 회원, 0은 탈퇴
     refresh_token:   Mapped[Optional[str]]      = mapped_column(String(255), nullable=True)
     status_message:  Mapped[Optional[str]]      = mapped_column(String(500), nullable=True)
+    mode:            Mapped[int]                = mapped_column(Integer, nullable=False, server_default=text('0'))
     role:            Mapped[str]                = mapped_column(String(20),  nullable=False, server_default=text("'user'")) # 기본값은 일반 유저
 
     cloth_id: Mapped[Optional[str]] = mapped_column(String(100), ForeignKey("cloth.cloth_id"),nullable=True)

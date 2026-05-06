@@ -119,6 +119,21 @@ const useMypage = () => {
         }
     };
 
+    // 모드 변경
+    const updateMode = async (mode) => {
+        try {
+            const response = await api.patch("/users/me", { mode });
+            if (response.status === 200) {
+                setUser(response.data);
+                return true;
+            }
+        } catch (error) {
+            console.log(error);
+            setError(error.response?.data.detail || "모드 변경에 실패했습니다.");
+            return false;
+        }
+    };
+
 
     return {
         error,
@@ -128,7 +143,8 @@ const useMypage = () => {
         updatePassword,
         checkUsername,
         updateStatusMessage,
-        deleteUser
+        deleteUser,
+        updateMode
     };
 };
 
