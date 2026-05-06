@@ -12,14 +12,14 @@ import useCategory from "@/hooks/useCategory.jsx";
 
 export default function MyPage() {
     const { user, setUser, logout, deleteUser } = useAuth();
-    const { updateProfile, updatePassword, checkUsername, updateStatusMessage, error: mypageError, setError: setMypageError } = useMypage();
+    const { updateProfile, updatePassword, checkUsername, updateStatusMessage, error: mypageError, setError: setMypageError, updateMode } = useMypage();
     const { currentCloth, getUserCloth, setUserCloth } = useCloth();
     const { getCategory, addCategory, updateCategory, deleteCategory } = useCategory();
 
     const [isAdmin, setIsAdmin] = useState(false);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState("");
-    const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
+    const [strictMode, setStrictMode] = useState(user?.mode === 1 ? "less" : "strict");
     const [view, setView] = useState("main"); // "main" | "edit-profile"
     const [error, setError] = useState("");
     const [form, setForm] = useState({ 
@@ -54,19 +54,9 @@ export default function MyPage() {
         loadCategory();
     }, []);
 
-    // useEffect(() => {
-    //     const checkAdmin = () => false;
-    //     setIsAdmin(checkAdmin());
-    //     const loadStrictMode = () => "strict";
-    //     setStrictMode(loadStrictMode());
-    // }, []);
     useEffect(() => {
         setIsAdmin(user?.role === "admin");
     }, [user]);
-
-    useEffect(() => {
-        // TODO: API 로 strictMode 변경 저장
-    }, [strictMode]);
 
     useEffect(() => {
         if (user) {
@@ -95,6 +85,12 @@ export default function MyPage() {
             setMypageError("");
         }
     }, [form.username, form.currentPassword, form.password, form.confirmPassword]);
+
+    useEffect(() => {
+        if (user) {
+            setStrictMode(user.mode === 1 ? "less" : "strict");
+        }
+    }, [user]);
 
     // 카테고리 로드
     const loadCategory = async () => {
@@ -142,9 +138,14 @@ export default function MyPage() {
         setPendingCloth(cloth);
     };
 
-    const handleSelectStrictMode = (mode) => {
-        setStrictMode(mode);
-        alert(`모드 변경: ${mode === "strict" ? "엄격하게" : "덜 엄격하게"}`);
+    const handleSelectStrictMode = async (mode) => {
+        const modeValue = mode === "strict" ? 0 : 1;
+        const ok = await updateMode(modeValue);
+        if (ok) {
+            setStrictMode(mode);
+        } else {
+            showWarningAlert({ title: "모드 변경에 실패했습니다." });
+        }
     };
 
     const handleEnterDeleteMode = () => {
@@ -517,22 +518,43 @@ export default function MyPage() {
                             {/* 엄격하게 버튼 */}
                             <button
                                 onClick={() => handleSelectStrictMode("strict")}
-                                className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left cursor-pointer
-                                ${strictMode === "strict" ? "ring-2 ring-[#A8C8D8]" : ""}
+                                className={`w-full rounded-2xl p-5 shadow-sm block text-left cursor-pointer transition-colors
+                                    ${strictMode === "strict"
+                                        ? "bg-[#A8C8D8] ring-2 ring-[#A8C8D8]"
+                                        : "bg-white ring-2 ring-transparent hover:bg-[#EEF2F5]"}
                                 `}
                             >
-                                <p className="text-center text-sm font-bold text-[#3D4D5C]">엄격하게</p>
-                                <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
+                                <p className={`text-center text-sm font-bold 
+                                    ${strictMode === "strict" ? "text-white" : "text-[#8B9BAA]"}`}>
+                                    엄격하게
+                                </p>
+                                <div className={`mt-3 h-14 rounded-xl flex items-center px-4
+                                    ${strictMode === "strict" ? "bg-[#8BB8C8]" : "bg-[#E4E9EE]"}`}>
+                                    <p className={`text-xs ${strictMode === "strict" ? "text-white" : "text-[#8B9BAA]"}`}>
+                                        "너 또 안 했지. 내가 이런 거 미리 하라고 몇 번을 말했어."
+                                    </p>
+                                </div>
                             </button>
 
+                            {/* 경박하게 버튼 */}
                             <button
                                 onClick={() => handleSelectStrictMode("less")}
-                                className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left cursor-pointer
-                                ${strictMode === "less" ? "ring-2 ring-[#A8C8D8]" : ""}
+                                className={`w-full rounded-2xl p-5 shadow-sm block text-left cursor-pointer transition-colors
+                                    ${strictMode === "less"
+                                        ? "bg-[#A8C8D8] ring-2 ring-[#A8C8D8]"
+                                        : "bg-white ring-2 ring-transparent hover:bg-[#EEF2F5]"}
                                 `}
                             >
-                                <p className="text-center text-sm text-[#8B9BAA]">덜 엄격하게</p>
-                                <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
+                                <p className={`text-center text-sm font-bold
+                                    ${strictMode === "less" ? "text-white" : "text-[#8B9BAA]"}`}>
+                                    경박하게
+                                </p>
+                                <div className={`mt-3 h-14 rounded-xl flex items-center px-4
+                                    ${strictMode === "less" ? "bg-[#8BB8C8]" : "bg-[#E4E9EE]"}`}>
+                                    <p className={`text-xs ${strictMode === "less" ? "text-white" : "text-[#8B9BAA]"}`}>
+                                        "아직도 안 했어??? 진짜야???"
+                                    </p>
+                                </div>
                             </button>
                         </div>
                     </div>
