@@ -11,6 +11,7 @@ import useCategory from "@/hooks/useCategory.jsx";
 import { useAuth } from "../../hooks/useAuth";
 import { useNotification } from "@/hooks/useNotification";
 import { BsFillBellFill } from "react-icons/bs";
+import { showWarningDialog } from "@/utils/alertUtils.js";
 // 달성률에 따른 도트 색
 const RATE_COLOR = {
     HIGH:  "#A8D5B4", // 100% — 초록
@@ -118,6 +119,11 @@ export default function Todo() {
     };
     const handleDeleteSelected = async () => {
         if (selectedTodoIds.length === 0) return;
+        const ok = await showWarningDialog({
+            title: `${selectedTodoIds.length}개 할 일을 삭제할까요?`,
+            text: "삭제하면 되돌릴 수 없습니다.",
+        });
+        if (!ok) return;
         await Promise.all(selectedTodoIds.map((id) => deleteTodo(id)));
         setSelectedTodoIds([]);
         setIsDeleteMode(false);
