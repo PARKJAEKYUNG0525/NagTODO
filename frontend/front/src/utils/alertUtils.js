@@ -1,5 +1,5 @@
 import Swal from "sweetalert2";
-import api from "./api";
+import { buildFileUrl } from "./api";
 
 /**
  * sweetalert2 공통 래퍼 모음
@@ -86,7 +86,7 @@ export const showAttendanceReward = (totalDays, clothTitle, clothFileUrl) => {
         title: `누적 ${totalDays}일 출석 달성!`,
         html: `
             <div style="text-align:center;">
-                <img src="${api.defaults.baseURL}${clothFileUrl}"
+                <img src="${buildFileUrl(clothFileUrl)}"
                      alt="${clothTitle}"
                      style="width:120px;height:120px;object-fit:cover;border-radius:50%;margin:16px auto;display:block;background:#F5F8FA;" />
                 <p style="font-weight:bold;color:#3D4D5C;margin-top:8px;font-size:15px;">${clothTitle}</p>
