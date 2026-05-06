@@ -4,6 +4,7 @@ from sqlalchemy import func, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.db.models.todo import Todo
+from app.db.models.category import Category
 from app.db.scheme.todo import TodoCreate, TodoUpdate
 
 class TodoCrud:
@@ -38,16 +39,17 @@ class TodoCrud:
 
         stmt = (
             select(
-                Todo.category_id.label("category"),
+                Category.name.label("category"),
                 func.count().label("total"),
                 func.sum(case((Todo.todo_status == "완료", 1), else_=0)).label("completed"),
             )
+            .join(Category, Todo.category_id == Category.category_id)
             .where(
                 Todo.user_id == user_id,
                 Todo.created_at >= start_dt,
                 Todo.created_at <= end_dt,
             )
-            .group_by(Todo.category_id)
+            .group_by(Category.category_id, Category.name)
         )
 
         result = await db.execute(stmt)
@@ -92,8 +94,9 @@ class TodoCrud:
             select(
                 Todo.title.label("text"),
                 Todo.todo_status,
-                Todo.category_id.label("category"),
+                Category.name.label("category"),
             )
+            .join(Category, Todo.category_id == Category.category_id)
             .where(
                 Todo.user_id == user_id,
                 Todo.created_at >= start_dt,
