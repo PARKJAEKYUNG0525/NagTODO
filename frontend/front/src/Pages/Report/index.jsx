@@ -159,7 +159,7 @@ export default function MonthlyReport() {
                 <NotificationBell />
             </header>
 
-            <div className="flex-1 overflow-y-auto px-6 pt-6 pb-4">
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 pt-6 pb-4">
                 {/* 탭 토글 */}
                 <div className="flex flex-col gap-2">
                     <div className="flex gap-2">

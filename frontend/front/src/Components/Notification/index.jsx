@@ -11,6 +11,20 @@ export default function NotificationBell({ onAccept }) {
     const { fetchFriends } = useFriend();
     const [isOpen, setIsOpen] = useState(false);
 
+    const handleOpen = async () => {
+        setIsOpen(true);
+        console.log("notifications:", notifications);
+        const systemNotifications = notifications.filter(
+            (n) => !n.is_read && n.type === "system"
+        );
+        await Promise.all(
+            systemNotifications.map((n) =>
+                api.patch(`/notifications/${n.notification_id}`, { is_read: true })
+            )
+        );
+        fetchNotifications();
+    };
+
     const handleAccept = async (notification) => {
         try {
             const friendId = notification.content.split(":")[1];
@@ -39,11 +53,11 @@ export default function NotificationBell({ onAccept }) {
     return (
         <>
             <button
-                onClick={() => setIsOpen(true)}
+                onClick={handleOpen} 
                 className="relative w-12 h-12 rounded-full bg-[#4A5C6E] flex items-center justify-center shadow-sm shrink-0 cursor-pointer"
             >
                 <BsFillBellFill className="w-5 h-5 text-white" />
-                {notifications.length > 0 && (
+                {Array.isArray(notifications) && notifications.some(n => !n.is_read) && (
                     <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#A8C8D8]" />
                 )}
             </button>

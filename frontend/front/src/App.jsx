@@ -5,6 +5,7 @@ import {
     Outlet,
     Navigate,
     useNavigate,
+    useLocation,
 } from "react-router-dom";
 import Navbar from "./Components/Navbar";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
@@ -25,12 +26,14 @@ import api, { buildFileUrl } from "@/utils/api.js";
 
 
 const ProtectedRoute = ({ children }) => {
-    const { isAuthenticated, isLoading, isDeleting } = useAuth();
+    const { isAuthenticated, isLoading, isDeleting, isLoggingOut } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         // 로딩이 끝났는데 인증이 안 된 경우에만 알림 후 이동
-        if (!isLoading && !isAuthenticated && !isDeleting) {
+        if (!isLoading && !isAuthenticated && !isDeleting && !isLoggingOut) {
+            if (location.pathname === "/") return;            
             Swal.fire({
                 icon: "warning",
                 title: "로그인 필요",
@@ -40,7 +43,7 @@ const ProtectedRoute = ({ children }) => {
                 navigate("/", { replace: true });
             });
         }
-    }, [isAuthenticated, isLoading, isDeleting, navigate]);
+    }, [isAuthenticated, isLoading, isDeleting, isLoggingOut, navigate]);
 
     if (isLoading) {
         return (
@@ -50,13 +53,13 @@ const ProtectedRoute = ({ children }) => {
         );
     }
 
-    return isAuthenticated ? children : null;
+    return (isAuthenticated || isLoggingOut || isDeleting) ? children : null;
 };
 
 const RootLayout = () => {
     return (
-        <div className="h-screen bg-gray-200 flex items-center justify-center font-sans">
-            <main className="bg-[#EEF2F5] flex flex-col w-full h-screen sm:w-[390px] sm:h-auto sm:aspect-[390/844] sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative">
+        <div className="min-h-screen bg-gray-200 flex items-center justify-center font-sans">
+            <main className="bg-[#EEF2F5] flex flex-col w-full min-h-screen sm:w-97.5 sm:min-h-0 sm:h-auto sm:aspect-390/844 sm:max-h-211 sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative">
                 <Outlet />
                 <InterferencePopup />
             </main>
@@ -72,7 +75,7 @@ const ProtectedLayout = () => {
     return (
         <MusicProvider>
             <div
-                className="flex-1 min-h-0 flex flex-col bg-[#F4F7FA] bg-cover bg-center overflow-hidden"
+                className="flex-1 min-h-0 flex flex-col bg-[#F4F7FA] bg-cover bg-center"
                 style={
                     currentBg
                         ? {

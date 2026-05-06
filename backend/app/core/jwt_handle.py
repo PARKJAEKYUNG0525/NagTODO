@@ -56,7 +56,7 @@ def decode_token(token:str) -> dict:
     )
 
 # 토큰을 해독한 후, 받은 payload{} 에서 uid(userid) 꺼내서 반환
-def verify_token(token:str) -> int:
+def verify_token(token:str) -> int | None:
     payload = decode_token(token)
     return payload.get("uid")
 

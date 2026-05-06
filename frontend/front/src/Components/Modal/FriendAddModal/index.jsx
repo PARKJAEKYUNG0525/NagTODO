@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import ModalLayout from "../ModalLayout";
+import api from "../../../utils/api";
 
 const FriendAddModal = ({ isOpen, onClose, onSearch, onRequest }) => {
   const [query, setQuery] = useState("");                 // 검색창에 입력된 텍스트
@@ -101,13 +102,34 @@ const FriendAddModal = ({ isOpen, onClose, onSearch, onRequest }) => {
         <div className="flex flex-col gap-3 min-h-[100px] max-h-[300px] overflow-y-auto">
           {hasSearched ? (
             searchResults.length > 0 ? (
-              searchResults.map((user) => (
+              searchResults.map((user) => {
+                console.log("검색된 유저:", user.username, "옷 데이터:", user.cloths);
+                return(
                 <div
                   key={user.user_id}
                   className="flex items-center justify-between p-4 rounded-2xl bg-white border border-[#E1E8ED]"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-[#A8C8D8] opacity-50"></div>
+
+                    <div className="w-10 h-10 rounded-full bg-[#F5F8FA] shrink-0 overflow-hidden border border-[#E4E9EE] flex items-center justify-center">
+                      {user.file_url ? ( // 수정: user.cloth_id?.file_url 대신 user.file_url 사용
+                        <img
+                          src={`${api.defaults.baseURL}${user.file_url}`} // 백엔드에서 조립된 경로를 그대로 사용
+                          alt={user.username}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // 이미지 로드 실패 시 안전장치
+                            e.target.src = "/default_profile.png"; 
+                          }}
+                        />
+                      ) : (
+                        // 데이터 자체가 없을 때 (fallback)
+                        <div className="w-full h-full bg-[#A8C8D8] opacity-50 flex items-center justify-center text-white text-[10px]">
+                          No img
+                        </div>
+                      )}
+                    </div>
+                    
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-[#3D4D5C]">
                         {user.username}
@@ -124,7 +146,8 @@ const FriendAddModal = ({ isOpen, onClose, onSearch, onRequest }) => {
                     요청
                   </button>
                 </div>
-              ))
+                );
+              })
             ) : (
               <div className="flex items-center justify-center py-10">
                 <p className="text-xs text-[#8B9BAA]">검색 결과가 없습니다.</p>

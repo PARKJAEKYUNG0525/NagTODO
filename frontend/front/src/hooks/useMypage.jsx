@@ -5,10 +5,9 @@ import { showSuccessAlert, showWarningDialog } from "../utils/alertUtils.js";
 import { useAuth } from "./useAuth";
 
 const useMypage = () => {
-    const { setUser, logout } = useAuth();
+    const { setUser, logout, isDeleting, setIsDeleting} = useAuth();
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [isDeleting, setIsDeleting] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const navigate = useNavigate();
 
@@ -94,7 +93,7 @@ const useMypage = () => {
         }
     };
 
-    
+    //회원탈퇴
     const deleteUser = async () => {
         const confirmed = await showWarningDialog({
         title: "정말 탈퇴하시겠습니까?",
