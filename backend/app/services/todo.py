@@ -19,7 +19,7 @@ async def _require_user(db: AsyncSession, user_id: int):
     return user
 
 
-async def _require_category(db: AsyncSession, category_id: str):
+async def _require_category(db: AsyncSession, category_id: int):
     """category_id에 해당하는 Category가 없으면 404를 발생시킨다."""
     category = await CategoryCrud.get_category(db, category_id)
     if not category:

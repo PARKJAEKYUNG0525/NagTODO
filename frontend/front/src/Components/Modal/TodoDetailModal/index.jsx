@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState} from "react";
 import ModalLayout from "../ModalLayout";
-import { showWarningAlert } from "@/utils/alertUtils.js";
+import { showWarningAlert, showWarningDialog } from "@/utils/alertUtils.js";
 import useCategory from "@/hooks/useCategory.jsx";
 
 /**
@@ -62,7 +62,9 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
     onClose?.();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
+    const ok = await showWarningDialog({ title: "진짜 삭제?", text: "삭제하면 되돌릴 수 없는데!?!?!" });
+    if (!ok) return;
     onDelete?.(todo.todo_id);
     onClose?.();
   };
