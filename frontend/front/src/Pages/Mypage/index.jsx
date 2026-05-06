@@ -325,8 +325,8 @@ export default function MyPage() {
 
     const handleStatusMessage = async () => {
         if (editingStatusMessage) {
-            if (statusMessage.length > 50) {
-                showWarningAlert({title: "50자 이내로 입력하세요."})
+            if (statusMessage.length > 30) {
+                showWarningAlert({title: "30자 이내로 입력하세요."})
                 return;
             }
 
