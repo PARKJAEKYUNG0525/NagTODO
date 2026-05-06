@@ -63,7 +63,7 @@ const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
   };
 
   const handleDelete = async () => {
-    const ok = await showWarningDialog({ title: "할 일을 삭제할까요?", text: "삭제하면 되돌릴 수 없습니다." });
+    const ok = await showWarningDialog({ title: "진짜 삭제?", text: "삭제하면 되돌릴 수 없는데!?!?!" });
     if (!ok) return;
     onDelete?.(todo.todo_id);
     onClose?.();
