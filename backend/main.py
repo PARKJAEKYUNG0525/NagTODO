@@ -1,9 +1,7 @@
 import uvicorn
-from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from app.db.database import Base, async_engine, AsyncSessionLocal
 from app.db.seed import seed_categories, seed_musics, seed_imgs, seed_cloths, seed_admin
 from fastapi.concurrency import asynccontextmanager
@@ -58,8 +56,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
 
 app.include_router(attendance_router)
 app.include_router(category_router)

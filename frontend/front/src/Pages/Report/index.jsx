@@ -350,7 +350,7 @@ export default function MonthlyReport() {
                             <div className="mt-8 flex flex-col items-center gap-3 py-8">
                                 <div className="animate-spin rounded-full h-10 w-10 border-4 border-[#A8C8D8] border-t-transparent" />
                                 <p className="text-xs text-[#8B9BAA]">AI 리포트를 생성하는 중입니다…</p>
-                                <p className="text-[10px] text-[#8B9BAA]">최대 1~2분 소요될 수 있습니다</p>
+                                <p className="text-[10px] text-[#8B9BAA]">3분 가량 소요될 수 있습니다</p>
                             </div>
                         )}
 
@@ -537,7 +537,7 @@ function ClusterGrid({ clusters }) {
             {clusters.map((cluster) => (
                 <div key={cluster.cluster_id} className="bg-white rounded-2xl p-3 shadow-sm">
                     <span className="inline-block px-2 py-0.5 rounded-full bg-[#EEF2F5] text-[10px] text-[#3D4D5C]">
-                        {cluster.dominant_category}
+                        {cluster.topic ?? cluster.dominant_category}
                     </span>
                     <p className="mt-2 text-xs text-[#3D4D5C] font-medium">{cluster.size}개 실패 task</p>
                     {cluster.sample_texts[0] && (

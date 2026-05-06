@@ -71,7 +71,7 @@ const BgChangeModal = ({ isOpen, onClose }) => {
                             >
                                 <div className="w-full aspect-square rounded-xl shadow-inner overflow-hidden bg-[#F5F8FA]">
                                     <img
-                                        src={`${api.defaults.baseURL}${img.file_url}`}
+                                        src={img.file_url}
                                         alt={img.title}
                                         className="w-full h-full object-cover"
                                         loading="lazy"

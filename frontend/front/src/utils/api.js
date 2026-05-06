@@ -8,12 +8,7 @@ const api = axios.create({
     },
 });
 
-// ngrok 환경에서 <img>, <audio> 등 브라우저 직접 로드 요청에 헤더를 붙일 수 없으므로
-// 쿼리 파라미터로 ngrok 경고 페이지를 우회
-export const buildFileUrl = (filePath) => {
-    const base = api.defaults.baseURL || '';
-    const url = `${base}${filePath}`;
-    return base.includes('ngrok') ? `${url}?ngrok-skip-browser-warning=true` : url;
-};
+// 정적 파일은 frontend public/에서 같은 origin으로 서빙되므로 상대 경로 그대로 사용
+export const buildFileUrl = (filePath) => filePath;
 
 export default api;

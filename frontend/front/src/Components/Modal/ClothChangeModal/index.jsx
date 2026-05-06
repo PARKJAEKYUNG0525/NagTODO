@@ -116,7 +116,7 @@ const ClothChangeModal = ({ isOpen, onClose, currentClothId, onApply }) => {
                             >
                                 <div className="w-full aspect-square rounded-xl shadow-inner overflow-hidden bg-[#F5F8FA] relative">
                                     <img
-                                        src={`${api.defaults.baseURL}${cloth.file_url}`}
+                                        src={cloth.file_url}
                                         alt={cloth.title}
                                         className={`w-full h-full object-cover transition ${
                                             unlocked ? "" : "grayscale opacity-40"
