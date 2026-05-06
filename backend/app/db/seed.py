@@ -23,7 +23,7 @@ _CLOTHS_DEFAULT = [
     {"cloth_id": "default_4",     "title": "누워있는 투칸",     "file_url": "/static/cloth/누워있는_Default.png"},
     {"cloth_id": "default_5",     "title": "빤히 쳐다보는 투칸", "file_url": "/static/cloth/눈반짝_Default.png"},
     {"cloth_id": "default_6",     "title": "숙면하는 투칸",     "file_url": "/static/cloth/드르렁_Default.png"},
-    {"cloth_id": "default_7",     "title": "앉아있는 투칸",     "file_url": "/static/cloth/앉아있는_default.png"},
+    {"cloth_id": "default_7",     "title": "앉아있는 투칸",     "file_url": "/static/cloth/앉아있는_Default.png"},
     {"cloth_id": "default_8",     "title": "웃고있는 투칸",     "file_url": "/static/cloth/웃음_Default.png"},
     {"cloth_id": "default_9",     "title": "인사하는 투칸",     "file_url": "/static/cloth/인사_Default.png"},
     {"cloth_id": "default_10",    "title": "째려보는 투칸",     "file_url": "/static/cloth/째려보는_Default.png"},

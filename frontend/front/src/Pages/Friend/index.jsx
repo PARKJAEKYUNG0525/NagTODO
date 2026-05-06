@@ -110,7 +110,7 @@ export default function Friend() {
                                 >
                                     {user.file_url ? (
                                         <img
-                                            src={`${api.defaults.baseURL}${user.file_url}`}
+                                            src={user.file_url}
                                             alt={user.username}
                                             onError={(e) => {
                                                 e.target.outerHTML =`<div style="width:48px;height:48px;border-radius:9999px;background-color:#A8C8D8;flex-shrink:0;"></div>`;

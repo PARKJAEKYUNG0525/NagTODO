@@ -356,7 +356,7 @@ export default function MyPage() {
                 <div className="mt-6 flex flex-col items-center">
                     <div className={`w-24 h-24 rounded-full overflow-hidden ${!pendingCloth ? 'bg-[#A8C8D8]' : ''}`}>
                         {pendingCloth && (
-                            <img src={`${api.defaults.baseURL}${pendingCloth.file_url}`}
+                            <img src={pendingCloth.file_url}
                                  alt={pendingCloth.title} className="w-full h-full object-cover"
                             />
                         )}
@@ -446,7 +446,7 @@ export default function MyPage() {
                         <div className={`mt-3 w-20 h-20 rounded-full overflow-hidden ${!currentCloth ? 'bg-[#A8C8D8]' : ''}`}>
                             {currentCloth && (
                                 <img
-                                    src={`${api.defaults.baseURL}${currentCloth.file_url}`}
+                                    src={currentCloth.file_url}
                                     alt={currentCloth.title}
                                     className="w-full h-full object-cover"
                                 />
