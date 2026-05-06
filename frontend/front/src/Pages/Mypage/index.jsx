@@ -245,13 +245,13 @@ export default function MyPage() {
         const isChangingCloth = pendingCloth?.cloth_id !== currentCloth?.cloth_id;
 
         if (!isChangingUsername && !isChangingPassword && !isChangingCloth) {
-            setError("(Mypage/index)변경된 내용이 없습니다.");
+            setError("변경된 내용이 없습니다.");
             return;
         }
 
         if (isChangingUsername) {
             if (!form.username.trim()) {
-                setError("(Mypage/index)닉네임을 입력해주세요.");
+                setError("닉네임을 입력해주세요.");
                 return;
             }
             const isAvailable = await checkUsername(form.username.trim());
@@ -260,16 +260,16 @@ export default function MyPage() {
 
         if (isChangingPassword) {
             if (!form.currentPassword) {
-                setError("(Mypage/index)현재 비밀번호를 입력해주세요.");
+                setError("현재 비밀번호를 입력해주세요.");
                 return;
             }
             if (!form.password) {
-                setError("(Mypage/index)새 비밀번호를 입력해주세요.");
+                setError("새 비밀번호를 입력해주세요.");
                 return;
             }
             const pwRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
             if (!pwRegex.test(form.password)) {
-                setError("(Mypage/index)새 비밀번호는 8자 이상, 영문·숫자·특수문자를 포함해야 합니다.");
+                setError("새 비밀번호는 8자 이상, 영문·숫자·특수문자를 포함해야 합니다.");
                 return;
             }
             
@@ -289,12 +289,9 @@ export default function MyPage() {
                     confirmPassword: form.confirmPassword,
                 });
                 if (!pwOk) return;
-                //     {
-                //     setError("(Mypage/index)비밀번호를 다시 확인해주세요.");
-                //     return;   
-                // }
+                
                 if (form.password !== form.confirmPassword) {
-                    setError("(Mypage/index)새 비밀번호가 일치하지 않습니다.");
+                    setError("새 비밀번호가 일치하지 않습니다.");
                     return;
                 }
                 message.push("비밀번호");
@@ -319,7 +316,7 @@ export default function MyPage() {
             setPendingCloth(null);
             setView("main");
         } catch (err) {
-            setError("(Mypage/index)저장 중 오류가 발생했습니다.");
+            setError("저장 중 오류가 발생했습니다.");
         }
     };
 
