@@ -11,8 +11,8 @@ import ClothChangeModal from "@/Components/Modal/ClothChangeModal";
 import useCategory from "@/hooks/useCategory.jsx";
 
 export default function MyPage() {
-    const { user, setUser, logout, deleteUser } = useAuth();
-    const { updateProfile, updatePassword, checkUsername, updateStatusMessage, error: mypageError, setError: setMypageError, updateMode } = useMypage();
+    const { user, setUser, logout } = useAuth();
+    const { updateProfile, updatePassword, checkUsername, updateStatusMessage, error: mypageError, setError: setMypageError, updateMode, deleteUser } = useMypage();
     const { currentCloth, getUserCloth, setUserCloth } = useCloth();
     const { getCategory, addCategory, updateCategory, deleteCategory } = useCategory();
 
