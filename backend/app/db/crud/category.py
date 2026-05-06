@@ -15,7 +15,7 @@ class CategoryCrud:
 
     # R 조회 - 단일 조회
     @staticmethod
-    async def get_category(db: AsyncSession, category_id: str) -> Category | None:
+    async def get_category(db: AsyncSession, category_id: int) -> Category | None:
         result = await db.execute(select(Category).where(Category.category_id == category_id))
         return result.scalar_one_or_none()
 
