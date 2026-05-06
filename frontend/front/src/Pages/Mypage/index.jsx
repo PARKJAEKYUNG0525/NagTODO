@@ -14,9 +14,11 @@ export default function MyPage() {
     const { user, setUser, logout, deleteUser } = useAuth();
     const { updateProfile, updatePassword, checkUsername, updateStatusMessage, error: mypageError, setError: setMypageError } = useMypage();
     const { currentCloth, getUserCloth, setUserCloth } = useCloth();
-    const { getCategory } = useCategory();
+    const { getCategory, addCategory, updateCategory, deleteCategory } = useCategory();
 
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [newCategoryName, setNewCategoryName] = useState("");
     const [strictMode, setStrictMode] = useState("strict"); // "strict" | "less"
     const [view, setView] = useState("main"); // "main" | "edit-profile"
     const [error, setError] = useState("");
@@ -31,7 +33,7 @@ export default function MyPage() {
         birthDay: ""  
         });
 
-    const [adminMode, setAdminMode] = useState("default"); // "default" | "edit" | "delete"
+    const [adminCategoryMode, setAdminCategoryMode] = useState("default"); // "default" | "edit" | "delete"
     const [editingCategoryId, setEditingCategoryId] = useState(null);
     const [editingValue, setEditingValue] = useState("");
     const [selectedCategoryIds, setSelectedCategoryIds] = useState([]);
@@ -48,17 +50,19 @@ export default function MyPage() {
     useEffect(() => { getUserCloth(); }, []);
 
     // mount시, 카테고리 수정 시 카테고리 목록 불러오기
-    // 관리자 쪽에서 쓰이지만 일단 주석처리
-    // useEffect(() => {
-    //     loadCategory();
-    // }, [loadCategory]);
-
     useEffect(() => {
-        const checkAdmin = () => false;
-        setIsAdmin(checkAdmin());
-        const loadStrictMode = () => "strict";
-        setStrictMode(loadStrictMode());
+        loadCategory();
     }, []);
+
+    // useEffect(() => {
+    //     const checkAdmin = () => false;
+    //     setIsAdmin(checkAdmin());
+    //     const loadStrictMode = () => "strict";
+    //     setStrictMode(loadStrictMode());
+    // }, []);
+    useEffect(() => {
+        setIsAdmin(user?.role === "admin");
+    }, [user]);
 
     useEffect(() => {
         // TODO: API 로 strictMode 변경 저장
@@ -92,11 +96,12 @@ export default function MyPage() {
         }
     }, [form.username, form.currentPassword, form.password, form.confirmPassword]);
 
-    // 관리자 쪽에서 쓰이지만 일단 주석처리
-    // const loadCategory = useCallback(async () => {
-    //     const db_category = await getCategory();
-    //     if (db_category) setCategories(db_category);
-    // }, [getCategory]);
+    // 카테고리 로드
+    const loadCategory = async () => {
+        const db_category = await getCategory();
+        console.log("카테고리 데이터:", JSON.stringify(db_category)); 
+        if (db_category) setCategories(db_category);
+    };
 
     // 회원 가입 날짜 계산
     const getJoinDate = () => {
@@ -115,9 +120,6 @@ export default function MyPage() {
         return diffInDays;
     }
 
-    // const handleNotification = () => alert("알림 아이콘 클릭");
-
-    // const handleWithdraw = () => alert("회원탈퇴 안내");
     const handleEditProfile = () => {
         setForm(prev => ({
             ...prev,
@@ -145,14 +147,12 @@ export default function MyPage() {
         alert(`모드 변경: ${mode === "strict" ? "엄격하게" : "덜 엄격하게"}`);
     };
 
-    const handleEditAdmin = () => alert("관리자 정보 수정");
-
     const handleEnterDeleteMode = () => {
-        setAdminMode("delete");
+        setAdminCategoryMode("delete");
         setEditingCategoryId(null);
     };
     const handleCancelDeleteMode = () => {
-        setAdminMode("default");
+        setAdminCategoryMode("default");
         setSelectedCategoryIds([]);
     };
     const handleToggleCategorySelect = (id) => {
@@ -170,39 +170,57 @@ export default function MyPage() {
             text: "삭제된 카테고리는 복구할 수 없어요.",
         });
         if (ok) {
-            setCategories((prev) =>
-                prev.filter((c) => !selectedCategoryIds.includes(c.id))
+            // 개별 삭제 순차 실행
+            const results = await Promise.all(
+                selectedCategoryIds.map((id) => deleteCategory(id))
             );
-            setSelectedCategoryIds([]);
-            setAdminMode("default");
-            showSuccessAlert({title: "삭제 완료"});
+            if (results.every(Boolean)) {
+                setCategories((prev) =>
+                    prev.filter((c) => !selectedCategoryIds.includes(c.category_id))
+                );
+                setSelectedCategoryIds([]);
+                setAdminCategoryMode("default");
+                showSuccessAlert({ title: "삭제 완료" });
+            }
         }
     };
 
     const handleStartEdit = (category) => {
-        setAdminMode("edit");
-        setEditingCategoryId(category.id);
+        console.log("handleStartEdit called:", category.id);
+        // setAdminCategoryMode("edit");
+        setEditingCategoryId(category.category_id);
         setEditingValue(category.name);
     };
     const handleCancelEdit = () => {
-        setAdminMode("default");
+        // setAdminCategoryMode("default");
         setEditingCategoryId(null);
         setEditingValue("");
     };
-    const handleConfirmEdit = () => {
+    const handleConfirmEdit = async () => {
         if (!editingValue.trim()) {
             setError("카테고리 이름을 입력하세요.");
             return;
         }
-        setCategories((prev) =>
-            prev.map((c) =>
-                c.id === editingCategoryId ? { ...c, name: editingValue.trim() } : c
-            )
-        );
-        setAdminMode("default");
-        setEditingCategoryId(null);
-        setEditingValue("");
-        showSuccessAlert({title:"카테고리 수정 완료"});
+        const ok = await updateCategory(editingCategoryId, editingValue.trim());
+        if (ok) {
+            setCategories((prev) =>
+                prev.map((c) => c.category_id === editingCategoryId ? { ...c, name: editingValue.trim() } : c)
+            );
+            setEditingCategoryId(null);
+            setEditingValue("");
+            showSuccessAlert({ title: "카테고리 수정 완료" });
+        }
+    };
+
+    const handleAddCategory = async () => {
+        if (!newCategoryName.trim()) return;
+        const newCat = await addCategory(newCategoryName.trim());
+        if (newCat) {
+            setCategories((prev) => [...prev, newCat]);
+            setIsAddModalOpen(false);
+            setNewCategoryName("");
+            showSuccessAlert({ title: "카테고리가 추가되었습니다." });
+        }
     };
 
     // 드래그 앤 드롭
@@ -338,175 +356,8 @@ export default function MyPage() {
 
     };
 
-    // ====== 렌더: 관리자 - 카테고리 설정/수정/삭제 ======
-    if (isAdmin) {
-        return (
-            <>
-                <header className="px-6 pt-6 flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-[#3D4D5C]">관리자기능</h1>
-                    <NotificationBell />
-                </header>
-
-                <div className="flex-1 overflow-y-auto px-6 pt-4 pb-4">
-                    <div className="bg-white rounded-2xl p-6 shadow-sm flex flex-col items-center">
-                        <p className="text-lg font-bold text-[#3D4D5C]">admin</p>
-                        <div className="mt-3 w-20 h-20 rounded-full bg-[#A8C8D8]">
-                            {/* 아이콘 위치: 프로필 이미지 (bi-person-fill) */}
-                        </div>
-                        <p className="mt-4 text-xs text-[#3D4D5C]">test@test.com</p>
-                        <p className="mt-1 text-xs text-[#8B9BAA]">
-                            서비스와 함께 한 지 <span className="font-semibold">40일째</span>
-                        </p>
-                        <button
-                            onClick={handleEditAdmin}
-                            className="mt-3 px-4 py-1.5 rounded-full bg-[#EEF2F5] text-xs font-semibold text-[#3D4D5C] cursor-pointer"
-                        >
-                            관리자 수정
-                        </button>
-                    </div>
-
-                    <div className="mt-6 flex items-center justify-between">
-                        <h2 className="text-base font-bold text-[#3D4D5C]">
-                            {adminMode === "edit"
-                                ? "카테고리 수정"
-                                : adminMode === "delete"
-                                    ? "카테고리 삭제"
-                                    : "카테고리 설정"}
-                        </h2>
-                        {adminMode === "default" && (
-                            <button
-                                onClick={handleEnterDeleteMode}
-                                className="text-xs text-[#8B9BAA] cursor-pointer"
-                            >
-                                삭제
-                            </button>
-                        )}
-                        {adminMode === "delete" && (
-                            <div className="flex items-center gap-3 text-xs">
-                                <button
-                                    onClick={handleCancelDeleteMode}
-                                    className="text-[#8B9BAA] cursor-pointer"
-                                >
-                                    취소
-                                </button>
-                                <button
-                                    onClick={handleDeleteSelected}
-                                    className="text-[#3D4D5C] font-semibold cursor-pointer"
-                                >
-                                    선택한 카테고리 삭제
-                                </button>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="mt-3 bg-white rounded-2xl p-3 shadow-sm">
-                        {categories.map((cat, idx) => {
-                            const isEditing =
-                                adminMode === "edit" && editingCategoryId === cat.id;
-                            const isOtherEditing =
-                                adminMode === "edit" && editingCategoryId !== cat.id;
-                            const isSelected =
-                                adminMode === "delete" && selectedCategoryIds.includes(cat.id);
-
-                            let pillClass = "bg-[#E4EEF3] text-[#87B4C4]";
-                            if (isEditing || isSelected) {
-                                pillClass = "bg-[#4A5C6E] text-white";
-                            }
-
-                            return (
-                                <div
-                                    key={cat.id}
-                                    draggable={adminMode === "default"}
-                                    onDragStart={() => handleDragStart(idx)}
-                                    onDragOver={handleDragOver}
-                                    onDrop={() => handleDrop(idx)}
-                                    onDragEnd={handleDragEnd}
-                                    className={`
-                                    flex items-center py-2 px-1
-                                    ${adminMode === "default" ? "cursor-move" : ""}
-                                    ${draggedIdx === idx ? "opacity-50" : ""}
-                                    `}
-                                >
-                                    <div className="w-6 flex flex-col gap-0.5 shrink-0">
-                                        {/* 아이콘 위치: 드래그 핸들 (bi-list) */}
-                                        <span className="block w-4 h-0.5 bg-[#B5BEC7] rounded-full" />
-                                        <span className="block w-4 h-0.5 bg-[#B5BEC7] rounded-full" />
-                                        <span className="block w-4 h-0.5 bg-[#B5BEC7] rounded-full" />
-                                    </div>
-
-                                    {isEditing ? (
-                                        <div className="flex-1">
-                                            <div className="inline-flex items-center bg-[#4A5C6E] rounded-full px-4 py-1.5">
-                                                <input
-                                                    type="text"
-                                                    autoFocus
-                                                    value={editingValue}
-                                                    onChange={(e) => setEditingValue(e.target.value)}
-                                                    className="bg-transparent text-xs font-semibold text-white outline-none w-20 cursor-pointer"
-                                                />
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <button
-                                            onClick={() => {
-                                                if (adminMode === "delete") {
-                                                    handleToggleCategorySelect(cat.id);
-                                                } else if (!isOtherEditing) {
-                                                    handleStartEdit(cat);
-                                                }
-                                            }}
-                                            disabled={isOtherEditing}
-                                            className="flex-1 text-left cursor-pointer"
-                                        >
-                                            <span
-                                                className={`inline-block px-4 py-1.5 rounded-full text-xs font-semibold ${pillClass}`}
-                                            >
-                                                {cat.name}
-                                            </span>
-                                        </button>
-                                    )}
-
-                                    <div className="shrink-0 text-xs">
-                                        {adminMode === "default" && (
-                                            <button
-                                                onClick={() => handleStartEdit(cat)}
-                                                className="text-[#8B9BAA] cursor-pointer"
-                                            >
-                                                수정
-                                            </button>
-                                        )}
-                                        {isEditing && (
-                                            <div className="flex items-center gap-3">
-                                                <button
-                                                    onClick={handleCancelEdit}
-                                                    className="text-[#8B9BAA] cursor-pointer"
-                                                >
-                                                    취소
-                                                </button>
-                                                <button
-                                                    onClick={handleConfirmEdit}
-                                                    className="text-[#3D4D5C] font-semibold cursor-pointer"
-                                                >
-                                                    확인
-                                                </button>
-                                            </div>
-                                        )}
-                                        {adminMode === "edit" && !isEditing && (
-                                            <span className="text-[#B5BEC7]">수정</span>
-                                        )}
-                                        {adminMode === "delete" && <span className="block w-0" />}
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </>
-        );
-    }
-
-    // ====== 렌더: 비관리자 - 내 정보 수정 ======
-    if (!isAdmin && view === "edit-profile") {
+    // ====== 렌더: 비관리자/관리자 - 내 정보 수정 ======
+    if (view === "edit-profile") {
         return (
             <div className="flex-1 overflow-y-auto px-8 pt-10 pb-10 flex flex-col">
                 <h1 className="text-xl font-bold text-[#3D4D5C]">내 정보 수정</h1>
@@ -585,7 +436,7 @@ export default function MyPage() {
         );
     }
 
-    // ====== 렌더: 비관리자 - 마이페이지 메인 ======
+    // ====== 렌더: 비관리자/관리자 - 마이페이지 메인 ======
     return (
         <div className="flex-1 min-h-0 flex flex-col">
             <header className="px-6 pt-6 flex items-center justify-between">
@@ -661,39 +512,187 @@ export default function MyPage() {
                     </div>
                 </div>
 
-                {/* 모드 변경 */}
-                <div className="flex flex-col">
-                    <h2 className="text-base font-bold text-[#3D4D5C] mb-3 px-1">모드 변경</h2>
-                    <div className="flex-1 flex flex-col gap-4 mb-4">
-                        {/* 엄격하게 버튼 */}
-                        <button
-                            onClick={() => handleSelectStrictMode("strict")}
-                            className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left cursor-pointer
-                            ${strictMode === "strict" ? "ring-2 ring-[#A8C8D8]" : ""}
-                            `}
-                        >
-                            <p className="text-center text-sm font-bold text-[#3D4D5C]">엄격하게</p>
-                            <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
-                        </button>
+                {/* 모드 변경 - 관리자에게는 표시하지 않음 */}
+                {!isAdmin && (
+                    <div className="flex flex-col">
+                        <h2 className="text-base font-bold text-[#3D4D5C] mb-3 px-1">모드 변경</h2>
+                        <div className="flex-1 flex flex-col gap-4 mb-4">
+                            {/* 엄격하게 버튼 */}
+                            <button
+                                onClick={() => handleSelectStrictMode("strict")}
+                                className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left cursor-pointer
+                                ${strictMode === "strict" ? "ring-2 ring-[#A8C8D8]" : ""}
+                                `}
+                            >
+                                <p className="text-center text-sm font-bold text-[#3D4D5C]">엄격하게</p>
+                                <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
+                            </button>
 
-                        <button
-                            onClick={() => handleSelectStrictMode("less")}
-                            className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left cursor-pointer
-                            ${strictMode === "less" ? "ring-2 ring-[#A8C8D8]" : ""}
+                            <button
+                                onClick={() => handleSelectStrictMode("less")}
+                                className={`w-full bg-white rounded-2xl p-5 shadow-sm block text-left cursor-pointer
+                                ${strictMode === "less" ? "ring-2 ring-[#A8C8D8]" : ""}
+                                `}
+                            >
+                                <p className="text-center text-sm text-[#8B9BAA]">덜 엄격하게</p>
+                                <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* 카테고리 관리 - 관리자만 표시 */}
+{isAdmin && (
+    <div className="shrink-0">
+        <div className="flex items-center justify-between mb-3 px-1">
+            <h2 className="text-base font-bold text-[#3D4D5C]">
+                {adminCategoryMode === "delete" ? "카테고리 삭제" : "카테고리 설정"}
+            </h2>
+            {adminCategoryMode === "default" && (
+                <div className="flex items-center gap-3 text-xs">
+                    <button
+                        onClick={() => { setIsAddModalOpen(true); setNewCategoryName(""); }}
+                        className="text-[#8B9BAA] cursor-pointer"
+                    >
+                        추가
+                    </button>
+                    <button
+                        onClick={handleEnterDeleteMode}
+                        className="text-[#8B9BAA] cursor-pointer"
+                    >
+                        삭제
+                    </button>
+                </div>
+            )}
+            {adminCategoryMode === "delete" && (
+                <div className="flex items-center gap-3 text-xs">
+                    <button onClick={handleCancelDeleteMode} className="text-[#8B9BAA] cursor-pointer">취소</button>
+                    <button onClick={handleDeleteSelected} className="text-[#3D4D5C] font-semibold cursor-pointer">선택한 카테고리 삭제</button>
+                </div>
+            )}
+        </div>
+
+        <div className="bg-white rounded-2xl p-3 shadow-sm">
+            {categories.length === 0 ? (
+                <p className="text-xs text-[#8B9BAA] text-center py-4">카테고리가 없습니다.</p>
+            ) : (
+                categories.map((cat, idx) => {
+                    const isEditing = editingCategoryId === cat.category_id;
+                    const isSelected = adminCategoryMode === "delete" && selectedCategoryIds.includes(cat.category_id);
+
+                    let pillClass = "bg-[#E4EEF3] text-[#87B4C4]";
+                    if (isEditing || isSelected) pillClass = "bg-[#4A5C6E] text-white";
+
+                    return (
+                        <div
+                            key={cat.category_id}
+                            draggable={adminCategoryMode === "default" && !isEditing}
+                            onDragStart={() => handleDragStart(idx)}
+                            onDragOver={handleDragOver}
+                            onDrop={() => handleDrop(idx)}
+                            onDragEnd={handleDragEnd}
+                            className={`flex items-center py-2 px-1
+                                ${adminCategoryMode === "default" && !isEditing ? "cursor-move" : ""}
+                                ${draggedIdx === idx ? "opacity-50" : ""}
                             `}
                         >
-                            <p className="text-center text-sm text-[#8B9BAA]">덜 엄격하게</p>
-                            <div className="mt-3 h-14 bg-[#E4E9EE] rounded-xl" />
+                            <div className="w-6 flex flex-col gap-0.5 shrink-0">
+                                <span className="block w-4 h-0.5 bg-[#B5BEC7] rounded-full" />
+                                <span className="block w-4 h-0.5 bg-[#B5BEC7] rounded-full" />
+                                <span className="block w-4 h-0.5 bg-[#B5BEC7] rounded-full" />
+                            </div>
+
+                            {isEditing ? (
+                                <div className="flex-1">
+                                    <div className="inline-flex items-center bg-[#4A5C6E] rounded-full px-4 py-1.5">
+                                        <input
+                                            type="text"
+                                            autoFocus
+                                            value={editingValue}
+                                            onChange={(e) => setEditingValue(e.target.value)}
+                                            className="bg-transparent text-xs font-semibold text-white outline-none w-20"
+                                        />
+                                    </div>
+                                </div>
+                            ) : (
+                                <button
+                                    onClick={() => {
+                                        if (adminCategoryMode === "delete") handleToggleCategorySelect(cat.category_id);
+                                    }}
+                                    className="flex-1 text-left"
+                                >
+                                    <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-semibold ${pillClass}`}>
+                                        {cat.name}
+                                    </span>
+                                </button>
+                            )}
+
+                            <div className="shrink-0 text-xs">
+                                {isEditing ? (
+                                    <div className="flex items-center gap-3">
+                                        <button onClick={handleCancelEdit} className="text-[#8B9BAA] cursor-pointer">취소</button>
+                                        <button onClick={handleConfirmEdit} className="text-[#3D4D5C] font-semibold cursor-pointer">확인</button>
+                                    </div>
+                                ) : adminCategoryMode === "default" ? (
+                                    <button
+                                        onClick={() => handleStartEdit(cat)}
+                                        className="text-[#8B9BAA] cursor-pointer"
+                                    >
+                                        수정
+                                    </button>
+                                ) : null}
+                            </div>
+                        </div>
+                    );
+                })
+            )}
+        </div>
+        {/* ✅ 추가 모달 */}
+        {isAddModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                <div className="bg-white rounded-2xl p-6 w-72 shadow-xl">
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-sm font-bold text-[#3D4D5C]">카테고리 생성</h3>
+                        <button onClick={() => setIsAddModalOpen(false)} className="text-[#8B9BAA] text-lg leading-none cursor-pointer">✕</button>
+                    </div>
+                    <p className="text-xs text-[#8B9BAA] mb-2">어떤 카테고리를 생성할까요?</p>
+                    <input
+                        type="text"
+                        autoFocus
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") handleAddCategory(); }}
+                        placeholder="예) 복습, 운동"
+                        className="w-full px-4 py-3 rounded-xl bg-[#F2F4F6] text-sm text-[#3D4D5C] outline-none placeholder-[#B5BEC7] focus:ring-2 focus:ring-[#A8C8D8] mb-5"
+                    />
+                    <div className="flex gap-3">
+                        <button
+                            onClick={() => setIsAddModalOpen(false)}
+                            className="flex-1 py-3 rounded-xl bg-[#EEF2F5] text-sm font-bold text-[#3D4D5C] cursor-pointer"
+                        >
+                            취소
+                        </button>
+                        <button
+                            onClick={handleAddCategory}
+                            className="flex-1 py-3 rounded-xl bg-[#E57373] text-sm font-bold text-white cursor-pointer"
+                        >
+                            추가 
                         </button>
                     </div>
                 </div>
+            </div>
+        )}
+    </div>
+)}
 
-                {/* 탈퇴 버튼 */}
-                <div className="flex justify-center shrink-0">
-                    <button onClick={deleteUser} className="text-[10px] text-[#8B9BAA] border-b border-[#8B9BAA] pb-0.5 cursor-pointer">
-                        회원 탈퇴
-                    </button>
-                </div>
+                {/* 탈퇴 버튼 - 관리자에게는 표시하지 않음 */}
+                {!isAdmin && (
+                    <div className="flex justify-center shrink-0">
+                        <button onClick={deleteUser} className="text-[10px] text-[#8B9BAA] border-b border-[#8B9BAA] pb-0.5 cursor-pointer">
+                            회원 탈퇴
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
