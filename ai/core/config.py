@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     # LLM
     OLLAMA_BASE_URL: str = "http://localhost:11434"
     OLLAMA_MODEL: str = "qwen2.5:7b"  # qwen2.5:7b / gemma:7b / qwen2.5:14b
-    OLLAMA_TIMEOUT: int = 60  # 로컬 Qwen2.5 3B 기준 여유 타임아웃(초)
+    OLLAMA_TIMEOUT: int = 180  # LLM 응답 대기 타임아웃(초)
 
     # 임베딩
     EMBEDDING_MODEL: str = "intfloat/multilingual-e5-small"

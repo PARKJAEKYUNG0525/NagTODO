@@ -4,7 +4,7 @@ import api from "../utils/api";
 
 const aiApi = axios.create({
     baseURL: import.meta.env.VITE_AI_URL || "http://localhost:8000",
-    timeout: 120_000,
+    timeout: 300_000,
 });
 
 export function useReport() {
