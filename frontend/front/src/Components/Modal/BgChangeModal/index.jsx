@@ -32,7 +32,7 @@ const BgChangeModal = ({ isOpen, onClose }) => {
 
     // currentBg가 바뀔 때 선택 상태 동기화
     useEffect(() => {
-        setSelected(currentBg ?? null);
+        setSelected(currentBg?.img_id ?? null);
     }, [currentBg]);
     
     const handleApply = () => {
@@ -40,13 +40,15 @@ const BgChangeModal = ({ isOpen, onClose }) => {
         if (selectedImg) {
             setCurrentBg(selectedImg);
             api.patch("/users/me", { img_id : selectedImg.img_id})
-                .catch(error => showWarningAlert({"title": "배경 적용 실패", "text" : error.message}));
+                .catch(error => showWarningAlert({title: "배경 적용 실패", text : error.message}));
         }
         onClose?.();
     };
 
     const handleReset = () => {
         setCurrentBg(null);
+        api.patch("/users/me", { img_id : null })
+            .catch(error => showWarningAlert({title: "배경 초기화 실패", text: error.message}));
         onClose?.();
     };
 
