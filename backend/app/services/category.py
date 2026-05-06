@@ -16,8 +16,9 @@ class CategoryService:
             await db.refresh(category)
             return category
 
-        except Exception:
+        except Exception as e:
             await db.rollback()
+            print("에러 발생:", e)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="category 생성에 실패했습니다."
