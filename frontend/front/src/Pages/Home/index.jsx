@@ -46,14 +46,13 @@ export default function Home() {
                 <NotificationBell />
             </header>
 
-            {/* 메인 콘텐츠 (Welcome 타이포) */}
+            {/* 메인 콘텐츠 (로고) */}
             <main className="flex-1 min-h-0 flex flex-col items-center justify-center px-6">
-                <h1 className="text-6xl font-bold text-[#3D4D5C] tracking-tight">
-                    Welcome
-                </h1>
-                <p className="mt-4 text-sm text-[#8B9BAA]">
-                    오늘도 좋은 하루 보내세요 ✨
-                </p>
+                <img
+                    src="/static/Logo.png"
+                    alt="NagTODO"
+                    className="w-64 max-w-full"
+                />
             </main>
 
             {/* 미니 뮤직 플레이어 + 배경 이미지 변경 */}
