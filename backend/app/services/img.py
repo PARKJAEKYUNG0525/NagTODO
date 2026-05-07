@@ -10,14 +10,6 @@ class ImgService:
     # C 생성
     @staticmethod
     async def create_img_svc(db: AsyncSession, data: ImgCreate) -> Img:
-        # homepage 존재 확인
-        # homepage = await ImgCrud.get_homepage(db, data.homepage_id)
-        # if not homepage:
-        #     raise HTTPException(
-        #         status_code=status.HTTP_404_NOT_FOUND,
-        #         detail=f"homepage_id '{data.homepage_id}'에 해당하는 homepage가 없습니다."
-        #     )
-
         try:
             img = await ImgCrud.create_img(db, data)
             await db.commit()
@@ -46,19 +38,7 @@ class ImgService:
                 detail=f"img_id '{img_id}'에 해당하는 데이터가 없습니다."
             )
         return img
-
-    # R 조회 - 단일 조회 (homepage 기준)
-    # @staticmethod
-    # async def get_img_by_homepage_svc(db: AsyncSession, homepage_id: str) -> Img:
-    #     img = await ImgCrud.get_img_by_homepage(db, homepage_id)
-    #     if not img:
-    #         raise HTTPException(
-    #             status_code=status.HTTP_404_NOT_FOUND,
-    #             detail=f"해당 홈페이지 '{homepage_id}'에 적용된 배경이 없습니다."
-    #         )
-    #
-    #     return img
-
+    
     # U 수정
     @staticmethod
     async def update_img_svc(db: AsyncSession, img_id: str, data: ImgUpdate) -> Img:

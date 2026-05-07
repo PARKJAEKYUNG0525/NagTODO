@@ -46,19 +46,6 @@ class ClothService:
             )
         return cloth
 
-    # R 조회 - cloth 조회 (user 기준)
-    # @staticmethod
-    # async def get_cloth_by_user_svc(db: AsyncSession, user_id: int) -> Cloth:
-    #     user = await cloth_crud.get_user(db, user_id)
-    #     if not user:
-    #         raise HTTPException(
-    #             status_code=status.HTTP_404_NOT_FOUND,
-    #             detail=f"user_id '{user_id}'에 해당하는 유저가 없습니다."
-    #         )
-    #
-    #     cloths = await cloth_crud.get_cloth_by_user(db, user_id)
-    #     return cloths
-
     # U 수정
     @staticmethod
     async def update_cloth_svc(db: AsyncSession, cloth_id: str, data: ClothUpdate) -> Cloth:

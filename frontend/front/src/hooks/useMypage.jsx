@@ -29,7 +29,7 @@ const useMypage = () => {
         try {
             const response = await api.get(`/users/check-username?username=${username}`);
             if (response.status === 200) {
-                return true; // 사용 가능
+                return true; 
             }
         } catch (error) {
             console.log(error);
@@ -38,7 +38,7 @@ const useMypage = () => {
             } else {
                 setError(error.response?.data.detail || "닉네임 확인에 실패했습니다.");
             }
-            return false; // 사용 불가
+            return false;
         }
     };
 
@@ -48,7 +48,6 @@ const useMypage = () => {
             const response = await api.patch("/users/me", { username } );
             if (response.status === 200) {
                 setUser(response.data);
-                // showSuccessAlert("프로필이 수정되었습니다");
                 return true;
             }
         } catch (error) {
@@ -80,10 +79,9 @@ const useMypage = () => {
     // 상태메세지
     const updateStatusMessage = async (status_message) => {
         try {
-            // 백엔드 엔드포인트와 필드명(status_message)은 실제 API 명세에 맞춰 확인 필요!
             const response = await api.patch("/users/me", { status_message });
             if (response.status === 200) {
-                setUser(response.data); // 전역 유저 정보 업데이트
+                setUser(response.data); 
                 return true;
             }
         } catch (error) {

@@ -68,7 +68,6 @@ export const AuthProvider = ({ children }) => {
             setIsAuthenticated(false);
             setUser(null);
             navigate("/");
-            // setIsLoggingOut(false);
         }
     };
 

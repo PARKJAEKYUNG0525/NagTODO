@@ -44,8 +44,8 @@ const ClothChangeModal = ({ isOpen, onClose, currentClothId, onApply }) => {
     // TODO: 출석 보상 도입 시 백엔드의 owned_cloths로 대체
     const isUnlocked = (cloth_id) => {
         if (!cloth_id) return false;
-        if (cloth_id.startsWith("default_")) return true;     // 기본 제공 (DB 안 봄)
-        return rewardSet.has(cloth_id);                        // 보상으로 받은 것
+        if (cloth_id.startsWith("default_")) return true;     
+        return rewardSet.has(cloth_id);                        
     };
 
     const handleApply = () => {

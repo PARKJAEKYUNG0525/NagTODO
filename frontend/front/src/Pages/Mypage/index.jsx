@@ -352,7 +352,7 @@ export default function MyPage() {
 
     };
 
-    // ====== 렌더: 비관리자/관리자 - 내 정보 수정 ======
+    // 비관리자/관리자 - 내 정보 수정 
     if (view === "edit-profile") {
         return (
             <div className="flex-1 overflow-y-auto px-8 pt-10 pb-10 flex flex-col">
@@ -432,7 +432,7 @@ export default function MyPage() {
         );
     }
 
-    // ====== 렌더: 비관리자/관리자 - 마이페이지 메인 ======
+    // 비관리자/관리자 - 마이페이지
     return (
         <div className="flex-1 min-h-0 flex flex-col">
             <header className="px-6 pt-6 flex items-center justify-between">
@@ -664,7 +664,7 @@ export default function MyPage() {
                 })
             )}
         </div>
-        {/* ✅ 추가 모달 */}
+        {/* 카테고리 추가 모달 */}
         {isAddModalOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
                 <div className="bg-white rounded-2xl p-6 w-72 shadow-xl">
@@ -715,7 +715,7 @@ export default function MyPage() {
     );
 }
 
-/* ============ 서브 컴포넌트 ============ */
+/* 서브 컴포넌트 */
 function Field({ label, type = "text", value, onChange, placeholder, readOnly }) {
     return (
         <div>

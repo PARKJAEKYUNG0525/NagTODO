@@ -81,8 +81,6 @@ class FriendCrud:
         await db.delete(friend)
         await db.flush()
 
-#---------------------------------------------------------
-
     # C 생성 - 친구 신청 데이터 생성
     @staticmethod
     async def create_request(db: AsyncSession, requester_id: int, receiver_id: int) -> Friend:

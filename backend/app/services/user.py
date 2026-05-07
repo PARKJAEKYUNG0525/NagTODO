@@ -37,13 +37,6 @@ class UserService:
             await db.commit()
             await db.refresh(user)
             return user
-
-        # except Exception:
-        #     await db.rollback()
-        #     raise HTTPException(
-        #         status_code=status.HTTP_400_BAD_REQUEST,
-        #         detail="user 생성에 실패했습니다."
-        #     )
         except Exception as e:
             await db.rollback()
             print(f"에러 발생: {e}")  # 추가
@@ -151,16 +144,7 @@ class UserService:
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="비밀번호 변경에 실패했습니다."
             )
-
-    # U 수정 - state
-    # @staticmethod
-    # async def update_state_svc(db: AsyncSession, user_id: int):
-    #     updated_user = await UserCrud.update_state_by_id(db, user_id, 0)
-    #     await db.commit()
-    #     await db.refresh(updated_user)
-    #     return {"message": "탈퇴가 완료되었습니다"}
-
-
+        
     # D 삭제
     @staticmethod
     async def delete_user_svc(db: AsyncSession, user_id: int) -> dict:

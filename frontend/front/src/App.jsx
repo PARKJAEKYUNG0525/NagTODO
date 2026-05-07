@@ -92,8 +92,8 @@ const ProtectedLayout = () => {
             showDeadlineAlert({ hoursLeft: ALERT_HOURS[hour], mode: user.mode ?? 0 });
         };
 
-        const interval = setInterval(check, 60 * 1000); // 1분마다 체크
-        check(); // 마운트 시 즉시 1회 체크 (앱 켰을 때 정각이면 바로 뜸)
+        const interval = setInterval(check, 60 * 1000); 
+        check(); 
 
         return () => clearInterval(interval);
     }, [user]);

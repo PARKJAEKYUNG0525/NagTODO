@@ -19,10 +19,7 @@ export function MusicProvider({ children }) {
     useEffect(() => {
         createAttendance().then(async (result) => {
             if (!result) return;
-
-            // 보상 받은 경우
             if (result.reward_cloth_id) {
-                // user 정보 새로고침 (reward_cloth_ids 갱신)
                 await refreshUser?.();
 
                 // 팝업 표시

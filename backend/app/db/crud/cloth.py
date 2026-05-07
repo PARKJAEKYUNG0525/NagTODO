@@ -26,12 +26,6 @@ class ClothCrud:
         result = await db.execute(select(Cloth))
         return list(result.scalars().all())
 
-    # R 조회 - cloth 단일 조회
-    # @staticmethod
-    # async def get_cloth(db: AsyncSession, cloth_id: str) -> Cloth | None:
-    #     result = await db.execute(select(Cloth).where(Cloth.cloth_id == cloth_id))
-    #     return result.scalar_one_or_none()
-
     # U 수정
     @staticmethod
     async def update_cloth(db: AsyncSession, cloth: Cloth, data: ClothUpdate) -> Cloth:

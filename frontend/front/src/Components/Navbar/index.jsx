@@ -3,23 +3,6 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { BsListCheck, BsPeople, BsClipboardData, BsPerson, BsHouse } from 'react-icons/bs';
 
-/**
- * 하단 탭 네비게이션 바 (5 탭)
- *
- * 순서:
- *   1) 메인 화면 → Home
- *   2) 친구      → Friend
- *   3) 투두리스트 → TodoMain
- *   4) 월간리포트 → MonthlyReport
- *   5) 마이페이지 → Mypage
- *
- * Props
- *  - activeTab     (string) 현재 활성 탭 key. 부모가 state/router 로 제어 (옵션)
- *  - onTabClick    (fn)     탭 클릭 시 호출. 시그니처: (key, path) => void
- *
- * activeTab / onTabClick 이 없으면 내부 state 로 동작 (프리뷰 용도)
- */
-
 const TABS = [
     { key: "main",   label: "홈",      path: "/main", Icon: BsHouse },
     { key: "friend", label: "친구",    path: "/friend", Icon: BsPeople },

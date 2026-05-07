@@ -21,11 +21,6 @@ async def get_all_cloths(db: Session = Depends(get_db)):
 async def get_todo(cloth_id: str, db: Session = Depends(get_db)):
     return await cloth_svc.get_cloth_svc(db, cloth_id)
 
-# R 전체 조회 - 유저별
-# @router.get("/user/{user_id}", response_model=ClothRead)
-# async def get_cloths_by_user(user_id: int, db: Session = Depends(get_db)):
-#     return await cloth_svc.get_cloth_by_user_svc(db, user_id)
-
 # U 수정
 @router.patch("/{cloth_id}", response_model=ClothRead)
 async def update_cloth(cloth_id: str, data: ClothUpdate, db: Session = Depends(get_db)):

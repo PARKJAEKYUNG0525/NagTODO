@@ -8,7 +8,6 @@ const api = axios.create({
     },
 });
 
-// 정적 파일은 frontend public/에서 같은 origin으로 서빙되므로 상대 경로 그대로 사용
 export const buildFileUrl = (filePath) => filePath;
 
 export default api;
