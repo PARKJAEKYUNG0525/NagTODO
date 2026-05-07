@@ -109,7 +109,7 @@ export default function FriendDetail() {
     };
 
     return (
-        <>
+        <div className="flex-1 min-h-0 flex flex-col">
             {/* 헤더: 뒤로가기 + 친구 이름 + 벨 */}
             <header className="px-6 pt-6 flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -226,6 +226,6 @@ export default function FriendDetail() {
                     )}
                 </div>
             </div>
-        </>
+        </div>
     );
 }

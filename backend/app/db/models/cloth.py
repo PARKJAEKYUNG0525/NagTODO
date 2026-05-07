@@ -1,10 +1,6 @@
 from app.db.database import Base
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, ForeignKey,Integer
-from typing import TYPE_CHECKING
-
-# if TYPE_CHECKING:
-#     from .user import User
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String
 
 class Cloth(Base):
     __tablename__ = "cloth"

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import ModalLayout from "../ModalLayout";
 import { showSuccessAlert, showWarningAlert } from "../../../utils/alertUtils";
 
-const MAX_LENGTH = 50;
+const MAX_LENGTH = 30;
 
 const AdminMessageModal = ({ isOpen, onClose, users = [], sendNotification, sendNotificationToAll }) => {
     const [activeTab, setActiveTab] = useState("all"); // "all" | "individual"

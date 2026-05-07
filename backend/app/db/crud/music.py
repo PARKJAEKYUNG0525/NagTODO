@@ -15,12 +15,6 @@ class MusicCrud:
         await db.flush()
         return music
 
-    # R 조회 - homepage 존재 확인
-    # @staticmethod
-    # async def get_homepage(db: AsyncSession, homepage_id: str) -> Homepage | None:
-    #     result = await db.execute(select(Homepage).where(Homepage.homepage_id == homepage_id))
-    #     return result.scalar_one_or_none()
-
     # R 조회 - 전체 조회
     @staticmethod
     async def get_all_musics(db: AsyncSession) -> list[Music]:
@@ -32,12 +26,6 @@ class MusicCrud:
     async def get_music(db: AsyncSession, music_id: str) -> Music | None:
         result = await db.execute(select(Music).where(Music.music_id == music_id))
         return result.scalar_one_or_none()
-
-    # R 조회 - homepage 기준 조회
-    # @staticmethod
-    # async def get_music_by_homepage(db: AsyncSession, homepage_id: str) -> list[Music]:
-    #     result = await db.execute(select(Music).where(Music.homepage_id == homepage_id))
-    #     return list(result.scalars().all())
 
     # U 수정
     @staticmethod

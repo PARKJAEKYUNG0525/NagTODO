@@ -3,18 +3,6 @@ import ModalLayout from "../ModalLayout";
 import { showWarningAlert, showWarningDialog } from "@/utils/alertUtils.js";
 import useCategory from "@/hooks/useCategory.jsx";
 
-/**
- * TodoDetailModal
- * - 할 일 카드 클릭 시 열리는 상세/수정 모달.
- * - 제목/메모/카테고리/진행상태를 그 자리에서 수정하고 저장합니다.
- *
- * props:
- *   - isOpen   : boolean
- *   - onClose  : ()=>void
- *   - todo     : { id, title, memo, category, todo_status, ... } | null
- *   - onSave   : (updatedTodo)=>void
- *   - onDelete : (id)=>void
- */
 const TodoDetailModal = ({ isOpen, onClose, todo, onSave, onDelete }) => {
   const { getCategory } = useCategory();
 

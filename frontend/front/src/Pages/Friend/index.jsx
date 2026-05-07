@@ -16,7 +16,6 @@ export default function Friend() {
     const { user: currentUser } = useAuth();
     const { notifications, fetchNotifications, sendNotification, sendNotificationToAll  } = useNotification();
 
-    // const [isAdmin, setIsAdmin] = useState(false);
     const isAdmin = currentUser?.role === "admin";
     const [allUsers, setAllUsers] = useState([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -25,7 +24,6 @@ export default function Friend() {
     const [isMessageOpen, setIsMessageOpen] = useState(false);
     const navigate = useNavigate();
 
-    // friendName을 state로 함께 넘김
     const handleFriendClick = (friend) => {
         const friendUserId =
             friend.requester_id === currentUser?.user_id
@@ -70,14 +68,14 @@ export default function Friend() {
         }
     }, [isAdmin]);
 
-    // ====== 관리자 뷰 ======
+    // 관리자 뷰 
     if (isAdmin) {
         const filtered = allUsers.filter((u) =>
             (u.username || "").includes(searchQuery.trim())
         );
 
         return (
-            <>
+            <div className="flex-1 min-h-0 flex flex-col">
                 <header className="px-6 pt-6 flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-[#3D4D5C]">회원 관리</h1>
                     <NotificationBell onAccept={fetchFriends} />
@@ -166,11 +164,11 @@ export default function Friend() {
                     sendNotification={sendNotification}
                     sendNotificationToAll={sendNotificationToAll}
                 />
-            </>
+            </div>
         );
     }   
 
-    // ====== 일반 유저 친구 목록 ======
+    // 유저 친구 목록 
     const filteredFriends = friends.filter((f) => {
         const friendName =
             f.requester_id === currentUser?.user_id
@@ -182,7 +180,7 @@ export default function Friend() {
 
 
 return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col min-h-0">
         <header className="px-6 pt-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-[#3D4D5C]">친구</h1>
             <NotificationBell onAccept={fetchFriends} />
@@ -228,7 +226,6 @@ return (
                                     key={friend.friend_id}
                                     className="w-full bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3"
                                 >
-                                    {/* 기존 button을 div로 감싸고, 클릭 영역을 분리 */}
                                     <button
                                         onClick={() => handleFriendClick(friend)}
                                         className="flex items-center gap-3 flex-1 text-left cursor-pointer"
@@ -281,7 +278,7 @@ return (
                 </div>
             </div>
 
-            {/* 플로팅 친구 추가 버튼 */}
+            {/* 친구 추가 버튼 */}
             <button
                 onClick={handleAddFriend}
                 className="absolute right-6 bottom-28 w-12 h-12 rounded-full bg-[#A8C8D8] flex items-center justify-center shadow-lg cursor-pointer"

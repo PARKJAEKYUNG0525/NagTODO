@@ -4,17 +4,6 @@ import api from "@/utils/api.js";
 import {useImg} from "@/hooks/useImg.jsx";
 import {showWarningAlert} from "@/utils/alertUtils.js";
 
-/**
- * BgChangeModal
- * - 배경 이미지 변경 모달
- * - 백엔드 /imgs에서 받아온 이미지 그리드
- *
- * props:
- *   - isOpen     : boolean
- *   - onClose    : ()=>void
- *   - currentBg  : string  현재 배경 img_id
- *   - onApply    : (img)=>void   선택한 img 객체 전체를 넘김
- */
 const BgChangeModal = ({ isOpen, onClose }) => {
     const { getAllImgs, currentBg, setCurrentBg } = useImg();
     const [imgs, setImgs] = useState([]);

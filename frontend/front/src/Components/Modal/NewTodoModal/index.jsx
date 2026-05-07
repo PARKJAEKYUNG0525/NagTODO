@@ -6,19 +6,6 @@ import { useInterference } from "../../../hooks/useInterference";
 import { useTodo } from "../../../hooks/useTodo";
 import useCategory from "../../../hooks/useCategory";
 
-/**
- * NewTodoModal
- * - 새 할 일 추가 모달
- * - 저장 시 useTodo.createTodo() 호출 → AI 간섭 팝업 트리거
- *
- * props:
- *   - isOpen        : boolean
- *   - onClose       : ()=>void
- *   - onSubmit      : (snapshot)=>void  — 모달 닫힌 직후 낙관적 업데이트용 콜백 (선택)
- *   - onSaved       : ()=>void          — API 완료 후 실제 목록 동기화용 콜백 (선택)
- *   - selectedDate  : Date              — 캘린더에서 선택한 날짜 (기본값: 오늘)
- */
-
 const NewTodoModal = ({ isOpen, onClose, onSubmit, onSaved, selectedDate = new Date() }) => {
     const { user } = useAuth();
     const { showFeedback } = useInterference();

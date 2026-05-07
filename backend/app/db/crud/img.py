@@ -1,6 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-# from app.db.models.homepage import Homepage
 from app.db.models.img import Img
 from app.db.scheme.img import ImgCreate, ImgUpdate
 
@@ -14,12 +13,6 @@ class ImgCrud:
         await db.flush()
         return img
 
-    # R 조회 - homepage 존재 확인
-    # @staticmethod
-    # async def get_homepage(db: AsyncSession, homepage_id: str) -> Homepage | None:
-    #     result = await db.execute(select(Homepage).where(Homepage.homepage_id == homepage_id))
-    #     return result.scalar_one_or_none()
-
     # R 조회 - 전체 조회
     @staticmethod
     async def get_all_imgs(db: AsyncSession) -> list[Img]:
@@ -31,12 +24,6 @@ class ImgCrud:
     async def get_img(db: AsyncSession, img_id: str) -> Img | None:
         result = await db.execute(select(Img).where(Img.img_id == img_id))
         return result.scalar_one_or_none()
-
-    # R 조회 - 단일 조회 (homepage 기준)
-    # @staticmethod
-    # async def get_img_by_homepage(db: AsyncSession, homepage_id: str) -> Img | None:
-    #     result = await db.execute(select(Img).where(Img.homepage_id == homepage_id))
-    #     return result.scalar_one_or_none()
 
     # U 수정
     @staticmethod

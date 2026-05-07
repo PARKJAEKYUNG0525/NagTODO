@@ -60,7 +60,7 @@ const ProtectedRoute = ({ children }) => {
 const RootLayout = () => {
     return (
         <div className="min-h-screen bg-gray-200 flex items-center justify-center font-sans">
-            <main className="bg-[#EEF2F5] flex flex-col w-full min-h-screen sm:w-97.5 sm:min-h-0 sm:h-auto sm:aspect-390/844 sm:max-h-211 sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative">
+            <main className="bg-[#EEF2F5] flex flex-col w-full h-screen sm:w-97.5 sm:min-h-0 sm:h-auto sm:aspect-390/844 sm:max-h-211 sm:rounded-[32px] sm:shadow-2xl overflow-hidden relative">
                 <Outlet />
                 <InterferencePopup />
             </main>
@@ -92,8 +92,8 @@ const ProtectedLayout = () => {
             showDeadlineAlert({ hoursLeft: ALERT_HOURS[hour], mode: user.mode ?? 0 });
         };
 
-        const interval = setInterval(check, 60 * 1000); // 1분마다 체크
-        check(); // 마운트 시 즉시 1회 체크 (앱 켰을 때 정각이면 바로 뜸)
+        const interval = setInterval(check, 60 * 1000); 
+        check(); 
 
         return () => clearInterval(interval);
     }, [user]);

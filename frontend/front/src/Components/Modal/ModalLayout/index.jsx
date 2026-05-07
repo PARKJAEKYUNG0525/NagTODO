@@ -1,20 +1,5 @@
 import React, { useEffect } from "react";
 
-/**
- * ModalLayout
- * - 모든 모달의 공통 껍데기 (backdrop + 둥근 흰 카드 + 헤더 + children 슬롯)
- * - 열려 있는 동안 body 스크롤을 잠급니다.
- * - backdrop 클릭 / 우상단 X 버튼으로 닫을 수 있습니다.
- *
- * props:
- *   - isOpen    : boolean  모달 표시 여부
- *   - onClose   : ()=>void 닫기 콜백
- *   - title     : string   모달 상단 타이틀
- *   - children  : 본문 영역
- *
- * ※ 아직 React 스타일로 잘게 쪼개지 않고 "한 파일짜리 레이아웃" 으로만 둡니다.
- *   나중에 Header, Backdrop 등으로 분리 예정.
- */
 const ModalLayout = ({ isOpen, onClose, title, children }) => {
   useEffect(() => {
     if (isOpen) {

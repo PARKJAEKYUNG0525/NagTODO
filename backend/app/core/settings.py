@@ -26,14 +26,11 @@ class Settings(BaseSettings):
         populate_by_name = True
 
     # 동적 프로퍼티
-    # 메서드를 속성처럼 접근할 수 있게 해줌
-    # "root:12345@localhost:3306/board"
     @property
     def tmp_db(self) -> str:
         return f"{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
 
     # 비동기 DB URL
-    # "mysql+asyncmy://root:12345@localhost:3306/board"
     @property
     def db_url(self) -> str:
         return f"mysql+asyncmy://{self.tmp_db}"
@@ -54,5 +51,4 @@ class Settings(BaseSettings):
         return timedelta(seconds=self.refresh_token_expire_seconds)
 
 # @property를 사용했기 때문에
-# settings.tmp_db / settings.db_url / settings.sync_db_url 형식으로 접근 가능
 settings = Settings();

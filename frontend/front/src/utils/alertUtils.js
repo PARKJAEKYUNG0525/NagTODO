@@ -1,18 +1,6 @@
 import Swal from "sweetalert2";
 import { buildFileUrl } from "./api";
 
-/**
- * sweetalert2 공통 래퍼 모음
- *
- * 프로젝트 디자인 시스템 색에 맞춘 기본값을 주입합니다.
- *   - 경고/삭제 계열: #E89B9B (coral)
- *   - 성공/정보 계열: #A8C8D8 (blue)
- *
- * 사용 예)
- *   const ok = await confirmDelete({ title: "정말 삭제할까요?" });
- *   if (ok) { await alertSuccess({ title: "삭제 완료" }); }
- */
-
 const sharedCustomClass = {
     title: "!text-lg font-bold pt-6",
     popup: "rounded-3xl",
@@ -20,7 +8,6 @@ const sharedCustomClass = {
     cancelButton: "px-6 py-3 rounded-2xl text-[#3D4D5C]",
 };
 
-/** 삭제 확인 다이얼로그 (isConfirmed 를 boolean 으로 반환) */
 export async function showWarningDialog({
                                         title,
                                         text,
