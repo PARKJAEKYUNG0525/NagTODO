@@ -77,7 +77,7 @@ async def interference(
     if personal_count < settings.MIN_PERSONAL_TODOS:
         global_similar = retrieve_similar(req.todo_text, model, store)
         global_stats = compute_stats(global_similar, req.user_id)
-        remaining = settings.MIN_PERSONAL_TODOS - personal_count
+        remaining = settings.MIN_PERSONAL_TODOS - personal_count - 1
         global_rate = global_stats["global_rate"]
         rate_str = f"{global_rate:.1f}%" if global_rate is not None else "집계 중"
         _save_embedding(req, model, store)
