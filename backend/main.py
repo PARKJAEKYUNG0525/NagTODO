@@ -38,28 +38,28 @@ app=FastAPI(lifespan=lifespan)
 app.add_middleware(RefreshTokenMiddleware)
 
 # 요청 허용 관련 설정
-# app.add_middleware(
-#     CORSMiddleware,
-#     allow_origins=[
-#         "http://192.168.0.44:3000",
-#         "http://localhost:3000",
-#         "http://192.168.0.3:3000",
-#         "http://localhost:5173",
-#         "http://localhost:4173",
-#         ],
-#     allow_origin_regex=r"https://.*\.ngrok-free\.app",
-#     allow_credentials=True,
-#     allow_methods=["*"],
-#     allow_headers=["*"],
-# )
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://192.168.0.44:3000",
+        "http://localhost:3000",
+        "http://192.168.0.3:3000",
+        "http://localhost:5173",
+        "http://localhost:4173",
+        ],
+    allow_origin_regex=r"https://.*\.ngrok-free\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 app.include_router(attendance_router)
 app.include_router(category_router)

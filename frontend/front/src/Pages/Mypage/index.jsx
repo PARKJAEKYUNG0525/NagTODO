@@ -188,12 +188,10 @@ export default function MyPage() {
 
     const handleStartEdit = (category) => {
         console.log("handleStartEdit called:", category.id);
-        // setAdminCategoryMode("edit");
         setEditingCategoryId(category.category_id);
         setEditingValue(category.name);
     };
     const handleCancelEdit = () => {
-        // setAdminCategoryMode("default");
         setEditingCategoryId(null);
         setEditingValue("");
     };
