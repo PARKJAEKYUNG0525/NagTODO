@@ -10,7 +10,7 @@ from app.db.models.cloth import Cloth
 from app.db.scheme.attendance import AttendanceResponse
 
 # 누적 출석일수 리스트 (고정)
-REWARDS_THRESHOLDS = [1, 3, 7, 14, 30, 60, 100, 150, 200]
+REWARDS_THRESHOLDS = [1, 3, 7, 14, 30, 60, 100, 150, 200, 365]
 
 class AttendanceService:
     @staticmethod
