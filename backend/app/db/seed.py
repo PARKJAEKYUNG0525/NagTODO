@@ -1,18 +1,19 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import Category, Cloth, Img, Music
+from sqlalchemy.dialects.postgresql import insert
 from app.db.models.user import User
 from datetime import date
 import bcrypt
 import os
 
 _DEFAULT_CATEGORIES = [
-    ("study",       "공부"),
-    ("workout",     "운동"),
-    ("daily",       "일상"),
-    ("appointment", "약속"),
-    ("work",        "업무"),
-    ("etc",         "기타"),
+    (1, "공부"),
+    (2, "운동"),
+    (3, "일상"),
+    (4, "약속"),
+    (5, "업무"),
+    (6, "기타"),
 ]
 
 _CLOTHS_DEFAULT = [
@@ -22,7 +23,7 @@ _CLOTHS_DEFAULT = [
     {"cloth_id": "default_4",     "title": "누워있는 투칸",     "file_url": "/static/cloth/누워있는_Default.png"},
     {"cloth_id": "default_5",     "title": "빤히 쳐다보는 투칸", "file_url": "/static/cloth/눈반짝_Default.png"},
     {"cloth_id": "default_6",     "title": "숙면하는 투칸",     "file_url": "/static/cloth/드르렁_Default.png"},
-    {"cloth_id": "default_7",     "title": "앉아있는 투칸",     "file_url": "/static/cloth/앉아있는_default.png"},
+    {"cloth_id": "default_7",     "title": "앉아있는 투칸",     "file_url": "/static/cloth/앉아있는_Default.png"},
     {"cloth_id": "default_8",     "title": "웃고있는 투칸",     "file_url": "/static/cloth/웃음_Default.png"},
     {"cloth_id": "default_9",     "title": "인사하는 투칸",     "file_url": "/static/cloth/인사_Default.png"},
     {"cloth_id": "default_10",    "title": "째려보는 투칸",     "file_url": "/static/cloth/째려보는_Default.png"},
@@ -123,3 +124,11 @@ async def seed_admin(session: AsyncSession) -> None:
         print("관리자 계정 생성 완료")
     else:
         print("관리자 계정 이미 존재")
+
+
+async def run_all_seeds(session: AsyncSession) -> None:
+    await seed_categories(session)
+    await seed_cloths(session)
+    await seed_imgs(session)
+    await seed_musics(session)
+    await seed_admin(session)

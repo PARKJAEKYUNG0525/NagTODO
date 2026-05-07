@@ -110,7 +110,7 @@ export default function Friend() {
                                 >
                                     {user.file_url ? (
                                         <img
-                                            src={`${api.defaults.baseURL}${user.file_url}`}
+                                            src={user.file_url}
                                             alt={user.username}
                                             onError={(e) => {
                                                 e.target.outerHTML =`<div style="width:48px;height:48px;border-radius:9999px;background-color:#A8C8D8;flex-shrink:0;"></div>`;
@@ -235,10 +235,12 @@ return (
                                     >
                                         {friendFileUrl ? (
                                             <img
-                                                src={`${api.defaults.baseURL}${friendFileUrl}`}
+                                                src={friendFileUrl}
                                                 alt={friendName}
                                                 onError={(e) => {
-                                                    e.target.outerHTML = `<div style="width:48px;height:48px;border-radius:9999px;background-color:#A8C8D8;flex-shrink:0;"></div>`;
+                                                    e.target.onerror = null;
+                                                    e.target.style.display = "none";
+                                                    e.target.parentNode.classList.add("bg-[#A8C8D8]", "w-12", "h-12", "rounded-full", "shrink-0");
                                                 }}
                                                 className="w-12 h-12 rounded-full shrink-0 object-cover"
                                             />

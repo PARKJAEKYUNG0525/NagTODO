@@ -1,11 +1,9 @@
 import uvicorn
-from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from app.db.database import Base, async_engine, AsyncSessionLocal
-from app.db.seed import seed_categories, seed_musics, seed_imgs, seed_cloths, seed_admin
+from app.db.seed import run_all_seeds
 from fastapi.concurrency import asynccontextmanager
 
 from app.middleware.token_refresh import RefreshTokenMiddleware
@@ -31,11 +29,7 @@ async def lifespan(app:FastAPI):
         await conn.run_sync(Base.metadata.create_all)
     async with AsyncSessionLocal() as session:
         async with session.begin():
-            await seed_categories(session)
-            await seed_cloths(session)
-            await seed_imgs(session)
-            await seed_musics(session)
-            await seed_admin(session)
+            await run_all_seeds(session)
     yield
     await async_engine.dispose()
 
@@ -58,8 +52,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
 
 app.include_router(attendance_router)
 app.include_router(category_router)

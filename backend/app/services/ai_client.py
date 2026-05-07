@@ -7,7 +7,7 @@ from app.core.settings import settings
 logger = logging.getLogger(__name__)
 
 
-async def get_interference(todo_id: str, todo_text: str, category: str, user_id: str) -> dict | None:
+async def get_interference(todo_id: str, todo_text: str, category: int, user_id: str) -> dict | None:
     """AI 서버의 간섭 파이프라인 호출. 실패 시 None 반환 (todo 생성은 항상 성공)."""
     try:
         async with httpx.AsyncClient() as client:
@@ -23,7 +23,7 @@ async def get_interference(todo_id: str, todo_text: str, category: str, user_id:
         return None
 
 
-async def update_embedding(todo_id: str, user_id: str, category: str, text: str, completed: bool) -> None:
+async def update_embedding(todo_id: str, user_id: str, category: int, text: str, completed: bool) -> None:
     """AI 서버 임베딩 수정 (내부적으로 soft delete + 재임베딩). 실패해도 todo 수정 결과에는 영향 없음."""
     try:
         async with httpx.AsyncClient() as client:
@@ -37,7 +37,7 @@ async def update_embedding(todo_id: str, user_id: str, category: str, text: str,
         logger.warning("AI 임베딩 수정 호출 실패 (todo_id=%s): %s", todo_id, e)
 
 
-async def patch_embedding(todo_id: str, completed: bool | None = None, category: str | None = None) -> None:
+async def patch_embedding(todo_id: str, completed: bool | None = None, category: int | None = None) -> None:
     """AI 서버 메타데이터만 수정 (벡터 재계산·soft delete 없음). 실패해도 todo 수정 결과에는 영향 없음."""
     body = {k: v for k, v in {"completed": completed, "category": category}.items() if v is not None}
     try:

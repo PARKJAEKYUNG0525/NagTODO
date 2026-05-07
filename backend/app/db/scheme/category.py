@@ -12,7 +12,7 @@ class CategoryUpdate(BaseModel):
     name: str | None = None
 
 class CategoryInDB(CategoryBase):
-    category_id: str
+    category_id: int
     
     class Config:
         from_attributes = True

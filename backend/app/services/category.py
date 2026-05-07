@@ -16,8 +16,9 @@ class CategoryService:
             await db.refresh(category)
             return category
 
-        except Exception:
+        except Exception as e:
             await db.rollback()
+            print("에러 발생:", e)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="category 생성에 실패했습니다."
@@ -25,7 +26,7 @@ class CategoryService:
 
     # R 조회 - category 단일 조회
     @staticmethod
-    async def get_category_svc(db: AsyncSession, category_id: str) -> Category:
+    async def get_category_svc(db: AsyncSession, category_id: int) -> Category:
         category = await CategoryCrud.get_category(db, category_id)
         if not category:
             raise HTTPException(
@@ -42,7 +43,7 @@ class CategoryService:
 
     # U 수정
     @staticmethod
-    async def update_category_svc(db: AsyncSession, category_id: str, data: CategoryUpdate) -> Category:
+    async def update_category_svc(db: AsyncSession, category_id: int, data: CategoryUpdate) -> Category:
         category = await CategoryCrud.get_category(db, category_id)
         if not category:
             raise HTTPException(
@@ -65,7 +66,7 @@ class CategoryService:
         
     # D 삭제
     @staticmethod
-    async def delete_category_svc(db: AsyncSession, category_id: str) -> dict:
+    async def delete_category_svc(db: AsyncSession, category_id: int) -> dict:
         category = await CategoryCrud.get_category(db, category_id)
         if not category:
             raise HTTPException(

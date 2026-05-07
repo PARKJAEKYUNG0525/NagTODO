@@ -13,7 +13,7 @@ async def create_category(data: CategoryCreate, db: AsyncSession = Depends(get_d
 
 # R 단일 조회
 @router.get("/{category_id}", response_model=CategoryRead)
-async def get_category(category_id: str, db: AsyncSession = Depends(get_db)):
+async def get_category(category_id: int, db: AsyncSession = Depends(get_db)):
     return await category_svc.get_category_svc(db, category_id)
 
 # R 전체 조회
@@ -23,10 +23,10 @@ async def get_all_category(db: AsyncSession = Depends(get_db)):
 
 # U 수정
 @router.patch("/{category_id}", response_model=CategoryRead)
-async def update_category(category_id: str, data: CategoryUpdate, db: AsyncSession = Depends(get_db)):
+async def update_category(category_id: int, data: CategoryUpdate, db: AsyncSession = Depends(get_db)):
     return await category_svc.update_category_svc(db, category_id, data)
 
 # D 삭제
 @router.delete("/{category_id}")
-async def delete_category(category_id: str, db: AsyncSession = Depends(get_db)):
+async def delete_category(category_id: int, db: AsyncSession = Depends(get_db)):
     return await category_svc.delete_category_svc(db, category_id)

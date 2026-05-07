@@ -1,6 +1,5 @@
 from pydantic import BaseModel, Field
 from datetime import datetime, timezone
-from typing import Annotated, Optional
 
 class TodoBase(BaseModel):
     title: str
@@ -10,7 +9,7 @@ class TodoBase(BaseModel):
 
 class TodoCreate(TodoBase):
     user_id: int
-    category_id: Annotated[str, Field(max_length=100)]
+    category_id: int
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class TodoUpdate(BaseModel):
@@ -18,12 +17,13 @@ class TodoUpdate(BaseModel):
     todo_status: str | None = None
     detail: str | None = None
     visibility: str | None = None
-    category_id: str | None = None
+    category_id: int | None = None
     user_id: int | None = None
 
 class TodoInDB(TodoBase):
     todo_id: str
     user_id: int
+    category_id: int
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
