@@ -35,17 +35,9 @@ export default function Login({ onSignupClick }) {
         // PC(sm 이상): 흰 배경에 카드 형태로 중앙 정렬
         <>
             <div className="bg-[#EEF2F5] flex flex-col flex-1 w-full px-6 py-10 justify-center">
-                {/* 프로필 아이콘 */}
                 <div className="flex flex-col items-center">
-                    <div className="mb-5 ">
-                        <div className="w-20 h-20 rounded-full bg-[#9ECFDA]"/>
-                    </div>
-
-                    {/* 타이틀 */}
-                    <h1 className="text-[32px] font-bold text-[#2D3748] tracking-tight mb-2">
-                        Welcome
-                    </h1>
-                    <p className="text-sm text-[#718096] mb-8">
+                    <img src="/static/Logo.png" alt="NagTODO" className="w-52 max-w-full" />
+                    <p className="text-sm text-[#718096] mt-3 mb-8">
                         로그인하고 오늘의 할 일을 시작하세요
                     </p>
                 </div>
