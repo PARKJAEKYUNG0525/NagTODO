@@ -77,7 +77,7 @@ export default function Friend() {
         );
 
         return (
-            <>
+            <div className="min-h-0">
                 <header className="px-6 pt-6 flex items-center justify-between">
                     <h1 className="text-2xl font-bold text-[#3D4D5C]">회원 관리</h1>
                     <NotificationBell onAccept={fetchFriends} />
@@ -166,7 +166,7 @@ export default function Friend() {
                     sendNotification={sendNotification}
                     sendNotificationToAll={sendNotificationToAll}
                 />
-            </>
+            </div>
         );
     }   
 
@@ -182,7 +182,7 @@ export default function Friend() {
 
 
 return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col min-h-0">
         <header className="px-6 pt-6 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-[#3D4D5C]">친구</h1>
             <NotificationBell onAccept={fetchFriends} />
