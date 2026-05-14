@@ -6,16 +6,16 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from ai.embeddings.model import EmbeddingModel
     from ai.embeddings.store import EmbeddingStore
-    from ai.llm.ollama_client import OllamaClient
+    from ai.llm.openai_client import OpenAIClient
 
-'''무거운 객체(임베딩 모델, 벡터 스토어)를 앱 전체에서 딱 한 번만 생성하고
-필요한 곳(FastAPI 엔드포인트 등)에 자동으로 주입해주는 연결 허브.
+'''臾닿굅??媛앹껜(?꾨쿋??紐⑤뜽, 踰≫꽣 ?ㅽ넗??瑜????꾩껜?먯꽌 ????踰덈쭔 ?앹꽦?섍퀬
+?꾩슂??怨?FastAPI ?붾뱶?ъ씤???????먮룞?쇰줈 二쇱엯?댁＜???곌껐 ?덈툕.
 
-모듈 레벨 임포트 대신 함수 내부에서 지연 임포트(lazy import)하여
-테스트 환경에서 sentence_transformers 등 무거운 라이브러리 로드를 방지.'''
+紐⑤뱢 ?덈꺼 ?꾪룷??????⑥닔 ?대??먯꽌 吏???꾪룷??lazy import)?섏뿬
+?뚯뒪???섍꼍?먯꽌 sentence_transformers ??臾닿굅???쇱씠釉뚮윭由?濡쒕뱶瑜?諛⑹?.'''
 
-# @lru_cache : 싱글턴 보장
-# 첫 호출 시에만 실행하고 이후엔 캐시된 인스턴스를 반환 -> 요청마다 객체 새로 생성 X
+# @lru_cache : ?깃???蹂댁옣
+# 泥??몄텧 ?쒖뿉留??ㅽ뻾?섍퀬 ?댄썑??罹먯떆???몄뒪?댁뒪瑜?諛섑솚 -> ?붿껌留덈떎 媛앹껜 ?덈줈 ?앹꽦 X
 
 @lru_cache(maxsize=1)
 def get_embedding_model() -> EmbeddingModel:
@@ -24,14 +24,19 @@ def get_embedding_model() -> EmbeddingModel:
 
 
 @lru_cache(maxsize=1)
-def get_ollama_client() -> OllamaClient:
-    from ai.llm.ollama_client import OllamaClient
-    return OllamaClient()
+def get_openai_client() -> OpenAIClient:
+    from ai.llm.openai_client import OpenAIClient
+    return OpenAIClient()
+
+
+def get_ollama_client() -> OpenAIClient:
+    """Backward-compatible alias. Kept to reduce migration risk."""
+    return get_openai_client()
 
 
 @lru_cache(maxsize=1)
 def get_embedding_store() -> EmbeddingStore:
-    """디스크에서 인덱스를 로드하고 soft delete 항목을 정리한 스토어를 반환."""
+    """?붿뒪?ъ뿉???몃뜳?ㅻ? 濡쒕뱶?섍퀬 soft delete ??ぉ???뺣━???ㅽ넗?대? 諛섑솚."""
     from ai.embeddings.store import EmbeddingStore
     store = EmbeddingStore()
     store.load()
