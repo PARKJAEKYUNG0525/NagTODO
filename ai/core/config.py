@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # Suppress HF symlink warning on Windows.
@@ -9,13 +10,13 @@ os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=Path(__file__).resolve().parent.parent.parent / ".env",
+        env_file=Path(__file__).resolve().parent.parent / ".env",
         case_sensitive=True,
         extra="ignore",
     )
 
     # LLM
-    OPENAI_API_KEY: str = ""
+    OPENAI_API_KEY: SecretStr | None = None
     OPENAI_MODEL: str = "gpt-4o-mini"
     OPENAI_TIMEOUT: int = 30
 

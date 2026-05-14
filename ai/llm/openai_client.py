@@ -7,7 +7,7 @@ from ai.core.config import settings
 
 class OpenAIClient:
     def __init__(self) -> None:
-        self._api_key = settings.OPENAI_API_KEY
+        self._api_key = settings.OPENAI_API_KEY.get_secret_value() if settings.OPENAI_API_KEY else ""
         self._model = settings.OPENAI_MODEL
         self._timeout = settings.OPENAI_TIMEOUT
         self._base_url = "https://api.openai.com/v1/chat/completions"

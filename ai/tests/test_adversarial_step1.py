@@ -9,7 +9,7 @@ from ai.core.config import settings
 
 class TestConfigValidation:
     def test_config_defaults_exist(self):
-        assert settings.OPENAI_API_KEY is not None
+        assert hasattr(settings, "OPENAI_API_KEY")
         assert settings.OPENAI_MODEL
         assert settings.EMBEDDING_MODEL
         assert settings.VECTOR_DIM == 384
