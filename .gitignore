@@ -17,3 +17,5 @@ frontend/front/node_modules/
 .claude/
 .mcp.json
 ai/data/
+ai/docs/
+CLAUDE.md
