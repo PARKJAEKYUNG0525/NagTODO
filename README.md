@@ -1,13 +1,19 @@
-# NagTODO
+<h1 align="center">NagTODO</h1>
 
-![Frontend](https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite%208-61DAFB?logo=react&logoColor=black)
-![Backend](https://img.shields.io/badge/Backend-FastAPI%200.116-009688?logo=fastapi&logoColor=white)
-![DB](https://img.shields.io/badge/DB-MySQL%208-4479A1?logo=mysql&logoColor=white)
-![Embedding](https://img.shields.io/badge/Embedding-intfloat%2Fmultilingual--e5--small-111111)
-![SLLM](https://img.shields.io/badge/SLLM-qwen2.5%3A7b-111111)
-![Workflow](https://img.shields.io/badge/Workflow-LangGraph-1C3C3C)
-![Vector Search](https://img.shields.io/badge/Vector%20Search-FAISS-0467DF)
-![LLM Runtime](https://img.shields.io/badge/LLM%20Runtime-Ollama-111111)
+<p align="center">
+  <img src="https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite%208-61DAFB?logo=react&logoColor=black" alt="Frontend: React 19 | Vite 8" />
+  <img src="https://img.shields.io/badge/Backend-FastAPI%200.116-009688?logo=fastapi&logoColor=white" alt="Backend: FastAPI 0.116" />
+  <img src="https://img.shields.io/badge/DB-MySQL%208-4479A1?logo=mysql&logoColor=white" alt="DB: MySQL 8" />
+  <br />
+  <img src="https://img.shields.io/badge/Embedding-intfloat%2Fmultilingual--e5--small-111111" alt="Embedding: intfloat/multilingual-e5-small" />
+  <img src="https://img.shields.io/badge/SLLM-qwen2.5%3A7b-111111" alt="SLLM: qwen2.5:7b" />
+  <img src="https://img.shields.io/badge/Workflow-LangGraph-1C3C3C" alt="Workflow: LangGraph" />
+  <br />
+  <img src="https://img.shields.io/badge/Vector%20Search-FAISS-0467DF" alt="Vector Search: FAISS" />
+  <img src="https://img.shields.io/badge/LLM%20Runtime-Ollama-111111" alt="LLM Runtime: Ollama" />
+</p>
+
+<br />
 
 사람들은 해야 할 일을 몰라서 미루는 게 아닙니다.  
 알면서도 안 하기 때문에 미룹니다.
@@ -17,6 +23,8 @@
 NagTODO는 이 지점에서 출발한 **잔소리형 Todo 서비스**입니다.
 
 단순히 알림을 보내는 것이 아니라, 사용자가 할 일을 미루지 않도록 계속 건드리고, 과거의 수행 패턴을 분석해 더 잘 실천할 수 있는 방향을 제안합니다. 기록에서 끝나는 Todo가 아니라, 실제 행동으로 이어지게 만드는 Todo를 목표로 합니다.
+
+<br />
 
 ## 서비스 소개
 
@@ -28,6 +36,17 @@ NagTODO는 사용자의 할 일 수행 패턴을 AI가 분석해, 필요할 때�
 
 NagTODO의 잔소리는 다정한 위로보다 행동을 끌어내는 자극에 가깝습니다. 조금 짜증나도, 계속 신경 쓰이게 만들어 결국 할 일을 하게 만드는 것이 이 서비스의 포인트입니다.
 
+<br />
+
+## 서비스 화면
+
+> 서비스 캡처 이미지를 추가할 위치입니다.  
+> 예시: `docs/images/service-preview.png`
+
+![NagTODO 서비스 화면](docs/images/service-preview.png)
+
+<br />
+
 ## 투칸(To-Can)
 
 투칸(To-Can)은 사용자를 재촉하고 잔소리해가며, 할 일(To)을 완료(Can)하도록 도와주는 NagTODO의 캐릭터입니다.
@@ -36,6 +55,8 @@ NagTODO의 잔소리는 다정한 위로보다 행동을 끌어내는 자극에 
 
 투칸 캐릭터는 Google Gemini를 사용하여 제작하였습니다.
 
+<br />
+
 ## 왜 NagTODO인가
 
 Todo 앱을 열어 할 일을 적는 것만으로는 충분하지 않습니다.
@@ -43,6 +64,8 @@ Todo 앱을 열어 할 일을 적는 것만으로는 충분하지 않습니다.
 문제는 "무엇을 해야 하는가"가 아니라 "왜 계속 안 하는가"에 있습니다. NagTODO는 사용자가 스스로 외면하던 패턴을 다시 보여주고, 적절한 압박감과 심리적 책임감을 만들어 실행을 유도합니다.
 
 기존 Todo 앱이 수동적인 일정 관리 도구라면, NagTODO는 사용자의 행동 변화를 이끄는 능동적인 Todo 서비스입니다.
+
+<br />
 
 ## 핵심 기능
 
@@ -55,6 +78,8 @@ Todo 앱을 열어 할 일을 적는 것만으로는 충분하지 않습니다.
 - 반복 실패 가능성이 있는 task에 대해 상황에 맞는 잔소리 제공
 - 사용자가 계획을 더 현실적으로 조정하도록 유도
 
+<br />
+
 ### 월간 회고 리포트
 
 한 달 동안의 Todo 기록을 AI가 분석해 회고 리포트를 생성합니다.
@@ -63,6 +88,8 @@ Todo 앱을 열어 할 일을 적는 것만으로는 충분하지 않습니다.
 - 반복적으로 미룬 task 유형 파악
 - 비슷한 실패 task를 묶어 원인과 경향 요약
 - 다음 달 목표 달성을 위한 개선 방향 제안
+
+<br />
 
 ### 출석 보상과 코스튬
 
@@ -75,11 +102,15 @@ NagTODO는 잔소리만 하는 서비스가 아닙니다. 사용자가 매일 �
 
 코스튬을 입은 투칸들은 출석 보상으로 제공됩니다. 사용자는 잔소리를 듣기만 하는 것이 아니라, 꾸준히 돌아온 만큼 새로운 캐릭터를 모으는 재미도 얻을 수 있습니다.
 
+<br />
+
 ### 홈 화면 커스터마이징
 
 사용자는 홈 화면에서 원하는 배경과 BGM을 설정할 수 있습니다.
 
 잔소리형 Todo라는 핵심 경험은 유지하되, 사용자가 자신의 취향에 맞는 분위기에서 서비스를 사용할 수 있도록 배경 이미지와 음악 선택 기능을 제공합니다.
+
+<br />
 
 ## 사용 흐름
 
@@ -91,6 +122,8 @@ NagTODO는 잔소리만 하는 서비스가 아닙니다. 사용자가 매일 �
 6. 원하는 배경과 BGM으로 홈 화면을 꾸밉니다.
 7. 한 달 동안 쌓인 기록을 기반으로 월간 회고 리포트를 생성합니다.
 8. 사용자는 자신의 미루는 습관을 확인하고 다음 목표를 더 현실적으로 세웁니다.
+
+<br />
 
 ## NagTODO가 만드는 경험
 
