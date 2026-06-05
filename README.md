@@ -1,5 +1,5 @@
 <p align="center">
-  <img src=".\frontend\front\public\static\Logo.png" alt="NagTODO Logo" width="250" />
+  <img src=".\frontend\front\public\static\Logo.png" alt="NagTODO Logo" width="300" />
 </p>
 
 <p align="center">
@@ -18,11 +18,11 @@
 
 <br />
 
-## 시연 영상
-
 [NagTODO 시연 영상 보러가기](https://youtu.be/S1QiVu4N3s8)
 
 <br />
+
+---
 
 사람들은 해야 할 일을 몰라서 미루는 게 아닙니다.  
 알면서도 안 하기 때문에 미룹니다.
