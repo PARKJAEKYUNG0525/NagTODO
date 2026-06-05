@@ -1,8 +1,6 @@
 <p align="center">
-  <img src=".\frontend\front\public\static\Logo.png" alt="NagTODO Logo" width="180" />
+  <img src=".\frontend\front\public\static\Logo.png" alt="NagTODO Logo" width="250" />
 </p>
-
-<h1 align="center">NagTODO</h1>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Language-TypeScript%20%7C%20Python-FDE68A?logo=python&logoColor=black" alt="Language: TypeScript | Python" />
@@ -17,6 +15,12 @@
   <img src="https://img.shields.io/badge/Vector%20Search-FAISS-BAE6FD" alt="Vector Search: FAISS" />
   <img src="https://img.shields.io/badge/LLM%20Runtime-Ollama-E5E7EB" alt="LLM Runtime: Ollama" />
 </p>
+
+<br />
+
+## 시연 영상
+
+[NagTODO 시연 영상 보러가기](https://youtu.be/S1QiVu4N3s8)
 
 <br />
 
