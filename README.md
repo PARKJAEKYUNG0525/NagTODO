@@ -1,16 +1,21 @@
+<p align="center">
+  <img src=".\frontend\front\public\static\Logo.png" alt="NagTODO Logo" width="180" />
+</p>
+
 <h1 align="center">NagTODO</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Frontend-React%2019%20%7C%20Vite%208-61DAFB?logo=react&logoColor=black" alt="Frontend: React 19 | Vite 8" />
-  <img src="https://img.shields.io/badge/Backend-FastAPI%200.116-009688?logo=fastapi&logoColor=white" alt="Backend: FastAPI 0.116" />
-  <img src="https://img.shields.io/badge/DB-MySQL%208-4479A1?logo=mysql&logoColor=white" alt="DB: MySQL 8" />
+  <img src="https://img.shields.io/badge/Language-TypeScript%20%7C%20Python-FDE68A?logo=python&logoColor=black" alt="Language: TypeScript | Python" />
+  <img src="https://img.shields.io/badge/Frontend-React%20%7C%20Vite-BAE6FD?logo=react&logoColor=black" alt="Frontend: React | Vite" />
+  <img src="https://img.shields.io/badge/Backend-FastAPI-BBF7D0?logo=fastapi&logoColor=black" alt="Backend: FastAPI" />
+  <img src="https://img.shields.io/badge/DB-MySQL-BFDBFE?logo=mysql&logoColor=black" alt="DB: MySQL" />
   <br />
-  <img src="https://img.shields.io/badge/Embedding-intfloat%2Fmultilingual--e5--small-111111" alt="Embedding: intfloat/multilingual-e5-small" />
-  <img src="https://img.shields.io/badge/SLLM-qwen2.5%3A7b-111111" alt="SLLM: qwen2.5:7b" />
-  <img src="https://img.shields.io/badge/Workflow-LangGraph-1C3C3C" alt="Workflow: LangGraph" />
+  <img src="https://img.shields.io/badge/Embedding-multilingual--e5--small-E9D5FF" alt="Embedding: multilingual-e5-small" />
+  <img src="https://img.shields.io/badge/LLM-Qwen2.5:7b-FBCFE8" alt="LLM: Qwen2.5:7b" />
+  <img src="https://img.shields.io/badge/Workflow-LangGraph-B5F5EC" alt="Workflow: LangGraph" />
   <br />
-  <img src="https://img.shields.io/badge/Vector%20Search-FAISS-0467DF" alt="Vector Search: FAISS" />
-  <img src="https://img.shields.io/badge/LLM%20Runtime-Ollama-111111" alt="LLM Runtime: Ollama" />
+  <img src="https://img.shields.io/badge/Vector%20Search-FAISS-BAE6FD" alt="Vector Search: FAISS" />
+  <img src="https://img.shields.io/badge/LLM%20Runtime-Ollama-E5E7EB" alt="LLM Runtime: Ollama" />
 </p>
 
 <br />
@@ -36,18 +41,14 @@ NagTODO는 사용자의 할 일 수행 패턴을 AI가 분석해, 필요할 때�
 
 NagTODO의 잔소리는 다정한 위로보다 행동을 끌어내는 자극에 가깝습니다. 조금 짜증나도, 계속 신경 쓰이게 만들어 결국 할 일을 하게 만드는 것이 이 서비스의 포인트입니다.
 
-<br />
-
-## 서비스 화면
-
-> 서비스 캡처 이미지를 추가할 위치입니다.  
-> 예시: `docs/images/service-preview.png`
-
-![NagTODO 서비스 화면](docs/images/service-preview.png)
 
 <br />
 
 ## 투칸(To-Can)
+
+<p align="center">
+  <img src=".\frontend\front\public\static\cloth\인사_Default.png" width="180" />
+</p>
 
 투칸(To-Can)은 사용자를 재촉하고 잔소리해가며, 할 일(To)을 완료(Can)하도록 도와주는 NagTODO의 캐릭터입니다.
 
@@ -71,6 +72,11 @@ Todo 앱을 열어 할 일을 적는 것만으로는 충분하지 않습니다.
 
 ### AI 잔소리 간섭
 
+<p align="center">
+  <img src=".\images\todo_add.png" width="30%" />
+  <img src=".\images\todo_interference.png" width="30%" />
+</p>
+
 할 일을 등록하는 순간, AI가 비슷한 과거 task를 분석합니다.
 
 - 비슷한 일을 예전에 얼마나 성공했는지 확인
@@ -82,6 +88,12 @@ Todo 앱을 열어 할 일을 적는 것만으로는 충분하지 않습니다.
 
 ### 월간 회고 리포트
 
+<p align="center">
+  <img src=".\images\monthly_report_1.png" width="30%" />
+  <img src=".\images\monthly_report_2.png" width="30%" />
+  <img src=".\images\monthly_report_3.png" width="30%" />
+</p>
+
 한 달 동안의 Todo 기록을 AI가 분석해 회고 리포트를 생성합니다.
 
 - 완료율 중심이 아닌 실패 패턴 중심 분석
@@ -91,7 +103,27 @@ Todo 앱을 열어 할 일을 적는 것만으로는 충분하지 않습니다.
 
 <br />
 
+### 친구 기능
+
+<p align="center">
+  <img src=".\images\friendlist.png" width="30%" />
+  <img src=".\images\friend_todo.png" width="30%" />
+</p>
+
+친구를 추가하면 서로의 Todo를 확인할 수 있습니다.
+
+- 친구의 Todo 진행 상황 확인
+- 서로 미루고 있는 task를 보며 자연스럽게 자극 받기
+- 혼자 관리하는 Todo가 아니라 함께 실천하는 Todo 경험 제공
+
+<br />
+
 ### 출석 보상과 코스튬
+
+<p align="center">
+  <img src=".\images\char_default.png" width="30%" />
+  <img src=".\images\char_cro.png" width="30%" />
+</p>
 
 NagTODO는 잔소리만 하는 서비스가 아닙니다. 사용자가 매일 다시 들어오고, 꾸준히 할 일을 관리할 수 있도록 보상 체계를 제공합니다.
 
@@ -105,6 +137,11 @@ NagTODO는 잔소리만 하는 서비스가 아닙니다. 사용자가 매일 �
 <br />
 
 ### 홈 화면 커스터마이징
+
+<p align="center">
+  <img src=".\images\home_bgimg.png" width="30%" />
+  <img src=".\images\home_music.png" width="30%" />
+</p>
 
 사용자는 홈 화면에서 원하는 배경과 BGM을 설정할 수 있습니다.
 
@@ -120,8 +157,9 @@ NagTODO는 잔소리만 하는 서비스가 아닙니다. 사용자가 매일 �
 4. 사용자는 피드백을 참고해 할 일을 수행하거나 계획을 조정합니다.
 5. 매일 출석체크를 통해 보상을 받고, 투칸 코스튬을 해금합니다.
 6. 원하는 배경과 BGM으로 홈 화면을 꾸밉니다.
-7. 한 달 동안 쌓인 기록을 기반으로 월간 회고 리포트를 생성합니다.
-8. 사용자는 자신의 미루는 습관을 확인하고 다음 목표를 더 현실적으로 세웁니다.
+7. 친구의 Todo를 확인하며 서로의 실천 상황을 공유합니다.
+8. 한 달 동안 쌓인 기록을 기반으로 월간 회고 리포트를 생성합니다.
+9. 사용자는 자신의 미루는 습관을 확인하고 다음 목표를 더 현실적으로 세웁니다.
 
 <br />
 
