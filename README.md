@@ -2,6 +2,8 @@
   <img src=".\frontend\front\public\static\Logo.png" alt="NagTODO Logo" width="300" />
 </p>
 
+---
+
 <p align="center">
   <img src="https://img.shields.io/badge/Language-TypeScript%20%7C%20Python-FDE68A?logo=python&logoColor=black" alt="Language: TypeScript | Python" />
   <img src="https://img.shields.io/badge/Frontend-React%20%7C%20Vite-BAE6FD?logo=react&logoColor=black" alt="Frontend: React | Vite" />
@@ -21,8 +23,6 @@
 [NagTODO 시연 영상 보러가기](https://youtu.be/S1QiVu4N3s8)
 
 <br />
-
----
 
 사람들은 해야 할 일을 몰라서 미루는 게 아닙니다.  
 알면서도 안 하기 때문에 미룹니다.
